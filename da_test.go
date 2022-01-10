@@ -1,8 +1,6 @@
 package hairetsu
 
 import (
-	"bytes"
-	"sort"
 	"testing"
 
 	"github.com/ajiyoshi-vg/hairetsu/node"
@@ -42,10 +40,8 @@ func TestSearch(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
 			data := c.data
-			sort.Slice(data, func(i, j int) bool {
-				return bytes.Compare(data[i], data[j]) < 0
-			})
 			builder := &builder{}
+			builder.SortBytes(data)
 			da, err := builder.FromBytes(data)
 			assert.NoError(t, err)
 
