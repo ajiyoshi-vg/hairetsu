@@ -41,7 +41,6 @@ func TestSearch(t *testing.T) {
 		t.Run(c.title, func(t *testing.T) {
 			data := c.data
 			builder := &builder{}
-			builder.SortBytes(data)
 			da, err := builder.FromBytes(data)
 			assert.NoError(t, err)
 

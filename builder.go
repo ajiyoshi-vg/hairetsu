@@ -1,9 +1,6 @@
 package hairetsu
 
 import (
-	"bytes"
-	"sort"
-
 	"github.com/ajiyoshi-vg/hairetsu/keyset"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/word"
@@ -22,12 +19,6 @@ func (b *builder) FromBytes(xs [][]byte) (*DoubleArray, error) {
 		return nil, err
 	}
 	return ret, nil
-}
-
-func (b *builder) SortBytes(data [][]byte) {
-	sort.Slice(data, func(i, j int) bool {
-		return bytes.Compare(data[i], data[j]) < 0
-	})
 }
 
 func (b *builder) build(da *DoubleArray, ks keyset.KeySet) error {
