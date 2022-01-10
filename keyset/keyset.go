@@ -1,4 +1,4 @@
-package walker
+package keyset
 
 import (
 	"github.com/ajiyoshi-vg/hairetsu/word"

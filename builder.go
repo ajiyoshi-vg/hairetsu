@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"sort"
 
+	"github.com/ajiyoshi-vg/hairetsu/keyset"
 	"github.com/ajiyoshi-vg/hairetsu/node"
-	"github.com/ajiyoshi-vg/hairetsu/walker"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 	"github.com/pkg/errors"
 )
@@ -23,7 +23,7 @@ func (b *builder) FromBytes(xs [][]byte) (*DoubleArray, error) {
 		nodes:   make([]node.Node, len(xs)*2),
 		factory: &fatFactory{},
 	}
-	if err := b.start(ret, data); err != nil {
+	if err := b.build(ret, data); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -35,10 +35,10 @@ func (b *builder) SortBytes(data [][]byte) {
 	})
 }
 
-func (b *builder) start(da *DoubleArray, data []word.Word) error {
+func (b *builder) build(da *DoubleArray, data []word.Word) error {
 	da.init(0)
 	b.id = 0
-	return walker.Walk(data, func(prefix word.Word, branch []word.Code) error {
+	return keyset.Walk(data, func(prefix word.Word, branch []word.Code) error {
 		return b.insert(da, prefix, branch)
 	})
 }

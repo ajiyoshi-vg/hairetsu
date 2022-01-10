@@ -20,7 +20,7 @@ func TestDoubleArray(t *testing.T) {
 		word.Word{5, 4, 3, 2, 1},
 	}
 	word.Sort(data)
-	err := b.start(da, data)
+	err := b.build(da, data)
 	assert.NoError(t, err)
 
 	for i, x := range data {
@@ -64,7 +64,7 @@ func TestDoubleArrayInit(t *testing.T) {
 		word.Word{2, 3, 4, 5},
 	}
 	word.Sort(data)
-	err := b.start(da, data)
+	err := b.build(da, data)
 	assert.NoError(t, err)
 	expect = []string{
 		"{base:0, next:10}",  // 0
