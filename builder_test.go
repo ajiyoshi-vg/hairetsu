@@ -3,6 +3,7 @@ package hairetsu
 import (
 	"testing"
 
+	"github.com/ajiyoshi-vg/hairetsu/keyset"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 	"github.com/stretchr/testify/assert"
@@ -19,8 +20,7 @@ func TestDoubleArray(t *testing.T) {
 		word.Word{5, 4, 3},
 		word.Word{5, 4, 3, 2, 1},
 	}
-	word.Sort(data)
-	err := b.build(da, data)
+	err := b.build(da, keyset.New(data))
 	assert.NoError(t, err)
 
 	for i, x := range data {
@@ -63,8 +63,7 @@ func TestDoubleArrayInit(t *testing.T) {
 		word.Word{1, 2},
 		word.Word{2, 3, 4, 5},
 	}
-	word.Sort(data)
-	err := b.build(da, data)
+	err := b.build(da, keyset.New(data))
 	assert.NoError(t, err)
 	expect = []string{
 		"{base:0, next:10}",  // 0

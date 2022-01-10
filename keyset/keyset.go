@@ -1,6 +1,8 @@
 package keyset
 
 import (
+	"sort"
+
 	"github.com/ajiyoshi-vg/hairetsu/word"
 )
 
@@ -13,12 +15,29 @@ type KeySet []Item
 
 type Callback func(word.Word, []word.Code, []uint32) error
 
+func FromBytes(xs [][]byte) KeySet {
+	ret := make(KeySet, 0, len(xs))
+	for i, x := range xs {
+		ret = append(ret, Item{
+			Key: word.FromBytes(x),
+			Val: uint32(i),
+		})
+	}
+	return ret
+}
+
 func New(data []word.Word) KeySet {
 	ret := make([]Item, 0, len(data))
 	for i, x := range data {
 		ret = append(ret, Item{Key: x, Val: uint32(i)})
 	}
 	return ret
+}
+
+func (ks KeySet) Sort() {
+	sort.Slice(ks, func(i, j int) bool {
+		return word.Compare(ks[i].Key, ks[j].Key) < 0
+	})
 }
 
 func (ks KeySet) Walk(f Callback) error {

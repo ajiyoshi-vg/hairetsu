@@ -14,15 +14,12 @@ type builder struct {
 }
 
 func (b *builder) FromBytes(xs [][]byte) (*DoubleArray, error) {
-	data := make([]word.Word, 0, len(xs))
-	for _, x := range xs {
-		data = append(data, word.FromBytes(x))
-	}
 	ret := &DoubleArray{
 		nodes:   make([]node.Node, len(xs)*2),
 		factory: &fatFactory{},
 	}
-	if err := b.build(ret, data); err != nil {
+	ks := keyset.FromBytes(xs)
+	if err := b.build(ret, ks); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -34,9 +31,9 @@ func (b *builder) SortBytes(data [][]byte) {
 	})
 }
 
-func (b *builder) build(da *DoubleArray, data []word.Word) error {
+func (b *builder) build(da *DoubleArray, ks keyset.KeySet) error {
 	da.init(0)
-	ks := keyset.New(data)
+	ks.Sort()
 	return ks.Walk(func(prefix word.Word, branch []word.Code, vals []uint32) error {
 		return b.insert(da, prefix, branch, vals)
 	})
