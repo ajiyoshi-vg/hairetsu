@@ -13,11 +13,16 @@ func TestSearch(t *testing.T) {
 	cases := []struct {
 		title  string
 		data   [][]byte
+		ng     [][]byte
 		prefix []byte
 		num    int
 	}{
 		{
-			title:  "インドネシア",
+			title: "インドネシア",
+			ng: [][]byte{
+				[]byte("hoge"),
+				[]byte("印"),
+			},
 			prefix: []byte("印度尼西亚啊"),
 			num:    2,
 			data: [][]byte{
@@ -48,6 +53,10 @@ func TestSearch(t *testing.T) {
 				actual, err := da.ExactMatchSearch(x)
 				assert.NoError(t, err, x)
 				assert.Equal(t, node.Index(i), actual)
+			}
+			for _, x := range c.ng {
+				_, err := da.ExactMatchSearch(x)
+				assert.Error(t, err, x)
 			}
 
 			is, err := da.CommonPrefixSearch(c.prefix)
