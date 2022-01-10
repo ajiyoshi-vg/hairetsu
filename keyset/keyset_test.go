@@ -10,14 +10,14 @@ import (
 )
 
 func TestWalk(t *testing.T) {
-	data := []word.Word{
+	x := New([]word.Word{
 		word.Word{1, 2, 3},
 		word.Word{1, 2, 3, 4, 5},
 		word.Word{1, 2, 4},
-	}
+	})
 
 	ss := []string{"(prefix, branches)"}
-	err := Walk(data, func(pre word.Word, brs []word.Code) error {
+	err := x.Walk(func(pre word.Word, brs []word.Code, vals []uint32) error {
 		ss = append(ss, fmt.Sprintf("(%v, %v)", pre, brs))
 		return nil
 	})

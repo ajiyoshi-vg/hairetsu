@@ -4,20 +4,35 @@ import (
 	"github.com/ajiyoshi-vg/hairetsu/word"
 )
 
-type Callback func(prefix word.Word, branch []word.Code) error
-
-func Walk(data []word.Word, f Callback) error {
-	return walkTrieNode(data, 0, len(data), 0, f)
+type Item struct {
+	Key word.Word
+	Val uint32
 }
 
-func walkTrieNode(data []word.Word, begin, end, depth int, f Callback) error {
+type KeySet []Item
+
+type Callback func(word.Word, []word.Code, []uint32) error
+
+func New(data []word.Word) KeySet {
+	ret := make([]Item, 0, len(data))
+	for i, x := range data {
+		ret = append(ret, Item{Key: x, Val: uint32(i)})
+	}
+	return ret
+}
+
+func (ks KeySet) Walk(f Callback) error {
+	return ks.walkTrieNode(0, len(ks), 0, f)
+}
+
+func (ks KeySet) walkTrieNode(begin, end, depth int, f Callback) error {
 	// apply callback first
-	if err := f(trieNode(data, begin, end, depth)); err != nil {
+	if err := f(ks.trieNode(begin, end, depth)); err != nil {
 		return err
 	}
 
 	for begin < end {
-		if data[begin].At(depth) != word.EOS {
+		if ks[begin].Key.At(depth) != word.EOS {
 			break
 		}
 		begin++
@@ -27,12 +42,12 @@ func walkTrieNode(data []word.Word, begin, end, depth int, f Callback) error {
 	}
 
 	lastBegin := begin
-	lastLabel := data[begin][depth]
+	lastLabel := ks[begin].Key[depth]
 	begin++
 	for begin < end {
-		label := data[begin][depth]
+		label := ks[begin].Key[depth]
 		if label != lastLabel {
-			if err := walkTrieNode(data, lastBegin, begin, depth+1, f); err != nil {
+			if err := ks.walkTrieNode(lastBegin, begin, depth+1, f); err != nil {
 				return err
 			}
 			lastBegin = begin
@@ -40,14 +55,16 @@ func walkTrieNode(data []word.Word, begin, end, depth int, f Callback) error {
 		}
 		begin++
 	}
-	return walkTrieNode(data, lastBegin, end, depth+1, f)
+	return ks.walkTrieNode(lastBegin, end, depth+1, f)
 }
 
-func trieNode(data []word.Word, begin, end, depth int) (word.Word, []word.Code) {
-	prefix := data[begin][0:depth]
+func (ks KeySet) trieNode(begin, end, depth int) (word.Word, []word.Code, []uint32) {
+	prefix := ks[begin].Key[0:depth]
 	branch := make([]word.Code, 0, end)
+	values := make([]uint32, 0, end)
 	for i := begin; i < end; i++ {
-		branch = append(branch, data[i].At(depth))
+		branch = append(branch, ks[i].Key.At(depth))
+		values = append(values, ks[i].Val)
 	}
-	return prefix, branch
+	return prefix, branch, values
 }

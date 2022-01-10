@@ -11,7 +11,6 @@ import (
 )
 
 type builder struct {
-	id node.Index
 }
 
 func (b *builder) FromBytes(xs [][]byte) (*DoubleArray, error) {
@@ -37,13 +36,13 @@ func (b *builder) SortBytes(data [][]byte) {
 
 func (b *builder) build(da *DoubleArray, data []word.Word) error {
 	da.init(0)
-	b.id = 0
-	return keyset.Walk(data, func(prefix word.Word, branch []word.Code) error {
-		return b.insert(da, prefix, branch)
+	ks := keyset.New(data)
+	return ks.Walk(func(prefix word.Word, branch []word.Code, vals []uint32) error {
+		return b.insert(da, prefix, branch, vals)
 	})
 }
 
-func (b *builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code) error {
+func (b *builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code, vals []uint32) error {
 	//log.Printf("insert(prefix, branch)=(%v, %v)", prefix, branch)
 
 	if err := b.checkBranch(branch); err != nil {
@@ -66,7 +65,7 @@ func (b *builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code) 
 	da.nodes[index].SetOffset(offset)
 
 	prev := word.NONE
-	for _, c := range branch {
+	for i, c := range branch {
 		// branch には同じラベルの枝が複数あることがある
 		// もう追加していたらスキップ
 		if c == prev {
@@ -79,8 +78,7 @@ func (b *builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code) 
 		if c == word.EOS {
 			//終端マーク
 			da.nodes[index].Terminate()
-			da.nodes[next].SetOffset(b.id)
-			b.id++
+			da.nodes[next].SetOffset(node.Index(vals[i]))
 		}
 
 		prev = c
