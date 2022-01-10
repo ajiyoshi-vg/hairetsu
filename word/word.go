@@ -1,6 +1,9 @@
 package word
 
-import "math"
+import (
+	"math"
+	"sort"
+)
 
 const (
 	EOS  = Code(0)
@@ -16,13 +19,26 @@ func (x Word) At(i int) Code {
 	}
 	return EOS
 }
+func (x Word) Bytes() []byte {
+	ret := make([]byte, 0, len(x))
+	for _, b := range x {
+		ret = append(ret, byte(b-1))
+	}
+	return ret
+}
 
-func FromByte(data []byte) Word {
+func FromBytes(data []byte) Word {
 	ret := make(Word, 0, len(data))
 	for _, b := range data {
 		ret = append(ret, Code(b+1))
 	}
 	return ret
+}
+
+func Sort(data []Word) {
+	sort.Slice(data, func(i, j int) bool {
+		return Compare(data[i], data[j]) < 0
+	})
 }
 
 func Compare(lhs, rhs Word) int {

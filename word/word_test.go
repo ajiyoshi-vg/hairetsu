@@ -97,3 +97,38 @@ func TestCompare(t *testing.T) {
 		})
 	}
 }
+
+func TestFromByte(t *testing.T) {
+	cases := []struct {
+		title  string
+		source [][]byte
+		expect [][]byte
+	}{
+		{
+			title: "simple",
+			source: [][]byte{
+				[]byte("日本語"),
+				[]byte("fuga"),
+			},
+			expect: [][]byte{
+				[]byte("日本語"),
+				[]byte("fuga"),
+			},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.title, func(t *testing.T) {
+			tmp := make([]Word, 0, len(c.source))
+			for _, x := range c.source {
+				tmp = append(tmp, FromBytes(x))
+			}
+
+			actual := make([][]byte, 0, len(c.source))
+			for _, x := range tmp {
+				actual = append(actual, x.Bytes())
+			}
+			assert.Equal(t, c.expect, actual)
+		})
+	}
+}
