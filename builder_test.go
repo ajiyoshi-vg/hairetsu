@@ -23,9 +23,10 @@ func TestDoubleArray(t *testing.T) {
 	err := b.start(da, data)
 	assert.NoError(t, err)
 
-	for _, x := range data {
-		_, err := da.lookup(x)
+	for i, x := range data {
+		actual, err := da.lookup(x)
 		assert.NoError(t, err)
+		assert.Equal(t, node.Index(i), actual)
 	}
 
 	ng := []word.Word{
@@ -82,12 +83,11 @@ func TestDoubleArrayInit(t *testing.T) {
 	for i, want := range expect {
 		assert.Equal(t, want, da.nodes[i].String(), i)
 	}
-	t.Log(expect)
-	t.Log(da.nodes)
 
-	for _, x := range data {
-		_, err := da.lookup(x)
+	for i, x := range data {
+		actual, err := da.lookup(x)
 		assert.NoError(t, err)
+		assert.Equal(t, node.Index(i), actual)
 	}
 
 	ng := []word.Word{

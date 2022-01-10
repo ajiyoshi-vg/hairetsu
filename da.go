@@ -123,7 +123,15 @@ func (da *DoubleArray) lookup(cs word.Word) (node.Index, error) {
 		return 0, err
 	}
 	if da.nodes[index].IsTerminal() {
-		return index, nil
+		return da.getValue(index)
 	}
 	return 0, errors.WithMessagef(da.nodeError(), "not terminal. lookup:%v index:%d", cs, index)
+}
+
+func (da *DoubleArray) getValue(term node.Index) (node.Index, error) {
+	data, err := da.traverse(term, word.EOS)
+	if err != nil {
+		return 0, err
+	}
+	return da.nodes[data].GetOffset(), nil
 }
