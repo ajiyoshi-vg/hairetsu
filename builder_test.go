@@ -24,7 +24,7 @@ func TestDoubleArray(t *testing.T) {
 	assert.NoError(t, err)
 
 	for i, x := range data {
-		actual, err := da.lookup(x)
+		actual, err := da.exactMatchSearch(x)
 		assert.NoError(t, err)
 		assert.Equal(t, node.Index(i), actual)
 	}
@@ -35,7 +35,7 @@ func TestDoubleArray(t *testing.T) {
 		word.Word{5, 4, 3, 2},
 	}
 	for _, x := range ng {
-		_, err := da.lookup(x)
+		_, err := da.exactMatchSearch(x)
 		assert.Error(t, err)
 	}
 }
@@ -84,7 +84,7 @@ func TestDoubleArrayInit(t *testing.T) {
 	}
 
 	for i, x := range data {
-		actual, err := da.lookup(x)
+		actual, err := da.exactMatchSearch(x)
 		assert.NoError(t, err)
 		assert.Equal(t, node.Index(i), actual)
 	}
@@ -96,7 +96,7 @@ func TestDoubleArrayInit(t *testing.T) {
 		word.Word{2, 3, 4},
 	}
 	for _, x := range ng {
-		_, err := da.lookup(x)
+		_, err := da.exactMatchSearch(x)
 		assert.Error(t, err)
 	}
 }

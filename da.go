@@ -24,29 +24,11 @@ func (da *DoubleArray) Traverse(index node.Index, branch word.Code) (node.Index,
 
 func (da *DoubleArray) ExactMatchSearch(xs []byte) (node.Index, error) {
 	cs := word.FromBytes(xs)
-	return da.lookup(cs)
+	return da.exactMatchSearch(cs)
 }
 func (da *DoubleArray) CommonPrefixSearch(xs []byte) ([]node.Index, error) {
 	cs := word.FromBytes(xs)
-	ret := make([]node.Index, 0, 10)
-
-	var index node.Index
-	var err error
-	for _, c := range cs {
-		index, err = da.Traverse(index, c)
-		if err != nil {
-			return ret, nil
-		}
-
-		if da.nodes[index].IsTerminal() {
-			val, err := da.getValue(index)
-			if err != nil {
-				return nil, err
-			}
-			ret = append(ret, val)
-		}
-	}
-	return ret, nil
+	return da.commonPrefixSearch(cs)
 }
 
 func (da *DoubleArray) init(after int) {
@@ -145,7 +127,7 @@ func (da *DoubleArray) getIndex(cs word.Word) (node.Index, error) {
 	return index, nil
 }
 
-func (da *DoubleArray) lookup(cs word.Word) (node.Index, error) {
+func (da *DoubleArray) exactMatchSearch(cs word.Word) (node.Index, error) {
 	index, err := da.getIndex(cs)
 	if err != nil {
 		return 0, err
@@ -154,6 +136,28 @@ func (da *DoubleArray) lookup(cs word.Word) (node.Index, error) {
 		return da.getValue(index)
 	}
 	return 0, errors.WithMessagef(da.nodeError(), "not terminal. lookup:%v index:%d", cs, index)
+}
+
+func (da *DoubleArray) commonPrefixSearch(cs word.Word) ([]node.Index, error) {
+	ret := make([]node.Index, 0, 10)
+
+	var index node.Index
+	var err error
+	for _, c := range cs {
+		index, err = da.Traverse(index, c)
+		if err != nil {
+			return ret, nil
+		}
+
+		if da.nodes[index].IsTerminal() {
+			val, err := da.getValue(index)
+			if err != nil {
+				return nil, err
+			}
+			ret = append(ret, val)
+		}
+	}
+	return ret, nil
 }
 
 func (da *DoubleArray) getValue(term node.Index) (node.Index, error) {
