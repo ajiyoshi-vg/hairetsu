@@ -1,8 +1,6 @@
 package hairetsu
 
 import (
-	"sort"
-
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/walker"
 	"github.com/ajiyoshi-vg/hairetsu/word"
@@ -18,12 +16,6 @@ func (b *builder) start(da *DoubleArray, data []word.Word) error {
 	b.id = 0
 	return walker.Walk(data, func(prefix word.Word, branch []word.Code) error {
 		return b.insert(da, prefix, branch)
-	})
-}
-
-func (b *builder) sort(data []word.Word) {
-	sort.Slice(data, func(i, j int) bool {
-		return word.Compare(data[i], data[j]) < 0
 	})
 }
 
