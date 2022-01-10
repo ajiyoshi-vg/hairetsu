@@ -10,8 +10,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-type builder struct {
-}
+type builder struct{}
 
 func (b *builder) FromBytes(xs [][]byte) (*DoubleArray, error) {
 	ret := &DoubleArray{

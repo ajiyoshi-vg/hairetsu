@@ -34,10 +34,14 @@ func New(data []word.Word) KeySet {
 	return ret
 }
 
+func (ks KeySet) less(i, j int) bool {
+	return word.Compare(ks[i].Key, ks[j].Key) < 0
+}
+
 func (ks KeySet) Sort() {
-	sort.Slice(ks, func(i, j int) bool {
-		return word.Compare(ks[i].Key, ks[j].Key) < 0
-	})
+	if !sort.SliceIsSorted(ks, ks.less) {
+		sort.Slice(ks, ks.less)
+	}
 }
 
 func (ks KeySet) Walk(f Callback) error {
