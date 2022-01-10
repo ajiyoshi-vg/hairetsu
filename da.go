@@ -13,15 +13,13 @@ type DoubleArray struct {
 	factory nodeFactory
 }
 
-func (da *DoubleArray) init(after int) {
-	if after == 0 {
-		da.nodes[0] = da.factory.root()
-		after = 1
+func (da *DoubleArray) Traverse(index node.Index, branch word.Code) (node.Index, error) {
+	offset := da.nodes[index].GetOffset()
+	next := offset.Forward(branch)
+	if int(next) >= len(da.nodes) || !da.nodes[next].IsChildOf(index) {
+		return 0, errors.WithMessagef(da.nodeError(), "branch:%v", branch)
 	}
-
-	for i := after; i < len(da.nodes); i++ {
-		da.nodes[i] = da.factory.node(i)
-	}
+	return next, nil
 }
 
 func (da *DoubleArray) ExactMatchSearch(xs []byte) (node.Index, error) {
@@ -35,7 +33,7 @@ func (da *DoubleArray) CommonPrefixSearch(xs []byte) ([]node.Index, error) {
 	var index node.Index
 	var err error
 	for _, c := range cs {
-		index, err = da.traverse(index, c)
+		index, err = da.Traverse(index, c)
 		if err != nil {
 			return ret, nil
 		}
@@ -49,6 +47,17 @@ func (da *DoubleArray) CommonPrefixSearch(xs []byte) ([]node.Index, error) {
 		}
 	}
 	return ret, nil
+}
+
+func (da *DoubleArray) init(after int) {
+	if after == 0 {
+		da.nodes[0] = da.factory.root()
+		after = 1
+	}
+
+	for i := after; i < len(da.nodes); i++ {
+		da.nodes[i] = da.factory.node(i)
+	}
 }
 
 func (da *DoubleArray) extend() {
@@ -77,15 +86,6 @@ func (da *DoubleArray) popNode(i node.Index) {
 	da.nodes[prev].SetNextEmptyNode(next)
 	// 2. nodes[i].next の prev に nodes[i].prev を繋ぐ
 	da.nodes[next].SetPrevEmptyNode(prev)
-}
-
-func (da *DoubleArray) traverse(index node.Index, branch word.Code) (node.Index, error) {
-	offset := da.nodes[index].GetOffset()
-	next := offset.Forward(branch)
-	if int(next) >= len(da.nodes) || !da.nodes[next].IsChildOf(index) {
-		return 0, errors.WithMessagef(da.nodeError(), "branch:%v", branch)
-	}
-	return next, nil
 }
 
 //FIXME
@@ -137,7 +137,7 @@ func (da *DoubleArray) getIndex(cs word.Word) (node.Index, error) {
 	var index node.Index
 	var err error
 	for _, c := range cs {
-		index, err = da.traverse(index, c)
+		index, err = da.Traverse(index, c)
 		if err != nil {
 			return 0, errors.WithMessagef(err, "word:%v", cs)
 		}
@@ -157,7 +157,7 @@ func (da *DoubleArray) lookup(cs word.Word) (node.Index, error) {
 }
 
 func (da *DoubleArray) getValue(term node.Index) (node.Index, error) {
-	data, err := da.traverse(term, word.EOS)
+	data, err := da.Traverse(term, word.EOS)
 	if err != nil {
 		return 0, err
 	}
