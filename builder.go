@@ -11,6 +11,21 @@ type builder struct {
 	id node.Index
 }
 
+func (b *builder) FromBytes(xs [][]byte) (*DoubleArray, error) {
+	ws := make([]word.Word, 0, len(xs))
+	for _, x := range xs {
+		ws = append(ws, word.FromBytes(x))
+	}
+	ret := &DoubleArray{
+		nodes:   make([]node.Node, len(xs)*2),
+		factory: &fatFactory{},
+	}
+	if err := b.start(ret, ws); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
 func (b *builder) start(da *DoubleArray, data []word.Word) error {
 	da.init(0)
 	b.id = 0
@@ -20,6 +35,8 @@ func (b *builder) start(da *DoubleArray, data []word.Word) error {
 }
 
 func (b *builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code) error {
+	//log.Printf("insert(prefix, branch)=(%v, %v)", prefix, branch)
+
 	if err := b.checkBranch(branch); err != nil {
 		return err
 	}

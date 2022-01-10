@@ -24,6 +24,33 @@ func (da *DoubleArray) init(after int) {
 	}
 }
 
+func (da *DoubleArray) ExactMatchSearch(xs []byte) (node.Index, error) {
+	cs := word.FromBytes(xs)
+	return da.lookup(cs)
+}
+func (da *DoubleArray) CommonPrefixSearch(xs []byte) ([]node.Index, error) {
+	cs := word.FromBytes(xs)
+	ret := make([]node.Index, 0, 10)
+
+	var index node.Index
+	var err error
+	for _, c := range cs {
+		index, err = da.traverse(index, c)
+		if err != nil {
+			return ret, nil
+		}
+
+		if da.nodes[index].IsTerminal() {
+			val, err := da.getValue(index)
+			if err != nil {
+				return nil, err
+			}
+			ret = append(ret, val)
+		}
+	}
+	return ret, nil
+}
+
 func (da *DoubleArray) extend() {
 	max := len(da.nodes)
 	da.nodes = append(da.nodes, make([]node.Node, len(da.nodes))...)
@@ -101,6 +128,7 @@ func (da *DoubleArray) findOffset(index node.Index, branch word.Code) (node.Inde
 		if err == nil {
 			return index, offset
 		}
+		da.ensure(index)
 		index = da.nodes[index].GetNextEmptyNode()
 	}
 }
