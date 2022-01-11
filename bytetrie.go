@@ -8,7 +8,7 @@ import (
 )
 
 type ByteTrie struct {
-	dat *da.DoubleArray
+	data *da.DoubleArray
 }
 
 type ByteTrieBuilder struct {
@@ -27,13 +27,13 @@ func (b *ByteTrieBuilder) Build(xs [][]byte) (*ByteTrie, error) {
 	if err := b.builder.Build(ret, ks); err != nil {
 		return nil, err
 	}
-	return &ByteTrie{dat: ret}, nil
+	return &ByteTrie{data: ret}, nil
 }
 
 func (t *ByteTrie) ExactMatchSearch(key []byte) (node.Index, error) {
-	return t.dat.ExactMatchSearch(word.FromBytes(key))
+	return t.data.ExactMatchSearch(word.FromBytes(key))
 }
 
 func (t *ByteTrie) CommonPrefixSearch(key []byte) ([]node.Index, error) {
-	return t.dat.CommonPrefixSearch(word.FromBytes(key))
+	return t.data.CommonPrefixSearch(word.FromBytes(key))
 }

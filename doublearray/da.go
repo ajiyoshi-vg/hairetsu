@@ -12,6 +12,11 @@ type DoubleArray struct {
 	nodes []node.Node
 }
 
+type Stat struct {
+	Length   int
+	NumEmpty int
+}
+
 func New(initial int) *DoubleArray {
 	return &DoubleArray{
 		nodes: make([]node.Node, initial),
@@ -51,6 +56,13 @@ func (da *DoubleArray) CommonPrefixSearch(cs word.Word) ([]node.Index, error) {
 	return ret, nil
 }
 
+func (da *DoubleArray) Stat() Stat {
+	return Stat{
+		Length:   len(da.nodes),
+		NumEmpty: da.countEmpty(),
+	}
+}
+
 func (da *DoubleArray) traverse(index node.Index, branch word.Code) (node.Index, error) {
 	offset := da.nodes[index].GetOffset()
 	next := offset.Forward(branch)
@@ -87,4 +99,20 @@ func (da *DoubleArray) getIndex(cs word.Word) (node.Index, error) {
 		}
 	}
 	return index, nil
+}
+
+func (da *DoubleArray) walkEmpty(f func(i node.Index, x node.Node)) {
+	index := da.nodes[0].GetNextEmptyNode()
+	for int(index) < len(da.nodes) {
+		f(index, da.nodes[index])
+		index = da.nodes[index].GetNextEmptyNode()
+	}
+}
+
+func (da *DoubleArray) countEmpty() int {
+	ret := 0
+	da.walkEmpty(func(node.Index, node.Node) {
+		ret++
+	})
+	return ret
 }
