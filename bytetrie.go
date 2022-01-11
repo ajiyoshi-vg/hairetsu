@@ -21,7 +21,7 @@ func newBuilder() *ByteTrieBuilder {
 	}
 }
 
-func (b *ByteTrieBuilder) FromBytes(xs [][]byte) (*ByteTrie, error) {
+func (b *ByteTrieBuilder) Build(xs [][]byte) (*ByteTrie, error) {
 	ret := da.New(len(xs) * 2)
 	ks := keyset.FromBytes(xs)
 	if err := b.builder.Build(ret, ks); err != nil {

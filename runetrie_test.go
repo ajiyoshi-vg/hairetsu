@@ -7,40 +7,40 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSearch(t *testing.T) {
+func TestRuneTrieSearch(t *testing.T) {
 	cases := []struct {
 		title  string
-		data   [][]byte
-		ng     [][]byte
-		prefix []byte
+		data   []string
+		ng     []string
+		prefix string
 		num    int
 	}{
 		{
 			title: "インドネシア",
-			ng: [][]byte{
-				[]byte("hoge"),
-				[]byte("印"),
+			ng: []string{
+				("hoge"),
+				("印"),
 			},
-			prefix: []byte("印度尼西亚啊"),
+			prefix: ("印度尼西亚啊"),
 			num:    2,
-			data: [][]byte{
-				[]byte("印度"),
-				[]byte("印度尼西亚"),
-				[]byte("印加帝国"),
-				[]byte("瑞士"),
-				[]byte("瑞典"),
-				[]byte("巴基斯坦"),
-				[]byte("巴勒斯坦"),
-				[]byte("以色列"),
-				[]byte("巴比伦"),
-				[]byte("土耳其"),
+			data: []string{
+				("印度"),
+				("印度尼西亚"),
+				("印加帝国"),
+				("瑞士"),
+				("瑞典"),
+				("巴基斯坦"),
+				("巴勒斯坦"),
+				("以色列"),
+				("巴比伦"),
+				("土耳其"),
 			},
 		},
 	}
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
 			data := c.data
-			da, err := newBuilder().Build(data)
+			da, err := newRuneTrieBuilder().Build(data)
 			assert.NoError(t, err)
 
 			for i, x := range data {
