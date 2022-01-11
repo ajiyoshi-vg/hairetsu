@@ -1,9 +1,10 @@
-package u64
+// +build !verbose
+
+package node
 
 import (
 	"fmt"
 
-	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/pkg/errors"
 )
 
@@ -30,27 +31,27 @@ const (
 
 type Node uint64
 
-var _ node.Node = (*Node)(nil)
+var _ NodeInterface = (*Node)(nil)
 
-func Root() *Node {
+func Root() Node {
 	var ret Node
 	ret.SetNextEmptyNode(1)
-	return &ret
+	return ret
 }
 
-func New(i int) *Node {
+func New(i int) Node {
 	//XX
 	var ret Node
-	ret.SetPrevEmptyNode(node.Index(i - 1))
-	ret.SetNextEmptyNode(node.Index(i + 1))
-	return &ret
+	ret.SetPrevEmptyNode(Index(i - 1))
+	ret.SetNextEmptyNode(Index(i + 1))
+	return ret
 }
 
-func (x Node) GetOffset() node.Index {
+func (x Node) GetOffset() Index {
 	return x.getBase()
 }
 
-func (x *Node) SetOffset(i node.Index) {
+func (x *Node) SetOffset(i Index) {
 	val := ^baseMask&uint64(*x) | uint64(i)<<31 | hasOffset
 	*x = Node(val)
 }
@@ -62,14 +63,14 @@ func (x Node) IsTerminal() bool {
 	return x&isTerminal > 0
 }
 
-func (x *Node) SetParent(i node.Index) {
+func (x *Node) SetParent(i Index) {
 	val := ^checkMask&uint64(*x) | uint64(i) | hasParent
 	*x = Node(val)
 }
-func (x Node) GetParent() node.Index {
+func (x Node) GetParent() Index {
 	return x.getCheck()
 }
-func (x Node) IsChildOf(parent node.Index) bool {
+func (x Node) IsChildOf(parent Index) bool {
 	if !x.HasParent() {
 		return false
 	}
@@ -78,36 +79,36 @@ func (x Node) IsChildOf(parent node.Index) bool {
 func (x Node) HasParent() bool {
 	return x&hasParent > 0
 }
-func (x Node) GetNextEmptyNode() node.Index {
+func (x Node) GetNextEmptyNode() Index {
 	if x.HasParent() {
 		panic(errors.Errorf("emptyでないNode(%v)のnextEmptyNodeを取ろうとした", x))
 	}
 	return x.getCheck()
 }
-func (x Node) GetPrevEmptyNode() node.Index {
+func (x Node) GetPrevEmptyNode() Index {
 	if x&hasOffset > 0 {
 		panic(errors.Errorf("prevが存在しないNode(%v)のGetPrevEmptyNodeを取ろうとした", x))
 	}
 	return x.getBase()
 }
 
-func (x *Node) SetNextEmptyNode(i node.Index) {
+func (x *Node) SetNextEmptyNode(i Index) {
 	val := ^checkMask&uint64(*x) | uint64(i)
 	*x = Node(val)
 }
 
-func (x *Node) SetPrevEmptyNode(i node.Index) {
+func (x *Node) SetPrevEmptyNode(i Index) {
 	val := ^baseMask&uint64(*x) | uint64(i)<<31
 	*x = Node(val)
 }
 
-func (x Node) getBase() node.Index {
+func (x Node) getBase() Index {
 	ret := (uint64(x) & baseMask) >> 31
-	return node.Index(ret)
+	return Index(ret)
 }
-func (x Node) getCheck() node.Index {
+func (x Node) getCheck() Index {
 	ret := (uint64(x) & checkMask)
-	return node.Index(ret)
+	return Index(ret)
 }
 func (x Node) baseLabel() string {
 	if x&hasOffset > 0 {

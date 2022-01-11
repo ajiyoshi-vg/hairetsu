@@ -7,7 +7,7 @@ import (
 
 type Index uint32
 
-type Node interface {
+type NodeInterface interface {
 	GetOffset() Index
 	SetOffset(Index)
 

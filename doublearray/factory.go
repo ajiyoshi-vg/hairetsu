@@ -2,8 +2,6 @@ package doublearray
 
 import (
 	"github.com/ajiyoshi-vg/hairetsu/node"
-	"github.com/ajiyoshi-vg/hairetsu/node/fat"
-	"github.com/ajiyoshi-vg/hairetsu/node/u64"
 )
 
 type nodeFactory interface {
@@ -12,26 +10,15 @@ type nodeFactory interface {
 }
 
 var (
-	_ nodeFactory = (*fatFactory)(nil)
-	_ nodeFactory = (*u64Factory)(nil)
+	_ nodeFactory = (*factory)(nil)
 )
 
-type fatFactory struct{}
+type factory struct{}
 
-func (f *fatFactory) root() node.Node {
-	return fat.Root()
+func (f *factory) root() node.Node {
+	return node.Root()
 }
 
-func (f *fatFactory) node(i int) node.Node {
-	return fat.New(i)
-}
-
-type u64Factory struct{}
-
-func (f *u64Factory) root() node.Node {
-	return u64.Root()
-}
-
-func (f *u64Factory) node(i int) node.Node {
-	return u64.New(i)
+func (f *factory) node(i int) node.Node {
+	return node.New(i)
 }
