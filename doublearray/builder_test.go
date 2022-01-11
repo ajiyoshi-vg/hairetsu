@@ -21,6 +21,9 @@ func TestDoubleArray(t *testing.T) {
 	err := NewBuilder().Build(da, keyset.New(data))
 	assert.NoError(t, err)
 
+	s := da.Stat()
+	assert.Equal(t, len(data), s.Leaf)
+
 	for i, x := range data {
 		actual, err := da.ExactMatchSearch(x)
 		assert.NoError(t, err)
@@ -53,6 +56,10 @@ func TestInitDoubleArray(t *testing.T) {
 	for i, node := range da.nodes {
 		assert.Equal(t, expect[i], node.String())
 	}
+	s := da.Stat()
+	assert.Equal(t, 5, s.Size)
+	assert.Equal(t, 0, s.Node)
+	assert.Equal(t, 5, s.Empty)
 }
 
 func TestBuildDoubleArray(t *testing.T) {
@@ -67,6 +74,9 @@ func TestBuildDoubleArray(t *testing.T) {
 	}
 	err := NewBuilder().Build(da, keyset.New(data))
 	assert.NoError(t, err)
+
+	s := da.Stat()
+	assert.Equal(t, len(data), s.Leaf)
 
 	expect := []string{
 		"{base:0, next:10}",  // 0
