@@ -1,11 +1,33 @@
 package hairetsu
 
 import (
+	"encoding/binary"
 	"testing"
 
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/stretchr/testify/assert"
 )
+
+func trimLeft(b []byte) []byte {
+	if len(b) < 2 {
+		return b
+	}
+	if b[0] == 0 {
+		return trimLeft(b[1:])
+	}
+	return b
+}
+
+func generateBytes(num uint32) [][]byte {
+	ret := make([][]byte, 0, num)
+	for i := 0; i < int(num); i++ {
+		buf := make([]byte, 4)
+		binary.BigEndian.PutUint32(buf, uint32(i))
+		buf = trimLeft(buf)
+		ret = append(ret, buf)
+	}
+	return ret
+}
 
 func TestSearch(t *testing.T) {
 	cases := []struct {
@@ -35,6 +57,15 @@ func TestSearch(t *testing.T) {
 				[]byte("巴比伦"),
 				[]byte("土耳其"),
 			},
+		},
+		{
+			title: "binary",
+			ng: [][]byte{
+				[]byte("hoge"),
+			},
+			prefix: []byte{1, 0, 0},
+			num:    2,
+			data:   generateBytes(65535),
 		},
 	}
 	for _, c := range cases {
