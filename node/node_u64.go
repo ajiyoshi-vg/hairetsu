@@ -14,9 +14,9 @@ Node bit layout (uint64)
 | 00 01 02 03 04 ...    32 33 34 ....     63 |
    ^     ^  ^            ^  ^  ^           ^
    |     |  |  (30bit)   |  |  |  (30bit)  |
-   |     |  base_________|  |  check_______|
-   |     hashOffset         hasParent
-   isTerminal
+   |     |  |_base_______|  |  |_check_____|
+   |     |_hasOffset        |_hasParent
+   |_isTerminal
 
 */
 
