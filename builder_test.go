@@ -11,16 +11,14 @@ import (
 
 func TestDoubleArray(t *testing.T) {
 	da := &DoubleArray{
-		nodes:   make([]node.Node, 10),
-		factory: &fatFactory{},
+		nodes: make([]node.Node, 10),
 	}
 
-	b := builder{}
 	data := []word.Word{
 		word.Word{5, 4, 3},
 		word.Word{5, 4, 3, 2, 1},
 	}
-	err := b.build(da, keyset.New(data))
+	err := newBuilder().build(da, keyset.New(data))
 	assert.NoError(t, err)
 
 	for i, x := range data {
@@ -40,12 +38,11 @@ func TestDoubleArray(t *testing.T) {
 	}
 }
 
-func TestDoubleArrayInit(t *testing.T) {
+func TestInitDoubleArray(t *testing.T) {
 	da := &DoubleArray{
-		nodes:   make([]node.Node, 5),
-		factory: &fatFactory{},
+		nodes: make([]node.Node, 5),
 	}
-	da.init(0)
+	newBuilder().init(da, 0)
 	expect := []string{
 		"{prev:0, next:1}",
 		"{prev:0, next:2}",
@@ -56,16 +53,22 @@ func TestDoubleArrayInit(t *testing.T) {
 	for i, node := range da.nodes {
 		assert.Equal(t, expect[i], node.String())
 	}
+}
 
-	b := builder{}
+func TestBuildDoubleArray(t *testing.T) {
+	da := &DoubleArray{
+		nodes: make([]node.Node, 5),
+	}
+
 	data := []word.Word{
 		word.Word{1},
 		word.Word{1, 2},
 		word.Word{2, 3, 4, 5},
 	}
-	err := b.build(da, keyset.New(data))
+	err := newBuilder().build(da, keyset.New(data))
 	assert.NoError(t, err)
-	expect = []string{
+
+	expect := []string{
 		"{base:0, next:10}",  // 0
 		"{base:3, check:0}#", // 1
 		"{base:3, check:0}",  // 2
