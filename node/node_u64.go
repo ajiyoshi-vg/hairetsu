@@ -15,7 +15,9 @@ Node bit layout (uint64)
    ^     ^  ^            ^  ^  ^           ^
    |     |  |  (30bit)   |  |  |  (30bit)  |
    |     |  |_base_______|  |  |_check_____|
+   |     |                  |
    |     |_hasOffset        |_hasParent
+   |
    |_isTerminal
 
 */
