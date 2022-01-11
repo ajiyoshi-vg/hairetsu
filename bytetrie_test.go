@@ -1,4 +1,4 @@
-package doublearray
+package hairetsu
 
 import (
 	"testing"

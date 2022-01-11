@@ -18,11 +18,11 @@ func TestDoubleArray(t *testing.T) {
 		word.Word{5, 4, 3},
 		word.Word{5, 4, 3, 2, 1},
 	}
-	err := newBuilder().build(da, keyset.New(data))
+	err := NewBuilder().Build(da, keyset.New(data))
 	assert.NoError(t, err)
 
 	for i, x := range data {
-		actual, err := da.exactMatchSearch(x)
+		actual, err := da.ExactMatchSearch(x)
 		assert.NoError(t, err)
 		assert.Equal(t, node.Index(i), actual)
 	}
@@ -33,7 +33,7 @@ func TestDoubleArray(t *testing.T) {
 		word.Word{5, 4, 3, 2},
 	}
 	for _, x := range ng {
-		_, err := da.exactMatchSearch(x)
+		_, err := da.ExactMatchSearch(x)
 		assert.Error(t, err)
 	}
 }
@@ -42,7 +42,7 @@ func TestInitDoubleArray(t *testing.T) {
 	da := &DoubleArray{
 		nodes: make([]node.Node, 5),
 	}
-	newBuilder().init(da, 0)
+	NewBuilder().init(da, 0)
 	expect := []string{
 		"{prev:0, next:1}",
 		"{prev:0, next:2}",
@@ -65,7 +65,7 @@ func TestBuildDoubleArray(t *testing.T) {
 		word.Word{1, 2},
 		word.Word{2, 3, 4, 5},
 	}
-	err := newBuilder().build(da, keyset.New(data))
+	err := NewBuilder().Build(da, keyset.New(data))
 	assert.NoError(t, err)
 
 	expect := []string{
@@ -87,7 +87,7 @@ func TestBuildDoubleArray(t *testing.T) {
 	}
 
 	for i, x := range data {
-		actual, err := da.exactMatchSearch(x)
+		actual, err := da.ExactMatchSearch(x)
 		assert.NoError(t, err)
 		assert.Equal(t, node.Index(i), actual)
 	}
@@ -99,7 +99,7 @@ func TestBuildDoubleArray(t *testing.T) {
 		word.Word{2, 3, 4},
 	}
 	for _, x := range ng {
-		_, err := da.exactMatchSearch(x)
+		_, err := da.ExactMatchSearch(x)
 		assert.Error(t, err)
 	}
 }

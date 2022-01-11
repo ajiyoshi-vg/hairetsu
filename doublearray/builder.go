@@ -7,28 +7,17 @@ import (
 	"github.com/pkg/errors"
 )
 
-type builder struct {
+type Builder struct {
 	factory nodeFactory
 }
 
-func newBuilder() *builder {
-	return &builder{
+func NewBuilder() *Builder {
+	return &Builder{
 		factory: &fatFactory{},
 	}
 }
 
-func (b *builder) FromBytes(xs [][]byte) (*DoubleArray, error) {
-	ret := &DoubleArray{
-		nodes: make([]node.Node, len(xs)*2),
-	}
-	ks := keyset.FromBytes(xs)
-	if err := b.build(ret, ks); err != nil {
-		return nil, err
-	}
-	return ret, nil
-}
-
-func (b *builder) build(da *DoubleArray, ks keyset.KeySet) error {
+func (b *Builder) Build(da *DoubleArray, ks keyset.KeySet) error {
 	b.init(da, 0)
 	ks.Sort()
 	return ks.Walk(func(prefix word.Word, branch []word.Code, vals []uint32) error {
@@ -36,7 +25,7 @@ func (b *builder) build(da *DoubleArray, ks keyset.KeySet) error {
 	})
 }
 
-func (b *builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code, vals []uint32) error {
+func (b *Builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code, vals []uint32) error {
 	//log.Printf("insert(prefix, branch)=(%v, %v)", prefix, branch)
 
 	if err := b.checkBranch(branch); err != nil {
@@ -81,7 +70,7 @@ func (b *builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code, 
 	return nil
 }
 
-func (b *builder) checkBranch(branch []word.Code) error {
+func (b *Builder) checkBranch(branch []word.Code) error {
 	for i := 1; i < len(branch); i++ {
 		if branch[i-1] > branch[i] {
 			//branchはソート済みのはずなので後ろに小さな値があったらおかしい
@@ -95,7 +84,7 @@ func (b *builder) checkBranch(branch []word.Code) error {
 	return nil
 }
 
-func (b *builder) init(da *DoubleArray, after int) {
+func (b *Builder) init(da *DoubleArray, after int) {
 	if after == 0 {
 		da.nodes[0] = b.factory.root()
 		after = 1
@@ -106,19 +95,19 @@ func (b *builder) init(da *DoubleArray, after int) {
 	}
 }
 
-func (b *builder) extend(da *DoubleArray) {
+func (b *Builder) extend(da *DoubleArray) {
 	max := len(da.nodes)
 	da.nodes = append(da.nodes, make([]node.Node, len(da.nodes))...)
 	b.init(da, max)
 }
 
-func (b *builder) ensure(da *DoubleArray, i node.Index) {
+func (b *Builder) ensure(da *DoubleArray, i node.Index) {
 	for len(da.nodes) <= int(i) {
 		b.extend(da)
 	}
 }
 
-func (b *builder) popNode(da *DoubleArray, i node.Index) {
+func (b *Builder) popNode(da *DoubleArray, i node.Index) {
 	// これから nodes[i] を使うための準備
 	// nodes[i] を prev/next にしているnodeから node[i]を取り除く
 
@@ -134,7 +123,7 @@ func (b *builder) popNode(da *DoubleArray, i node.Index) {
 	da.nodes[next].SetPrevEmptyNode(prev)
 }
 
-func (b *builder) findValidOffset(da *DoubleArray, cs word.Word) node.Index {
+func (b *Builder) findValidOffset(da *DoubleArray, cs word.Word) node.Index {
 	index, offset := b.findOffset(da, da.nodes[0].GetNextEmptyNode(), cs[0])
 
 	// offset からcs を全部格納可能なところを探す
@@ -159,7 +148,7 @@ func (b *builder) findValidOffset(da *DoubleArray, cs word.Word) node.Index {
 	}
 	return offset
 }
-func (b *builder) findOffset(da *DoubleArray, index node.Index, branch word.Code) (node.Index, node.Index) {
+func (b *Builder) findOffset(da *DoubleArray, index node.Index, branch word.Code) (node.Index, node.Index) {
 	for {
 		offset, err := index.Backward(branch)
 		if err == nil {

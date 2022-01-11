@@ -12,16 +12,13 @@ type DoubleArray struct {
 	nodes []node.Node
 }
 
-func (da *DoubleArray) ExactMatchSearch(xs []byte) (node.Index, error) {
-	cs := word.FromBytes(xs)
-	return da.exactMatchSearch(cs)
-}
-func (da *DoubleArray) CommonPrefixSearch(xs []byte) ([]node.Index, error) {
-	cs := word.FromBytes(xs)
-	return da.commonPrefixSearch(cs)
+func New(initial int) *DoubleArray {
+	return &DoubleArray{
+		nodes: make([]node.Node, initial),
+	}
 }
 
-func (da *DoubleArray) exactMatchSearch(cs word.Word) (node.Index, error) {
+func (da *DoubleArray) ExactMatchSearch(cs word.Word) (node.Index, error) {
 	index, err := da.getIndex(cs)
 	if err != nil {
 		return 0, err
@@ -32,7 +29,7 @@ func (da *DoubleArray) exactMatchSearch(cs word.Word) (node.Index, error) {
 	return 0, errors.WithMessagef(da.nodeError(), "not terminal. lookup:%v index:%d", cs, index)
 }
 
-func (da *DoubleArray) commonPrefixSearch(cs word.Word) ([]node.Index, error) {
+func (da *DoubleArray) CommonPrefixSearch(cs word.Word) ([]node.Index, error) {
 	ret := make([]node.Index, 0, 10)
 
 	var index node.Index
