@@ -57,9 +57,7 @@ func TestRuneTrieSearch(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, c.num, len(is))
 
-			s := da.data.Stat()
-			filled := float64(s.Length-s.NumEmpty) / float64(s.Length)
-			t.Logf("size:%d filled:%f", s.Length, filled)
+			t.Log(da.data.Stat())
 		})
 	}
 }
