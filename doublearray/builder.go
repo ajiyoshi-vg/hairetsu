@@ -1,4 +1,4 @@
-package hairetsu
+package doublearray
 
 import (
 	"github.com/ajiyoshi-vg/hairetsu/keyset"

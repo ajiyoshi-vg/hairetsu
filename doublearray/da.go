@@ -1,4 +1,4 @@
-package hairetsu
+package doublearray
 
 import (
 	"strings"
