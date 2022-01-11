@@ -29,7 +29,7 @@ func (t *RuneTrie) CommonPrefixSearch(key string) ([]node.Index, error) {
 	return t.data.CommonPrefixSearch(t.dict.Word(key))
 }
 
-func newRuneTrieBuilder() *RuneTrieBuilder {
+func NewRuneTrieBuilder() *RuneTrieBuilder {
 	return &RuneTrieBuilder{
 		builder: da.NewBuilder(),
 	}
@@ -37,7 +37,7 @@ func newRuneTrieBuilder() *RuneTrieBuilder {
 
 func (b *RuneTrieBuilder) Build(xs []string) (*RuneTrie, error) {
 	ret := da.New(len(xs) * 2)
-	dict := b.runeDict(xs)
+	dict := newRuneDict(xs)
 	ks, err := b.keyset(xs, dict)
 	if err != nil {
 		return nil, err
@@ -48,7 +48,7 @@ func (b *RuneTrieBuilder) Build(xs []string) (*RuneTrie, error) {
 	return &RuneTrie{data: ret, dict: dict}, nil
 }
 
-func (b *RuneTrieBuilder) keyset(ss []string, d RuneDict) (keyset.KeySet, error) {
+func (*RuneTrieBuilder) keyset(ss []string, d RuneDict) (keyset.KeySet, error) {
 	ret := make(keyset.KeySet, 0, len(ss))
 	for i, s := range ss {
 		w, err := d.StrictWord(s)
@@ -60,7 +60,7 @@ func (b *RuneTrieBuilder) keyset(ss []string, d RuneDict) (keyset.KeySet, error)
 	return ret, nil
 }
 
-func (b *RuneTrieBuilder) runeDict(ss []string) RuneDict {
+func newRuneDict(ss []string) RuneDict {
 	runeCount := make(map[rune]uint32, len(ss))
 	for _, s := range ss {
 		for _, r := range s {

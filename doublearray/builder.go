@@ -70,7 +70,7 @@ func (b *Builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code, 
 	return nil
 }
 
-func (b *Builder) checkBranch(branch []word.Code) error {
+func (*Builder) checkBranch(branch []word.Code) error {
 	for i := 1; i < len(branch); i++ {
 		if branch[i-1] > branch[i] {
 			//branchはソート済みのはずなので後ろに小さな値があったらおかしい

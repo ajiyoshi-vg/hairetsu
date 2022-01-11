@@ -71,7 +71,7 @@ func TestSearch(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
 			data := c.data
-			da, err := newBuilder().Build(data)
+			da, err := NewByteTrieBuilder().Build(data)
 			assert.NoError(t, err)
 
 			for i, x := range data {

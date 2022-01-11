@@ -15,7 +15,7 @@ type ByteTrieBuilder struct {
 	builder *da.Builder
 }
 
-func newBuilder() *ByteTrieBuilder {
+func NewByteTrieBuilder() *ByteTrieBuilder {
 	return &ByteTrieBuilder{
 		builder: da.NewBuilder(),
 	}

@@ -15,10 +15,10 @@ var (
 
 type factory struct{}
 
-func (f *factory) root() node.Node {
+func (*factory) root() node.Node {
 	return node.Root()
 }
 
-func (f *factory) node(i int) node.Node {
+func (*factory) node(i int) node.Node {
 	return node.New(i)
 }

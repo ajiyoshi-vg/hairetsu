@@ -40,7 +40,7 @@ func TestRuneTrieSearch(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
 			data := c.data
-			da, err := newRuneTrieBuilder().Build(data)
+			da, err := NewRuneTrieBuilder().Build(data)
 			assert.NoError(t, err)
 
 			for i, x := range data {
