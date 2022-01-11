@@ -2,6 +2,7 @@ package word
 
 import (
 	"fmt"
+	"math"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -114,11 +115,17 @@ func TestFromByte(t *testing.T) {
 			source: nil,
 			expect: []byte{},
 		},
+		{
+			title:  "[]byte{0, math.MaxUint8}",
+			source: []byte{0, math.MaxUint8},
+			expect: []byte{0, math.MaxUint8},
+		},
 	}
 
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
-			actual := FromBytes(c.source).Bytes()
+			actual, err := FromBytes(c.source).Bytes()
+			assert.NoError(t, err)
 			assert.Equal(t, c.expect, actual)
 		})
 	}
