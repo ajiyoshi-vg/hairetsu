@@ -12,15 +12,6 @@ type DoubleArray struct {
 	nodes []node.Node
 }
 
-func (da *DoubleArray) Traverse(index node.Index, branch word.Code) (node.Index, error) {
-	offset := da.nodes[index].GetOffset()
-	next := offset.Forward(branch)
-	if int(next) >= len(da.nodes) || !da.nodes[next].IsChildOf(index) {
-		return 0, errors.WithMessagef(da.nodeError(), "branch:%v", branch)
-	}
-	return next, nil
-}
-
 func (da *DoubleArray) ExactMatchSearch(xs []byte) (node.Index, error) {
 	cs := word.FromBytes(xs)
 	return da.exactMatchSearch(cs)
@@ -47,7 +38,7 @@ func (da *DoubleArray) commonPrefixSearch(cs word.Word) ([]node.Index, error) {
 	var index node.Index
 	var err error
 	for _, c := range cs {
-		index, err = da.Traverse(index, c)
+		index, err = da.traverse(index, c)
 		if err != nil {
 			return ret, nil
 		}
@@ -63,8 +54,17 @@ func (da *DoubleArray) commonPrefixSearch(cs word.Word) ([]node.Index, error) {
 	return ret, nil
 }
 
+func (da *DoubleArray) traverse(index node.Index, branch word.Code) (node.Index, error) {
+	offset := da.nodes[index].GetOffset()
+	next := offset.Forward(branch)
+	if int(next) >= len(da.nodes) || !da.nodes[next].IsChildOf(index) {
+		return 0, errors.WithMessagef(da.nodeError(), "branch:%v", branch)
+	}
+	return next, nil
+}
+
 func (da *DoubleArray) getValue(term node.Index) (node.Index, error) {
-	data, err := da.Traverse(term, word.EOS)
+	data, err := da.traverse(term, word.EOS)
 	if err != nil {
 		return 0, err
 	}
@@ -84,7 +84,7 @@ func (da *DoubleArray) getIndex(cs word.Word) (node.Index, error) {
 	var index node.Index
 	var err error
 	for _, c := range cs {
-		index, err = da.Traverse(index, c)
+		index, err = da.traverse(index, c)
 		if err != nil {
 			return 0, errors.WithMessagef(err, "word:%v", cs)
 		}
