@@ -32,18 +32,18 @@ type Node uint64
 
 var _ node.Node = (*Node)(nil)
 
-func Root() Node {
+func Root() *Node {
 	var ret Node
 	ret.SetNextEmptyNode(1)
-	return ret
+	return &ret
 }
 
-func New(i int) Node {
+func New(i int) *Node {
 	//XX
 	var ret Node
 	ret.SetPrevEmptyNode(node.Index(i - 1))
 	ret.SetNextEmptyNode(node.Index(i + 1))
-	return ret
+	return &ret
 }
 
 func (x Node) GetOffset() node.Index {

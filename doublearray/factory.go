@@ -3,6 +3,7 @@ package doublearray
 import (
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/node/fat"
+	"github.com/ajiyoshi-vg/hairetsu/node/u64"
 )
 
 type nodeFactory interface {
@@ -28,9 +29,9 @@ func (f *fatFactory) node(i int) node.Node {
 type u64Factory struct{}
 
 func (f *u64Factory) root() node.Node {
-	return fat.Root()
+	return u64.Root()
 }
 
 func (f *u64Factory) node(i int) node.Node {
-	return fat.New(i)
+	return u64.New(i)
 }
