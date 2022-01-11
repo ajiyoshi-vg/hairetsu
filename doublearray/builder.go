@@ -13,7 +13,7 @@ type Builder struct {
 
 func NewBuilder() *Builder {
 	return &Builder{
-		factory: &fatFactory{},
+		factory: &u64Factory{},
 	}
 }
 

@@ -9,22 +9,14 @@ import (
 
 /*
 
-value bit layout
-| 00 01 02 03 04 ...   32 33 34 ....     63 |
-  ^     ^  ^              ^  ^
-  |     |  |              |  |
-  |     |  base(30bit)    |  check(30bit)
-  |     hassOffset        hasParent
-  | isTerminal
+Node bit layout (uint64)
+| 00 01 02 03 04 ...    32 33 34 ....     63 |
+   ^     ^  ^            ^  ^  ^           ^
+   |     |  |  (30bit)   |  |  |  (30bit)  |
+   |     |  base_________|  |  check_______|
+   |     hashOffset         hasParent
+   isTerminal
 
-*/
-
-/*o
-
-| 00 01 02 03 04 ...   32 33 34 ....     63 |
-                           0  1  1 ..     1
-                        0  1  1 ..     1  0  << 1
-         0  1  1 ...                         << 31
 */
 
 const (
@@ -37,6 +29,8 @@ const (
 )
 
 type Node uint64
+
+var _ node.Node = (*Node)(nil)
 
 func Root() Node {
 	var ret Node
