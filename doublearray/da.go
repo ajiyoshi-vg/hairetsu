@@ -1,8 +1,6 @@
 package doublearray
 
 import (
-	"strings"
-
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 	"github.com/pkg/errors"
@@ -26,7 +24,7 @@ func (da *DoubleArray) ExactMatchSearch(cs word.Word) (node.Index, error) {
 	if da.nodes[index].IsTerminal() {
 		return da.getValue(index)
 	}
-	return 0, errors.WithMessagef(da.nodeError(), "not terminal. lookup:%v index:%d", cs, index)
+	return 0, errors.Errorf("not terminal. index:%d lookup:%v", index, cs)
 }
 
 func (da *DoubleArray) CommonPrefixSearch(cs word.Word) ([]node.Index, error) {
@@ -59,7 +57,7 @@ func (da *DoubleArray) traverse(index node.Index, branch word.Code) (node.Index,
 	offset := da.nodes[index].GetOffset()
 	next := offset.Forward(branch)
 	if int(next) >= len(da.nodes) || !da.nodes[next].IsChildOf(index) {
-		return 0, errors.WithMessagef(da.nodeError(), "branch:%v", branch)
+		return 0, errors.Errorf("traverse fail index:%d branch:%v", index, branch)
 	}
 	return next, nil
 }
@@ -70,15 +68,6 @@ func (da *DoubleArray) getValue(term node.Index) (node.Index, error) {
 		return 0, err
 	}
 	return da.nodes[data].GetOffset(), nil
-}
-
-//FIXME
-func (da *DoubleArray) nodeError() error {
-	ss := make([]string, 0, len(da.nodes))
-	for _, node := range da.nodes {
-		ss = append(ss, node.String())
-	}
-	return errors.New(strings.Join(ss, "\n"))
 }
 
 func (da *DoubleArray) getIndex(cs word.Word) (node.Index, error) {
