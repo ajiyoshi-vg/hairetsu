@@ -16,6 +16,16 @@ func New(initial int) *DoubleArray {
 	}
 }
 
+func FromArray(xs []uint64) *DoubleArray {
+	nodes := make([]node.Node, len(xs))
+	for i, x := range xs {
+		nodes[i] = node.Node(x)
+	}
+	return &DoubleArray{
+		nodes: nodes,
+	}
+}
+
 func (da *DoubleArray) ExactMatchSearch(cs word.Word) (node.Index, error) {
 	index, err := da.searchIndex(cs)
 	if err != nil {
@@ -82,6 +92,6 @@ func (da *DoubleArray) searchIndex(cs word.Word) (node.Index, error) {
 	return index, nil
 }
 
-func (da *DoubleArray) at(i node.Index) node.NodeInterface {
+func (da *DoubleArray) at(i node.Index) node.Interface {
 	return &da.nodes[i]
 }

@@ -1,42 +1,154 @@
+// +build !verbose
+
 package node
 
 import (
-	"github.com/ajiyoshi-vg/hairetsu/word"
+	"fmt"
+
 	"github.com/pkg/errors"
 )
 
-type Index uint32
+/*
 
-type NodeInterface interface {
-	GetOffset() Index
-	SetOffset(Index)
+Node bit layout (uint64)
+| 00 01 02 03 04 ...    32 33 34 ....     63 |
+   ^     ^  ^            ^  ^  ^           ^
+   |     |  |  (30bit)   |  |  |  (30bit)  |
+   |     |  |_base_______|  |  |_check_____|
+   |     |                  |
+   |     |_hasOffset        |_hasParent
+   |
+   |_isTerminal
 
-	Terminate()
-	IsTerminal() bool
+*/
 
-	SetParent(Index)
-	IsChildOf(Index) bool
+const (
+	isTerminal = 1 << 63
+	hasOffset  = 1 << 61
+	hasParent  = 1 << 30
 
-	IsUsed() bool
+	baseMask  = ((uint64(1) << 29) - 1) << 31
+	checkMask = uint64(1)<<29 - 1
+)
 
-	GetNextEmptyNode() (Index, error)
-	GetPrevEmptyNode() (Index, error)
-	SetNextEmptyNode(Index) error
-	SetPrevEmptyNode(Index) error
+type Node uint64
 
-	Reset(int)
-	String() string
+var _ Interface = (*Node)(nil)
+
+func Root() Node {
+	var ret Node
+	ret.SetNextEmptyNode(1)
+	return ret
 }
 
-func (x Index) Forward(c word.Code) Index {
-	return x + Index(c)
+func New(i int) Node {
+	//XX
+	var ret Node
+	ret.SetPrevEmptyNode(Index(i - 1))
+	ret.SetNextEmptyNode(Index(i + 1))
+	return ret
 }
 
-// Backword - offset.Forward(c) == x となるようなoffsetを返す
-func (x Index) Backward(c word.Code) (Index, error) {
-	if x < Index(c) {
-		return 0, errors.Errorf("can't backword from %d by %d", x, c)
+func (x *Node) Reset(i int) {
+	if i == 0 {
+		*x = Root()
+	} else {
+		*x = New(i)
 	}
-	offset := x - Index(c)
-	return offset, nil
+}
+
+func (x Node) GetOffset() Index {
+	return x.getBase()
+}
+
+func (x *Node) SetOffset(i Index) {
+	val := ^baseMask&uint64(*x) | uint64(i)<<31 | hasOffset
+	*x = Node(val)
+}
+
+func (x *Node) Terminate() {
+	*x |= isTerminal
+}
+func (x Node) IsTerminal() bool {
+	return x&isTerminal > 0
+}
+
+func (x *Node) SetParent(i Index) {
+	val := ^checkMask&uint64(*x) | uint64(i) | hasParent
+	*x = Node(val)
+}
+func (x Node) GetParent() Index {
+	return x.getCheck()
+}
+func (x Node) IsChildOf(parent Index) bool {
+	if !x.HasParent() {
+		return false
+	}
+	return x.GetParent() == parent
+}
+func (x Node) IsUsed() bool {
+	return x.HasOffset() || x.HasParent()
+}
+func (x Node) HasParent() bool {
+	return x&hasParent > 0
+}
+func (x Node) HasOffset() bool {
+	return x&hasOffset > 0
+}
+func (x Node) GetNextEmptyNode() (Index, error) {
+	return x.getCheck(), nil
+}
+func (x Node) GetPrevEmptyNode() (Index, error) {
+	return x.getBase(), nil
+}
+
+func (x *Node) SetNextEmptyNode(i Index) error {
+	if x.HasParent() {
+		return errors.Errorf("try to SetNextEmptyNode of used Node(%s)", x)
+	}
+	val := ^checkMask&uint64(*x) | uint64(i)
+	*x = Node(val)
+	return nil
+}
+
+func (x *Node) SetPrevEmptyNode(i Index) error {
+	if x.HasOffset() {
+		return errors.Errorf("try to SetPrevEmptyNode of used Node(%s)", x)
+	}
+	val := ^baseMask&uint64(*x) | uint64(i)<<31
+	*x = Node(val)
+	return nil
+}
+
+func (x Node) getBase() Index {
+	ret := (uint64(x) & baseMask) >> 31
+	return Index(ret)
+}
+func (x Node) getCheck() Index {
+	ret := (uint64(x) & checkMask)
+	return Index(ret)
+}
+func (x Node) baseLabel() string {
+	if x.HasOffset() {
+		return "base"
+	}
+	return "prev"
+}
+func (x Node) checkLabel() string {
+	if x&hasParent > 0 {
+		return "check"
+	}
+	return "next"
+}
+func (x Node) String() string {
+	ret := fmt.Sprintf("{%s:%d, %s:%d}",
+		x.baseLabel(),
+		x.getBase(),
+		x.checkLabel(),
+		x.getCheck(),
+	)
+	if x.IsTerminal() {
+		ret += "#"
+	}
+	return ret
 }
