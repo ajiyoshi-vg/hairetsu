@@ -21,7 +21,7 @@ func (da *DoubleArray) ExactMatchSearch(cs word.Word) (node.Index, error) {
 	if err != nil {
 		return 0, err
 	}
-	if da.nodes[index].IsTerminal() {
+	if da.at(index).IsTerminal() {
 		return da.getValue(index)
 	}
 	return 0, errors.Errorf("not terminal. index:%d lookup:%v", index, cs)
@@ -38,7 +38,7 @@ func (da *DoubleArray) CommonPrefixSearch(cs word.Word) ([]node.Index, error) {
 			return ret, nil
 		}
 
-		if da.nodes[index].IsTerminal() {
+		if da.at(index).IsTerminal() {
 			val, err := da.getValue(index)
 			if err != nil {
 				return nil, err
@@ -54,9 +54,9 @@ func (da *DoubleArray) Stat() Stat {
 }
 
 func (da *DoubleArray) traverse(index node.Index, branch word.Code) (node.Index, error) {
-	offset := da.nodes[index].GetOffset()
+	offset := da.at(index).GetOffset()
 	next := offset.Forward(branch)
-	if int(next) >= len(da.nodes) || !da.nodes[next].IsChildOf(index) {
+	if int(next) >= len(da.nodes) || !da.at(next).IsChildOf(index) {
 		return 0, errors.Errorf("traverse fail index:%d branch:%v", index, branch)
 	}
 	return next, nil
@@ -67,7 +67,7 @@ func (da *DoubleArray) getValue(term node.Index) (node.Index, error) {
 	if err != nil {
 		return 0, err
 	}
-	return da.nodes[data].GetOffset(), nil
+	return da.at(data).GetOffset(), nil
 }
 
 func (da *DoubleArray) searchIndex(cs word.Word) (node.Index, error) {
@@ -80,4 +80,8 @@ func (da *DoubleArray) searchIndex(cs word.Word) (node.Index, error) {
 		}
 	}
 	return index, nil
+}
+
+func (da *DoubleArray) at(i node.Index) node.NodeInterface {
+	return &da.nodes[i]
 }

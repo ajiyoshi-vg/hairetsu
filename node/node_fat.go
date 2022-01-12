@@ -30,6 +30,14 @@ func newNode(id int, b Index, c Index) Node {
 	return Node{id: id, base: b, check: c}
 }
 
+func (x *Node) Reset(i int) {
+	if i == 0 {
+		*x = Root()
+	} else {
+		*x = New(i)
+	}
+}
+
 func (x Node) String() string {
 	ret := fmt.Sprintf("{%s:%d, %s:%d}",
 		x.baseLabel(),

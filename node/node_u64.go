@@ -49,6 +49,14 @@ func New(i int) Node {
 	return ret
 }
 
+func (x *Node) Reset(i int) {
+	if i == 0 {
+		*x = Root()
+	} else {
+		*x = New(i)
+	}
+}
+
 func (x Node) GetOffset() Index {
 	return x.getBase()
 }

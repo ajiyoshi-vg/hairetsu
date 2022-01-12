@@ -45,7 +45,7 @@ func (b *Builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code, 
 	}
 
 	// nodes[index]にbranchを格納できるoffsetを指定
-	da.nodes[index].SetOffset(offset)
+	da.at(index).SetOffset(offset)
 
 	prev := word.NONE
 	for i, c := range branch {
@@ -58,12 +58,12 @@ func (b *Builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code, 
 		if err := b.popNode(da, next); err != nil {
 			return err
 		}
-		da.nodes[next].SetParent(index)
+		da.at(next).SetParent(index)
 
 		if c == word.EOS {
 			//終端マーク
-			da.nodes[index].Terminate()
-			da.nodes[next].SetOffset(node.Index(vals[i]))
+			da.at(index).Terminate()
+			da.at(next).SetOffset(node.Index(vals[i]))
 		}
 
 		prev = c
@@ -104,7 +104,7 @@ func (b *Builder) findValidOffset(da *DoubleArray, cs word.Word) (node.Index, er
 			break
 		}
 
-		if da.nodes[next].IsUsed() {
+		if da.at(next).IsUsed() {
 			index, offset, err = b.findOffset(da, index, cs[0])
 			if err != nil {
 				return 0, err
@@ -133,13 +133,8 @@ func (b *Builder) findOffset(da *DoubleArray, index node.Index, branch word.Code
 }
 
 func (b *Builder) init(da *DoubleArray, after int) {
-	if after == 0 {
-		da.nodes[0] = b.factory.root()
-		after = 1
-	}
-
 	for i := after; i < len(da.nodes); i++ {
-		da.nodes[i] = b.factory.node(i)
+		da.at(node.Index(i)).Reset(i)
 	}
 }
 func (b *Builder) extend(da *DoubleArray) {
@@ -179,17 +174,17 @@ func (b *Builder) popNode(da *DoubleArray, i node.Index) error {
 
 func (b *Builder) nextEmptyNode(da *DoubleArray, i node.Index) (node.Index, error) {
 	b.ensure(da, i)
-	return da.nodes[i].GetNextEmptyNode()
+	return da.at(i).GetNextEmptyNode()
 }
 func (b *Builder) prevEmptyNode(da *DoubleArray, i node.Index) (node.Index, error) {
 	b.ensure(da, i)
-	return da.nodes[i].GetPrevEmptyNode()
+	return da.at(i).GetPrevEmptyNode()
 }
 func (b *Builder) setNextEmptyNode(da *DoubleArray, i, next node.Index) error {
 	b.ensure(da, i)
-	return da.nodes[i].SetNextEmptyNode(next)
+	return da.at(i).SetNextEmptyNode(next)
 }
 func (b *Builder) setPrevEmptyNode(da *DoubleArray, i, prev node.Index) error {
 	b.ensure(da, i)
-	return da.nodes[i].SetPrevEmptyNode(prev)
+	return da.at(i).SetPrevEmptyNode(prev)
 }

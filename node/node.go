@@ -24,6 +24,7 @@ type NodeInterface interface {
 	SetNextEmptyNode(Index) error
 	SetPrevEmptyNode(Index) error
 
+	Reset(int)
 	String() string
 }
 
