@@ -92,6 +92,6 @@ func (da *DoubleArray) searchIndex(cs word.Word) (node.Index, error) {
 	return index, nil
 }
 
-func (da *DoubleArray) at(i node.Index) node.Interface {
+func (da *DoubleArray) at(i node.Index) *node.Node {
 	return &da.nodes[i]
 }

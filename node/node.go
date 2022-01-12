@@ -31,6 +31,27 @@ const (
 	checkMask = uint64(1)<<29 - 1
 )
 
+type Interface interface {
+	GetOffset() Index
+	SetOffset(Index)
+
+	Terminate()
+	IsTerminal() bool
+
+	SetParent(Index)
+	IsChildOf(Index) bool
+
+	IsUsed() bool
+
+	GetNextEmptyNode() (Index, error)
+	GetPrevEmptyNode() (Index, error)
+	SetNextEmptyNode(Index) error
+	SetPrevEmptyNode(Index) error
+
+	Reset(int)
+	String() string
+}
+
 type Node uint64
 
 var _ Interface = (*Node)(nil)

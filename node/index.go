@@ -7,27 +7,6 @@ import (
 
 type Index uint32
 
-type Interface interface {
-	GetOffset() Index
-	SetOffset(Index)
-
-	Terminate()
-	IsTerminal() bool
-
-	SetParent(Index)
-	IsChildOf(Index) bool
-
-	IsUsed() bool
-
-	GetNextEmptyNode() (Index, error)
-	GetPrevEmptyNode() (Index, error)
-	SetNextEmptyNode(Index) error
-	SetPrevEmptyNode(Index) error
-
-	Reset(int)
-	String() string
-}
-
 func (x Index) Forward(c word.Code) Index {
 	return x + Index(c)
 }
