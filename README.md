@@ -9,7 +9,7 @@ hairetsu is a TRIE implementation by double array.
 * support ExactMatchSearch CommonPrefixSearch
 * can use any binary as a label
   * including `\0`
-  * Some other implementations treat `\0` as a end of string, so that they can't use `keys including \0` as a label.
+  * Some other implementations treat `\0` as a end of string, so that they can't use keys including `\0` as a label.
 * can customize the character code of the label
 * can use as a key value store
   * can store 30bit uint value as a leaf
