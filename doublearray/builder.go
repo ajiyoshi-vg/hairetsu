@@ -86,31 +86,6 @@ func (*Builder) checkBranch(branch []word.Code) error {
 	return nil
 }
 
-func (b *Builder) popNode(da *DoubleArray, i node.Index) error {
-	// prepare to use nodes[i]
-	// ensure that nobody keeps nodes[i] as it's prev/next.
-
-	prev, err := b.prevEmptyNode(da, i)
-	if err != nil {
-		return err
-	}
-	next, err := b.nextEmptyNode(da, i)
-	if err != nil {
-		return err
-	}
-
-	// 1. let nodes[i].prev.next = nodes[i].next
-	if err := b.setNextEmptyNode(da, prev, next); err != nil {
-		return err
-	}
-	// 2. let nodes[i].next.prev = nodes[i].prev
-	if err := b.setPrevEmptyNode(da, next, prev); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (b *Builder) findValidOffset(da *DoubleArray, cs word.Word) (node.Index, error) {
 	index, offset, err := b.findOffset(da, 0, cs[0])
 	if err != nil {
@@ -177,6 +152,31 @@ func (b *Builder) ensure(da *DoubleArray, i node.Index) {
 		b.extend(da)
 	}
 }
+func (b *Builder) popNode(da *DoubleArray, i node.Index) error {
+	// prepare to use nodes[i]
+	// ensure that nobody keeps nodes[i] as it's prev/next.
+
+	prev, err := b.prevEmptyNode(da, i)
+	if err != nil {
+		return err
+	}
+	next, err := b.nextEmptyNode(da, i)
+	if err != nil {
+		return err
+	}
+
+	// 1. let nodes[i].prev.next = nodes[i].next
+	if err := b.setNextEmptyNode(da, prev, next); err != nil {
+		return err
+	}
+	// 2. let nodes[i].next.prev = nodes[i].prev
+	if err := b.setPrevEmptyNode(da, next, prev); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (b *Builder) nextEmptyNode(da *DoubleArray, i node.Index) (node.Index, error) {
 	b.ensure(da, i)
 	return da.nodes[i].GetNextEmptyNode()
