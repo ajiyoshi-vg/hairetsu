@@ -39,23 +39,28 @@ func (b *Builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code, 
 	}
 
 	// branch を全部格納できるoffsetを探して、
-	offset := b.findValidOffset(da, branch)
+	offset, err := b.findValidOffset(da, branch)
+	if err != nil {
+		return err
+	}
 
 	maxIndex := offset.Forward(branch[len(branch)-1])
 	b.ensure(da, maxIndex)
 
-	// nodes[at]にbranchを格納できるoffsetを指定
+	// nodes[index]にbranchを格納できるoffsetを指定
 	da.nodes[index].SetOffset(offset)
 
 	prev := word.NONE
 	for i, c := range branch {
-		// branch には同じラベルの枝が複数あることがある
-		// もう追加していたらスキップ
+		// branch can have same labels
+		// skip if it have already inserted
 		if c == prev {
 			continue
 		}
 		next := offset.Forward(c)
-		b.popNode(da, next)
+		if err := b.popNode(da, next); err != nil {
+			return err
+		}
 		da.nodes[next].SetParent(index)
 
 		if c == word.EOS {
@@ -84,47 +89,38 @@ func (*Builder) checkBranch(branch []word.Code) error {
 	return nil
 }
 
-func (b *Builder) init(da *DoubleArray, after int) {
-	if after == 0 {
-		da.nodes[0] = b.factory.root()
-		after = 1
+func (b *Builder) popNode(da *DoubleArray, i node.Index) error {
+	// prepare to use nodes[i]
+	// ensure that nobody keeps nodes[i] as it's prev/next.
+
+	prev, err := b.prevEmptyNode(da, i)
+	if err != nil {
+		return err
+	}
+	next, err := b.nextEmptyNode(da, i)
+	if err != nil {
+		return err
 	}
 
-	for i := after; i < len(da.nodes); i++ {
-		da.nodes[i] = b.factory.node(i)
-	}
-}
-
-func (b *Builder) extend(da *DoubleArray) {
-	max := len(da.nodes)
-	da.nodes = append(da.nodes, make([]node.Node, len(da.nodes))...)
-	b.init(da, max)
-}
-
-func (b *Builder) ensure(da *DoubleArray, i node.Index) {
-	for len(da.nodes) <= int(i) {
-		b.extend(da)
-	}
-}
-
-func (b *Builder) popNode(da *DoubleArray, i node.Index) {
-	// これから nodes[i] を使うための準備
-	// nodes[i] を prev/next にしているnodeから node[i]を取り除く
-
-	prev := da.nodes[i].GetPrevEmptyNode()
-	next := da.nodes[i].GetNextEmptyNode()
-
-	// next にアクセスできるように、必要があれば拡張
 	b.ensure(da, next)
 
-	// 1. nodes[i].prev の next に nodes[i].next を繋ぐ
-	da.nodes[prev].SetNextEmptyNode(next)
-	// 2. nodes[i].next の prev に nodes[i].prev を繋ぐ
-	da.nodes[next].SetPrevEmptyNode(prev)
+	// 1. let nodes[i].prev.next = nodes[i].next
+	if err := b.setNextEmptyNode(da, prev, next); err != nil {
+		return err
+	}
+	// 2. let nodes[i].next.prev = nodes[i].prev
+	if err := b.setPrevEmptyNode(da, next, prev); err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (b *Builder) findValidOffset(da *DoubleArray, cs word.Word) node.Index {
-	index, offset := b.findOffset(da, da.nodes[0].GetNextEmptyNode(), cs[0])
+func (b *Builder) findValidOffset(da *DoubleArray, cs word.Word) (node.Index, error) {
+	index, offset, err := b.findOffset(da, 0, cs[0])
+	if err != nil {
+		return 0, err
+	}
 
 	// offset からcs を全部格納可能なところを探す
 	for i := 0; i < len(cs); i++ {
@@ -139,22 +135,66 @@ func (b *Builder) findValidOffset(da *DoubleArray, cs word.Word) node.Index {
 		}
 
 		if da.nodes[next].HasParent() {
-			// 使用済みだった
-			// 次の未使用ノードを試す
-			index, offset = b.findOffset(da, da.nodes[index].GetNextEmptyNode(), cs[0])
+			index, offset, err = b.findOffset(da, index, cs[0])
+			if err != nil {
+				return 0, err
+			}
 			// cs[0] からやりなおし
 			i = 0
 		}
 	}
-	return offset
+	return offset, nil
 }
-func (b *Builder) findOffset(da *DoubleArray, index node.Index, branch word.Code) (node.Index, node.Index) {
-	for {
-		offset, err := index.Backward(branch)
-		if err == nil {
-			return index, offset
-		}
-		b.ensure(da, index)
-		index = da.nodes[index].GetNextEmptyNode()
+func (b *Builder) findOffset(da *DoubleArray, index node.Index, branch word.Code) (node.Index, node.Index, error) {
+	next, err := b.nextEmptyNode(da, index)
+	if err != nil {
+		return 0, 0, err
 	}
+	for {
+		offset, err := next.Backward(branch)
+		if err == nil {
+			return next, offset, nil
+		}
+		next, err = b.nextEmptyNode(da, next)
+		if err != nil {
+			return 0, 0, err
+		}
+	}
+}
+
+func (b *Builder) init(da *DoubleArray, after int) {
+	if after == 0 {
+		da.nodes[0] = b.factory.root()
+		after = 1
+	}
+
+	for i := after; i < len(da.nodes); i++ {
+		da.nodes[i] = b.factory.node(i)
+	}
+}
+func (b *Builder) extend(da *DoubleArray) {
+	max := len(da.nodes)
+	da.nodes = append(da.nodes, make([]node.Node, len(da.nodes))...)
+	b.init(da, max)
+}
+func (b *Builder) ensure(da *DoubleArray, i node.Index) {
+	for len(da.nodes) <= int(i) {
+		b.extend(da)
+	}
+}
+func (b *Builder) nextEmptyNode(da *DoubleArray, i node.Index) (node.Index, error) {
+	b.ensure(da, i)
+	return da.nodes[i].GetNextEmptyNode()
+}
+func (b *Builder) prevEmptyNode(da *DoubleArray, i node.Index) (node.Index, error) {
+	b.ensure(da, i)
+	return da.nodes[i].GetPrevEmptyNode()
+}
+func (b *Builder) setNextEmptyNode(da *DoubleArray, i, next node.Index) error {
+	b.ensure(da, i)
+	return da.nodes[i].SetNextEmptyNode(next)
+}
+func (b *Builder) setPrevEmptyNode(da *DoubleArray, i, prev node.Index) error {
+	b.ensure(da, i)
+	return da.nodes[i].SetPrevEmptyNode(prev)
 }

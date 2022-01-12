@@ -69,24 +69,32 @@ func (x Node) IsChildOf(parent Index) bool {
 	}
 	return x.check == parent
 }
-func (x Node) GetNextEmptyNode() Index {
+func (x Node) GetNextEmptyNode() (Index, error) {
 	if x.HasParent() {
-		panic(errors.Errorf("emptyでないNode(%v)のnextEmptyNodeを取ろうとした", x))
+		return 0, errors.Errorf("try to GetNextEmptyNode of used Node(%s)", x)
 	}
-	return x.check
+	return x.check, nil
 }
-func (x *Node) SetNextEmptyNode(i Index) {
+func (x *Node) SetNextEmptyNode(i Index) error {
+	if x.HasParent() {
+		return errors.Errorf("try to SetNextEmptyNode of used Node(%s)", x)
+	}
 	x.setCheck(i)
+	return nil
 }
-func (x *Node) SetPrevEmptyNode(i Index) {
+func (x *Node) SetPrevEmptyNode(i Index) error {
+	if x.hasOffset {
+		return errors.Errorf("try to SetPrevEmptyNode of used Node(%s)", x)
+	}
 	x.setBase(i)
+	return nil
 }
 
-func (x Node) GetPrevEmptyNode() Index {
+func (x Node) GetPrevEmptyNode() (Index, error) {
 	if x.hasOffset {
-		panic(errors.Errorf("prevが存在しないNode(%v)のGetPrevEmptyNodeを取ろうとした", x))
+		return 0, errors.Errorf("try to GetPrevEmptyNode of used Node(%s)", x)
 	}
-	return x.base
+	return x.base, nil
 }
 
 /////

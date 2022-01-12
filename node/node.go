@@ -18,10 +18,10 @@ type NodeInterface interface {
 	SetParent(Index)
 	IsChildOf(Index) bool
 
-	GetNextEmptyNode() Index
-	GetPrevEmptyNode() Index
-	SetNextEmptyNode(Index)
-	SetPrevEmptyNode(Index)
+	GetNextEmptyNode() (Index, error)
+	GetPrevEmptyNode() (Index, error)
+	SetNextEmptyNode(Index) error
+	SetPrevEmptyNode(Index) error
 
 	String() string
 }

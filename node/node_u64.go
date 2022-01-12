@@ -81,27 +81,35 @@ func (x Node) IsChildOf(parent Index) bool {
 func (x Node) HasParent() bool {
 	return x&hasParent > 0
 }
-func (x Node) GetNextEmptyNode() Index {
+func (x Node) GetNextEmptyNode() (Index, error) {
 	if x.HasParent() {
-		panic(errors.Errorf("emptyでないNode(%v)のnextEmptyNodeを取ろうとした", x))
+		return 0, errors.Errorf("try to GetNextEmptyNode of used Node(%s)", x)
 	}
-	return x.getCheck()
+	return x.getCheck(), nil
 }
-func (x Node) GetPrevEmptyNode() Index {
+func (x Node) GetPrevEmptyNode() (Index, error) {
 	if x&hasOffset > 0 {
-		panic(errors.Errorf("prevが存在しないNode(%v)のGetPrevEmptyNodeを取ろうとした", x))
+		return 0, errors.Errorf("try to GetPrevEmptyNode of used Node(%s)", x)
 	}
-	return x.getBase()
+	return x.getBase(), nil
 }
 
-func (x *Node) SetNextEmptyNode(i Index) {
+func (x *Node) SetNextEmptyNode(i Index) error {
+	if x.HasParent() {
+		return errors.Errorf("try to SetNextEmptyNode of used Node(%s)", x)
+	}
 	val := ^checkMask&uint64(*x) | uint64(i)
 	*x = Node(val)
+	return nil
 }
 
-func (x *Node) SetPrevEmptyNode(i Index) {
+func (x *Node) SetPrevEmptyNode(i Index) error {
+	if *x&hasOffset > 0 {
+		return errors.Errorf("try to SetPrevEmptyNode of used Node(%s)", x)
+	}
 	val := ^baseMask&uint64(*x) | uint64(i)<<31
 	*x = Node(val)
+	return nil
 }
 
 func (x Node) getBase() Index {
