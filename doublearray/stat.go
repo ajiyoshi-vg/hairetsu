@@ -17,7 +17,7 @@ func newStat(da *DoubleArray) Stat {
 		if x.IsTerminal() {
 			ret.Leaf++
 		}
-		if x.HasParent() {
+		if x.IsUsed() {
 			ret.Node++
 		} else {
 			ret.Empty++

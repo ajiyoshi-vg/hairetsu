@@ -78,19 +78,19 @@ func (x Node) IsChildOf(parent Index) bool {
 	}
 	return x.GetParent() == parent
 }
+func (x Node) IsUsed() bool {
+	return x.HasOffset() || x.HasParent()
+}
 func (x Node) HasParent() bool {
 	return x&hasParent > 0
 }
+func (x Node) HasOffset() bool {
+	return x&hasOffset > 0
+}
 func (x Node) GetNextEmptyNode() (Index, error) {
-	if x.HasParent() {
-		return 0, errors.Errorf("try to GetNextEmptyNode of used Node(%s)", x)
-	}
 	return x.getCheck(), nil
 }
 func (x Node) GetPrevEmptyNode() (Index, error) {
-	if x&hasOffset > 0 {
-		return 0, errors.Errorf("try to GetPrevEmptyNode of used Node(%s)", x)
-	}
 	return x.getBase(), nil
 }
 
@@ -104,7 +104,7 @@ func (x *Node) SetNextEmptyNode(i Index) error {
 }
 
 func (x *Node) SetPrevEmptyNode(i Index) error {
-	if *x&hasOffset > 0 {
+	if x.HasOffset() {
 		return errors.Errorf("try to SetPrevEmptyNode of used Node(%s)", x)
 	}
 	val := ^baseMask&uint64(*x) | uint64(i)<<31
@@ -121,7 +121,7 @@ func (x Node) getCheck() Index {
 	return Index(ret)
 }
 func (x Node) baseLabel() string {
-	if x&hasOffset > 0 {
+	if x.HasOffset() {
 		return "base"
 	}
 	return "prev"

@@ -78,24 +78,6 @@ func TestBuildDoubleArray(t *testing.T) {
 	s := da.Stat()
 	assert.Equal(t, len(data), s.Leaf)
 
-	expect := []string{
-		"{base:0, next:10}",  // 0
-		"{base:3, check:0}#", // 1
-		"{base:3, check:0}",  // 2
-		"{base:0, check:1}",  // 3
-		"{base:1, check:5}",  // 4
-		"{base:4, check:1}#", // 5
-		"{base:3, check:2}",  // 6
-		"{base:3, check:6}",  // 7
-		"{base:9, check:7}#", // 8
-		"{base:2, check:8}",  // 9
-		"{prev:0, next:11}",  // 10
-	}
-
-	for i, want := range expect {
-		assert.Equal(t, want, da.nodes[i].String(), i)
-	}
-
 	for i, x := range data {
 		actual, err := da.ExactMatchSearch(x)
 		assert.NoError(t, err)

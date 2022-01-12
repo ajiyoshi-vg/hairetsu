@@ -44,9 +44,6 @@ func (b *Builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code, 
 		return err
 	}
 
-	maxIndex := offset.Forward(branch[len(branch)-1])
-	b.ensure(da, maxIndex)
-
 	// nodes[index]にbranchを格納できるoffsetを指定
 	da.nodes[index].SetOffset(offset)
 
@@ -102,8 +99,6 @@ func (b *Builder) popNode(da *DoubleArray, i node.Index) error {
 		return err
 	}
 
-	b.ensure(da, next)
-
 	// 1. let nodes[i].prev.next = nodes[i].next
 	if err := b.setNextEmptyNode(da, prev, next); err != nil {
 		return err
@@ -134,7 +129,7 @@ func (b *Builder) findValidOffset(da *DoubleArray, cs word.Word) (node.Index, er
 			break
 		}
 
-		if da.nodes[next].HasParent() {
+		if da.nodes[next].IsUsed() {
 			index, offset, err = b.findOffset(da, index, cs[0])
 			if err != nil {
 				return 0, err

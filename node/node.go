@@ -14,9 +14,10 @@ type NodeInterface interface {
 	Terminate()
 	IsTerminal() bool
 
-	HasParent() bool
 	SetParent(Index)
 	IsChildOf(Index) bool
+
+	IsUsed() bool
 
 	GetNextEmptyNode() (Index, error)
 	GetPrevEmptyNode() (Index, error)

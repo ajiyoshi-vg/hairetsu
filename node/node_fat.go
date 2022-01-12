@@ -59,6 +59,12 @@ func (x Node) IsTerminal() bool {
 func (x Node) HasParent() bool {
 	return x.hasParent
 }
+func (x Node) HasOffset() bool {
+	return x.hasOffset
+}
+func (x Node) IsUsed() bool {
+	return x.HasParent() || x.HasOffset()
+}
 func (x *Node) SetParent(i Index) {
 	x.hasParent = true
 	x.setCheck(i)
