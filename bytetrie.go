@@ -11,6 +11,10 @@ type ByteTrie struct {
 	data *da.DoubleArray
 }
 
+func NewByteTrie(data *da.DoubleArray) *ByteTrie {
+	return &ByteTrie{data: data}
+}
+
 type ByteTrieBuilder struct {
 	builder *da.Builder
 }
