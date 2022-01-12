@@ -10,9 +10,7 @@ import (
 )
 
 func TestDoubleArray(t *testing.T) {
-	da := &DoubleArray{
-		nodes: make([]node.Node, 10),
-	}
+	da := New(10)
 
 	data := []word.Word{
 		word.Word{5, 4, 3},
@@ -42,9 +40,7 @@ func TestDoubleArray(t *testing.T) {
 }
 
 func TestInitDoubleArray(t *testing.T) {
-	da := &DoubleArray{
-		nodes: make([]node.Node, 5),
-	}
+	da := New(5)
 	NewBuilder().init(da, 0)
 	expect := []string{
 		"{prev:0, next:1}",
@@ -63,9 +59,7 @@ func TestInitDoubleArray(t *testing.T) {
 }
 
 func TestBuildDoubleArray(t *testing.T) {
-	da := &DoubleArray{
-		nodes: make([]node.Node, 5),
-	}
+	da := New(5)
 
 	data := []word.Word{
 		word.Word{1},
