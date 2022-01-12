@@ -40,11 +40,11 @@ func TestByteTrie(t *testing.T) {
 		[]byte{math.MaxUint8, 0, math.MaxInt8},
 	}
 
-	da, err := hairetsu.NewByteTrieBuilder().Build(data)
+	trie, err := hairetsu.NewByteTrieBuilder().Build(data)
 	assert.NoError(t, err)
 
 	for i, x := range data {
-		actual, err := da.ExactMatchSearch(x)
+		actual, err := trie.ExactMatchSearch(x)
 		assert.NoError(t, err, x)
 		assert.Equal(t, node.Index(i), actual)
 	}
@@ -55,12 +55,12 @@ func TestByteTrie(t *testing.T) {
 	}
 
 	for _, x := range ng {
-		_, err := da.ExactMatchSearch(x)
+		_, err := trie.ExactMatchSearch(x)
 		assert.Error(t, err, x)
 	}
 
 	target := []byte("abcedfg")
-	is, err := da.CommonPrefixSearch(target)
+	is, err := trie.CommonPrefixSearch(target)
 	assert.NoError(t, err)
 
 	n := 0
@@ -97,11 +97,11 @@ func TestRuneTrie(t *testing.T) {
 		"日本語",
 	}
 
-	da, err := hairetsu.NewRuneTrieBuilder().Build(data)
+	trie, err := hairetsu.NewRuneTrieBuilder().Build(data)
 	assert.NoError(t, err)
 
 	for i, x := range data {
-		actual, err := da.ExactMatchSearch(x)
+		actual, err := trie.ExactMatchSearch(x)
 		assert.NoError(t, err, x)
 		assert.Equal(t, node.Index(i), actual)
 	}
@@ -112,12 +112,12 @@ func TestRuneTrie(t *testing.T) {
 	}
 
 	for _, x := range ng {
-		_, err := da.ExactMatchSearch(x)
+		_, err := trie.ExactMatchSearch(x)
 		assert.Error(t, err, x)
 	}
 
 	target := "abcedfg"
-	is, err := da.CommonPrefixSearch(target)
+	is, err := trie.CommonPrefixSearch(target)
 	assert.NoError(t, err)
 
 	n := 0
