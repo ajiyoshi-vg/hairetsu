@@ -33,7 +33,7 @@ func (b *Builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code, 
 	}
 
 	// prefixが入っているところを探して、
-	index, err := da.getIndex(prefix)
+	index, err := da.searchIndex(prefix)
 	if err != nil {
 		return err
 	}

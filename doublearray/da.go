@@ -17,7 +17,7 @@ func New(initial int) *DoubleArray {
 }
 
 func (da *DoubleArray) ExactMatchSearch(cs word.Word) (node.Index, error) {
-	index, err := da.getIndex(cs)
+	index, err := da.searchIndex(cs)
 	if err != nil {
 		return 0, err
 	}
@@ -70,7 +70,7 @@ func (da *DoubleArray) getValue(term node.Index) (node.Index, error) {
 	return da.nodes[data].GetOffset(), nil
 }
 
-func (da *DoubleArray) getIndex(cs word.Word) (node.Index, error) {
+func (da *DoubleArray) searchIndex(cs word.Word) (node.Index, error) {
 	var index node.Index
 	var err error
 	for _, c := range cs {
