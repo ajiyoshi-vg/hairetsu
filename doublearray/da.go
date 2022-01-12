@@ -26,6 +26,14 @@ func FromArray(xs []uint64) *DoubleArray {
 	}
 }
 
+func (da *DoubleArray) Array() []uint64 {
+	ret := make([]uint64, len(da.nodes))
+	for i, x := range da.nodes {
+		ret[i] = uint64(x)
+	}
+	return ret
+}
+
 func (da *DoubleArray) ExactMatchSearch(cs word.Word) (node.Index, error) {
 	index, err := da.searchIndex(cs)
 	if err != nil {
