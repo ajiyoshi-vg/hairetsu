@@ -12,33 +12,57 @@ import (
 )
 
 func TestDoubleArray(t *testing.T) {
-	da := New(10)
-
-	data := []word.Word{
-		word.Word{5, 4, 3},
-		word.Word{5, 4, 3, 2, 1},
+	cases := []struct {
+		title string
+		data  Walker
+		ng    []word.Word
+	}{
+		{
+			title: "keyset",
+			data: keyset.FromWord([]word.Word{
+				word.Word{5, 4, 3},
+				word.Word{5, 4, 3, 2, 1},
+			}),
+			ng: []word.Word{
+				word.Word{5},
+				word.Word{5, 4},
+				word.Word{5, 4, 3, 2},
+			},
+		},
+		{
+			title: "keytree",
+			data: keytree.FromWord([]word.Word{
+				word.Word{5, 4, 3},
+				word.Word{5, 4, 3, 2, 1},
+			}),
+			ng: []word.Word{
+				word.Word{5},
+				word.Word{5, 4},
+				word.Word{5, 4, 3, 2},
+			},
+		},
 	}
-	b := NewBuilder(OptionProgress(progressbar.New(0)))
-	err := b.Build(da, keyset.FromWord(data))
-	assert.NoError(t, err)
+	for _, c := range cases {
+		da := New(10)
 
-	s := da.Stat()
-	assert.Equal(t, len(data), s.Leaf)
-
-	for i, x := range data {
-		actual, err := da.ExactMatchSearch(x)
+		b := NewBuilder(OptionProgress(progressbar.New(0)))
+		err := b.Build(da, c.data)
 		assert.NoError(t, err)
-		assert.Equal(t, node.Index(i), actual)
-	}
 
-	ng := []word.Word{
-		word.Word{5},
-		word.Word{5, 4},
-		word.Word{5, 4, 3, 2},
-	}
-	for _, x := range ng {
-		_, err := da.ExactMatchSearch(x)
-		assert.Error(t, err)
+		s := da.Stat()
+		assert.Equal(t, c.data.LeafNum(), s.Leaf)
+
+		c.data.WalkLeaf(func(key word.Word, val uint32) error {
+			actual, err := da.ExactMatchSearch(key)
+			assert.NoError(t, err)
+			assert.Equal(t, node.Index(val), actual)
+			return nil
+		})
+
+		for _, x := range c.ng {
+			_, err := da.ExactMatchSearch(x)
+			assert.Error(t, err)
+		}
 	}
 }
 
@@ -86,36 +110,6 @@ func TestBuildDoubleArray(t *testing.T) {
 		word.Word{2},
 		word.Word{2, 3},
 		word.Word{2, 3, 4},
-	}
-	for _, x := range ng {
-		_, err := da.ExactMatchSearch(x)
-		assert.Error(t, err)
-	}
-}
-
-func TestDoubleArrayByTree(t *testing.T) {
-	da := New(10)
-
-	data := []word.Word{
-		word.Word{5, 4, 3},
-		word.Word{5, 4, 3, 2, 1},
-	}
-	err := NewBuilder().Build(da, keytree.FromWord(data))
-	assert.NoError(t, err)
-
-	s := da.Stat()
-	assert.Equal(t, len(data), s.Leaf)
-
-	for i, x := range data {
-		actual, err := da.ExactMatchSearch(x)
-		assert.NoError(t, err)
-		assert.Equal(t, node.Index(i), actual)
-	}
-
-	ng := []word.Word{
-		word.Word{5},
-		word.Word{5, 4},
-		word.Word{5, 4, 3, 2},
 	}
 	for _, x := range ng {
 		_, err := da.ExactMatchSearch(x)

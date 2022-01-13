@@ -26,6 +26,9 @@ func TestWalkNode(t *testing.T) {
 
 	ss := []string{"(prefix, branches)"}
 	err := x.WalkNode(func(pre word.Word, brs []word.Code, val *uint32) error {
+		sort.Slice(brs, func(i, j int) bool {
+			return brs[i]-brs[j] > 0
+		})
 		ss = append(ss, fmt.Sprintf("(%v, %v, %s)", pre, brs, str(val)))
 		return nil
 	})
