@@ -90,8 +90,8 @@ func (ks KeySet) walkTrieNode(begin, end, depth int, f func(word.Word, []word.Co
 
 func (ks KeySet) trieNode(begin, end, depth int) (word.Word, []word.Code, []uint32) {
 	prefix := ks[begin].Key[0:depth]
-	branch := make([]word.Code, 0, end)
-	values := make([]uint32, 0, end)
+	branch := make([]word.Code, 0, end-begin)
+	values := make([]uint32, 0, end-begin)
 	for i := begin; i < end; i++ {
 		branch = append(branch, ks[i].Key.At(depth))
 		values = append(values, ks[i].Val)

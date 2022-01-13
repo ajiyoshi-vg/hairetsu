@@ -26,7 +26,7 @@ type option struct {
 var opt option
 
 func init() {
-	flag.IntVar(&opt.size, "size", 100*1000, "# of key")
+	flag.IntVar(&opt.size, "size", 10*1000*1000, "# of key")
 	flag.StringVar(&opt.kind, "kind", "tree", "[set|tree|darts] default:tree")
 	flag.Parse()
 }
