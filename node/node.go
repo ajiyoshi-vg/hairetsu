@@ -117,9 +117,15 @@ func (x Node) HasOffset() bool {
 	return x&hasOffset > 0
 }
 func (x Node) GetNextEmptyNode() (Index, error) {
+	if x.HasParent() {
+		return 0, errors.Errorf("try to GetNextEmptyNode of used Node(%s)", x)
+	}
 	return x.getCheck(), nil
 }
 func (x Node) GetPrevEmptyNode() (Index, error) {
+	if x.HasOffset() {
+		return 0, errors.Errorf("try to GetPrevEmptyNode of used Node(%s)", x)
+	}
 	return x.getBase(), nil
 }
 

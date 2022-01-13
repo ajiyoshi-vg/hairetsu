@@ -20,7 +20,9 @@ func (x Word) At(i int) Code {
 	}
 	return EOS
 }
-func (x Word) Bytes() ([]byte, error) {
+
+// bytes : inverse of FromBytes(). it's for test purpose
+func (x Word) bytes() ([]byte, error) {
 	ret := make([]byte, 0, len(x))
 	for _, b := range x {
 		if b > math.MaxUint8+1 {
@@ -29,11 +31,6 @@ func (x Word) Bytes() ([]byte, error) {
 		ret = append(ret, byte(b-1))
 	}
 	return ret, nil
-}
-func (x Word) Sort() {
-	sort.Slice(x, func(i, j int) bool {
-		return x[i]-x[j] < 0
-	})
 }
 
 func FromBytes(data []byte) Word {

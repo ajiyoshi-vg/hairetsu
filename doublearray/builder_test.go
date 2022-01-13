@@ -7,6 +7,7 @@ import (
 	"github.com/ajiyoshi-vg/hairetsu/keytree"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/word"
+	"github.com/schollz/progressbar"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,7 +18,8 @@ func TestDoubleArray(t *testing.T) {
 		word.Word{5, 4, 3},
 		word.Word{5, 4, 3, 2, 1},
 	}
-	err := NewBuilder().Build(da, keyset.FromWord(data))
+	b := NewBuilder(OptionProgress(progressbar.New(0)))
+	err := b.Build(da, keyset.FromWord(data))
 	assert.NoError(t, err)
 
 	s := da.Stat()

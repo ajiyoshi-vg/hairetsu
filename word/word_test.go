@@ -124,7 +124,7 @@ func TestFromByte(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
-			actual, err := FromBytes(c.source).Bytes()
+			actual, err := FromBytes(c.source).bytes()
 			assert.NoError(t, err)
 			assert.Equal(t, c.expect, actual)
 		})
