@@ -18,11 +18,20 @@ func str(x *uint32) string {
 }
 
 func TestWalkNode(t *testing.T) {
-	x := FromWord([]word.Word{
+	words := []word.Word{
 		word.Word{1, 2, 3},
 		word.Word{1, 2, 3, 4, 5},
 		word.Word{1, 2, 4},
-	})
+	}
+	x := FromWord(words)
+
+	assert.Equal(t, len(words), x.LeafNum())
+	for i, w := range words {
+		actual, err := x.Get(w)
+		assert.NoError(t, err)
+		assert.NotNil(t, actual)
+		assert.Equal(t, uint32(i), *actual)
+	}
 
 	ss := []string{}
 	err := x.WalkNode(func(pre word.Word, brs []word.Code, val *uint32) error {
@@ -47,11 +56,20 @@ func TestWalkNode(t *testing.T) {
 }
 
 func TestWalkLeaf(t *testing.T) {
-	x := FromWord([]word.Word{
+	words := []word.Word{
 		word.Word{1, 2, 3},
 		word.Word{1, 2, 3, 4, 5},
 		word.Word{1, 2, 4},
-	})
+	}
+	x := FromWord(words)
+	assert.Equal(t, len(words), x.LeafNum())
+
+	for i, w := range words {
+		actual, err := x.Get(w)
+		assert.NoError(t, err)
+		assert.NotNil(t, actual)
+		assert.Equal(t, uint32(i), *actual)
+	}
 
 	ss := []string{}
 	err := x.WalkLeaf(func(pre word.Word, val uint32) error {
