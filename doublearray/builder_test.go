@@ -17,7 +17,7 @@ func TestDoubleArray(t *testing.T) {
 		word.Word{5, 4, 3},
 		word.Word{5, 4, 3, 2, 1},
 	}
-	err := NewBuilder().Build(da, keyset.New(data))
+	err := NewBuilder().Build(da, keyset.FromWord(data))
 	assert.NoError(t, err)
 
 	s := da.Stat()
@@ -67,7 +67,7 @@ func TestBuildDoubleArray(t *testing.T) {
 		word.Word{1, 2},
 		word.Word{2, 3, 4, 5},
 	}
-	err := NewBuilder().Build(da, keyset.New(data))
+	err := NewBuilder().Build(da, keyset.FromWord(data))
 	assert.NoError(t, err)
 
 	s := da.Stat()

@@ -27,7 +27,7 @@ func FromBytes(xs [][]byte) KeySet {
 	return ret
 }
 
-func New(data []word.Word) KeySet {
+func FromWord(data []word.Word) KeySet {
 	ret := make([]Item, 0, len(data))
 	for i, x := range data {
 		ret = append(ret, Item{Key: x, Val: uint32(i)})
@@ -49,13 +49,13 @@ func (ks KeySet) LeafNum() int {
 	return len(ks)
 }
 
-func (ks KeySet) WalkNode(f func(word.Word, []word.Code, []uint32) error) error {
+func (ks KeySet) WalkNode(f func(word.Word, []word.Code, *uint32) error) error {
 	ks.Sort()
 	log.Println("sorted")
 	return ks.walkTrieNode(0, len(ks), 0, f)
 }
 
-func (ks KeySet) walkTrieNode(begin, end, depth int, f func(word.Word, []word.Code, []uint32) error) error {
+func (ks KeySet) walkTrieNode(begin, end, depth int, f func(word.Word, []word.Code, *uint32) error) error {
 	// apply callback first
 	if err := f(ks.trieNode(begin, end, depth)); err != nil {
 		return err
@@ -88,15 +88,19 @@ func (ks KeySet) walkTrieNode(begin, end, depth int, f func(word.Word, []word.Co
 	return ks.walkTrieNode(lastBegin, end, depth+1, f)
 }
 
-func (ks KeySet) trieNode(begin, end, depth int) (word.Word, []word.Code, []uint32) {
+func (ks KeySet) trieNode(begin, end, depth int) (word.Word, []word.Code, *uint32) {
 	prefix := ks[begin].Key[0:depth]
 	branch := make([]word.Code, 0, end-begin)
-	values := make([]uint32, 0, end-begin)
 	for i := begin; i < end; i++ {
-		branch = append(branch, ks[i].Key.At(depth))
-		values = append(values, ks[i].Val)
+		if depth < len(ks[i].Key) {
+			branch = append(branch, ks[i].Key[depth])
+		}
 	}
-	return prefix, branch, values
+	var value *uint32
+	if word.Compare(prefix, ks[begin].Key) == 0 {
+		value = &ks[begin].Val
+	}
+	return prefix, branch, value
 }
 
 func (ks KeySet) WalkLeaf(f func(word.Word, uint32) error) error {

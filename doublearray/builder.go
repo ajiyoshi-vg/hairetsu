@@ -28,7 +28,7 @@ func NewBuilder(opt ...Option) *Builder {
 }
 
 type Walker interface {
-	WalkNode(func(word.Word, []word.Code, []uint32) error) error
+	WalkNode(func(word.Word, []word.Code, *uint32) error) error
 	WalkLeaf(func(word.Word, uint32) error) error
 	LeafNum() int
 }
@@ -43,12 +43,15 @@ func (b *Builder) Build(da *DoubleArray, ks Walker) error {
 	if b.progress != nil {
 		b.progress.SetMax(ks.LeafNum())
 	}
-	return ks.WalkNode(func(prefix word.Word, branch []word.Code, vals []uint32) error {
-		return b.insert(da, prefix, branch, vals)
+	return ks.WalkNode(func(prefix word.Word, branch []word.Code, val *uint32) error {
+		if val != nil {
+			branch = append(branch, word.EOS)
+		}
+		return b.insert(da, prefix, branch, val)
 	})
 }
 
-func (b *Builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code, vals []uint32) error {
+func (b *Builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code, val *uint32) error {
 	//log.Printf("insert(prefix, branch)=(%v, %v)", prefix, branch)
 
 	// prefixが入っているところを探して、
@@ -66,7 +69,7 @@ func (b *Builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code, 
 	// nodes[index]にbranchを格納できるoffsetを指定
 	da.at(index).SetOffset(offset)
 
-	for i, c := range branch {
+	for _, c := range branch {
 		next := offset.Forward(c)
 		b.ensure(da, next)
 		if da.at(next).IsUsed() {
@@ -79,10 +82,10 @@ func (b *Builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code, 
 		}
 		da.at(next).SetParent(index)
 
-		if c == word.EOS {
-			//終端マーク
+		if val != nil {
+			//terminated
 			da.at(index).Terminate()
-			da.at(next).SetOffset(node.Index(vals[i]))
+			da.at(next).SetOffset(node.Index(*val))
 			if b.progress != nil {
 				b.progress.Add(1)
 			}
@@ -93,6 +96,8 @@ func (b *Builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code, 
 }
 
 func (b *Builder) findValidOffset(da *DoubleArray, cs word.Word) (node.Index, error) {
+	if len(cs) == 0 {
+	}
 	index, offset, err := b.findOffset(da, 0, cs[0])
 	if err != nil {
 		return 0, err

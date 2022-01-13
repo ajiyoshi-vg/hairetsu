@@ -1,4 +1,4 @@
-package keyset
+package keytree
 
 import (
 	"fmt"
@@ -23,16 +23,16 @@ func TestWalkNode(t *testing.T) {
 		word.Word{1, 2, 4},
 	})
 
-	ss := []string{"(prefix, branch)"}
+	ss := []string{"(prefix, branches)"}
 	err := x.WalkNode(func(pre word.Word, brs []word.Code, val *uint32) error {
 		ss = append(ss, fmt.Sprintf("(%v, %v, %s)", pre, brs, str(val)))
 		return nil
 	})
 	assert.NoError(t, err)
-	expect := `(prefix, branch)
-([], [1 1 1], nil)
-([1], [2 2 2], nil)
-([1 2], [3 3 4], nil)
+	expect := `(prefix, branches)
+([], [1], nil)
+([1], [2], nil)
+([1 2], [3 4], nil)
 ([1 2 3], [4], 0)
 ([1 2 3 4], [5], nil)
 ([1 2 3 4 5], [], 1)
