@@ -123,7 +123,7 @@ func keytreeData(num int) *keytree.Tree {
 }
 
 func benchHairetsu(data doublearray.Walker) error {
-	x := da.New(10)
+	x := da.New()
 	if err := da.NewBuilder(da.OptionProgress(progressbar.New(1))).Build(x, data); err != nil {
 		return err
 	}

@@ -26,7 +26,7 @@ func NewByteTrieBuilder() *ByteTrieBuilder {
 }
 
 func (b *ByteTrieBuilder) Build(xs [][]byte) (*ByteTrie, error) {
-	ret := da.New(len(xs) * 2)
+	ret := da.New()
 	ks := keytree.FromBytes(xs)
 	if err := b.builder.Build(ret, ks); err != nil {
 		return nil, err

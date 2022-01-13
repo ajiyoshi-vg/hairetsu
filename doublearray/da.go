@@ -10,9 +10,9 @@ type DoubleArray struct {
 	nodes []node.Node
 }
 
-func New(initial int) *DoubleArray {
+func New() *DoubleArray {
 	return &DoubleArray{
-		nodes: make([]node.Node, initial),
+		nodes: make([]node.Node, 10),
 	}
 }
 

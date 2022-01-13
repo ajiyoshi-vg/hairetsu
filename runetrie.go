@@ -36,7 +36,7 @@ func NewRuneTrieBuilder() *RuneTrieBuilder {
 }
 
 func (b *RuneTrieBuilder) Build(xs []string) (*RuneTrie, error) {
-	ret := da.New(len(xs) * 2)
+	ret := da.New()
 	dict := newRuneDict(xs)
 	ks, err := b.keyset(xs, dict)
 	if err != nil {
