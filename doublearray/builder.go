@@ -85,7 +85,7 @@ func (b *Builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code, 
 		}
 		da.at(next).SetParent(index)
 
-		if val != nil {
+		if c == word.EOS {
 			//terminated
 			da.at(index).Terminate()
 			da.at(next).SetOffset(node.Index(*val))

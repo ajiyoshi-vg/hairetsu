@@ -24,24 +24,24 @@ func TestWalkNode(t *testing.T) {
 		word.Word{1, 2, 4},
 	})
 
-	ss := []string{"(prefix, branches)"}
+	ss := []string{}
 	err := x.WalkNode(func(pre word.Word, brs []word.Code, val *uint32) error {
 		sort.Slice(brs, func(i, j int) bool {
-			return brs[i]-brs[j] > 0
+			return brs[i] < brs[j]
 		})
 		ss = append(ss, fmt.Sprintf("(%v, %v, %s)", pre, brs, str(val)))
 		return nil
 	})
 	assert.NoError(t, err)
-	expect := `(prefix, branches)
-([], [1], nil)
-([1], [2], nil)
-([1 2], [3 4], nil)
-([1 2 3], [4], 0)
+	expect := `([1 2 3 4 5], [], 1)
 ([1 2 3 4], [5], nil)
-([1 2 3 4 5], [], 1)
-([1 2 4], [], 2)`
+([1 2 3], [4], 0)
+([1 2 4], [], 2)
+([1 2], [3 4], nil)
+([1], [2], nil)
+([], [1], nil)`
 
+	sort.Strings(ss)
 	actual := strings.Join(ss, "\n")
 	assert.Equal(t, expect, actual)
 }
