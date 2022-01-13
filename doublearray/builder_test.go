@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/ajiyoshi-vg/hairetsu/keyset"
+	"github.com/ajiyoshi-vg/hairetsu/keytree"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 	"github.com/stretchr/testify/assert"
@@ -83,6 +84,36 @@ func TestBuildDoubleArray(t *testing.T) {
 		word.Word{2},
 		word.Word{2, 3},
 		word.Word{2, 3, 4},
+	}
+	for _, x := range ng {
+		_, err := da.ExactMatchSearch(x)
+		assert.Error(t, err)
+	}
+}
+
+func TestDoubleArrayByTree(t *testing.T) {
+	da := New(10)
+
+	data := []word.Word{
+		word.Word{5, 4, 3},
+		word.Word{5, 4, 3, 2, 1},
+	}
+	err := NewBuilder().Build(da, keytree.FromWord(data))
+	assert.NoError(t, err)
+
+	s := da.Stat()
+	assert.Equal(t, len(data), s.Leaf)
+
+	for i, x := range data {
+		actual, err := da.ExactMatchSearch(x)
+		assert.NoError(t, err)
+		assert.Equal(t, node.Index(i), actual)
+	}
+
+	ng := []word.Word{
+		word.Word{5},
+		word.Word{5, 4},
+		word.Word{5, 4, 3, 2},
 	}
 	for _, x := range ng {
 		_, err := da.ExactMatchSearch(x)

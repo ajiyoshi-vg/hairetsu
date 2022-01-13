@@ -1,6 +1,7 @@
 package keyset
 
 import (
+	"log"
 	"sort"
 
 	"github.com/ajiyoshi-vg/hairetsu/word"
@@ -44,11 +45,17 @@ func (ks KeySet) Sort() {
 	}
 }
 
-func (ks KeySet) Walk(f Callback) error {
+func (ks KeySet) LeafNum() int {
+	return len(ks)
+}
+
+func (ks KeySet) Walk(f func(word.Word, []word.Code, []uint32) error) error {
+	ks.Sort()
+	log.Println("sorted")
 	return ks.walkTrieNode(0, len(ks), 0, f)
 }
 
-func (ks KeySet) walkTrieNode(begin, end, depth int, f Callback) error {
+func (ks KeySet) walkTrieNode(begin, end, depth int, f func(word.Word, []word.Code, []uint32) error) error {
 	// apply callback first
 	if err := f(ks.trieNode(begin, end, depth)); err != nil {
 		return err

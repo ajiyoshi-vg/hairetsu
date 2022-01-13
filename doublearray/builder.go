@@ -2,24 +2,46 @@ package doublearray
 
 import (
 	"github.com/ajiyoshi-vg/hairetsu/keyset"
+	"github.com/ajiyoshi-vg/hairetsu/keytree"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/word"
-	"github.com/pkg/errors"
 )
 
 type Builder struct {
-	factory nodeFactory
+	factory  nodeFactory
+	progress Progress
 }
 
-func NewBuilder() *Builder {
-	return &Builder{
+type Progress interface {
+	SetMax(int)
+	Add(int) error
+}
+
+func NewBuilder(opt ...Option) *Builder {
+	ret := &Builder{
 		factory: &factory{},
 	}
+	for _, f := range opt {
+		f(ret)
+	}
+	return ret
 }
 
-func (b *Builder) Build(da *DoubleArray, ks keyset.KeySet) error {
+type Walker interface {
+	Walk(func(word.Word, []word.Code, []uint32) error) error
+	LeafNum() int
+}
+
+var (
+	_ Walker = (*keyset.KeySet)(nil)
+	_ Walker = (*keytree.Tree)(nil)
+)
+
+func (b *Builder) Build(da *DoubleArray, ks Walker) error {
 	b.init(da, 0)
-	ks.Sort()
+	if b.progress != nil {
+		b.progress.SetMax(ks.LeafNum())
+	}
 	return ks.Walk(func(prefix word.Word, branch []word.Code, vals []uint32) error {
 		return b.insert(da, prefix, branch, vals)
 	})
@@ -27,10 +49,6 @@ func (b *Builder) Build(da *DoubleArray, ks keyset.KeySet) error {
 
 func (b *Builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code, vals []uint32) error {
 	//log.Printf("insert(prefix, branch)=(%v, %v)", prefix, branch)
-
-	if err := b.checkBranch(branch); err != nil {
-		return err
-	}
 
 	// prefixが入っているところを探して、
 	index, err := da.searchIndex(prefix)
@@ -47,14 +65,14 @@ func (b *Builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code, 
 	// nodes[index]にbranchを格納できるoffsetを指定
 	da.at(index).SetOffset(offset)
 
-	prev := word.NONE
 	for i, c := range branch {
-		// branch can have same labels
-		// skip if it have already inserted
-		if c == prev {
+		next := offset.Forward(c)
+		b.ensure(da, next)
+		if da.at(next).IsUsed() {
+			// branch can have same labels
+			// skip if it have already inserted
 			continue
 		}
-		next := offset.Forward(c)
 		if err := b.popNode(da, next); err != nil {
 			return err
 		}
@@ -64,25 +82,12 @@ func (b *Builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code, 
 			//終端マーク
 			da.at(index).Terminate()
 			da.at(next).SetOffset(node.Index(vals[i]))
-		}
-
-		prev = c
-	}
-
-	return nil
-}
-
-func (*Builder) checkBranch(branch []word.Code) error {
-	for i := 1; i < len(branch); i++ {
-		if branch[i-1] > branch[i] {
-			//branchはソート済みのはずなので後ろに小さな値があったらおかしい
-			return errors.Errorf("data is not sorted(%v)", branch)
-		}
-		if branch[i] == word.EOS {
-			//EOSがあるとしたらbranch[0]だけ。途中にあったらおかしい
-			return errors.Errorf("bad EOS(%v)", branch)
+			if b.progress != nil {
+				b.progress.Add(1)
+			}
 		}
 	}
+
 	return nil
 }
 

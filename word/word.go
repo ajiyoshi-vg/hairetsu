@@ -30,6 +30,11 @@ func (x Word) Bytes() ([]byte, error) {
 	}
 	return ret, nil
 }
+func (x Word) Sort() {
+	sort.Slice(x, func(i, j int) bool {
+		return x[i]-x[j] < 0
+	})
+}
 
 func FromBytes(data []byte) Word {
 	ret := make(Word, 0, len(data))
