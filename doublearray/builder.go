@@ -28,7 +28,8 @@ func NewBuilder(opt ...Option) *Builder {
 }
 
 type Walker interface {
-	Walk(func(word.Word, []word.Code, []uint32) error) error
+	WalkNode(func(word.Word, []word.Code, []uint32) error) error
+	WalkLeaf(func(word.Word, uint32) error) error
 	LeafNum() int
 }
 
@@ -42,7 +43,7 @@ func (b *Builder) Build(da *DoubleArray, ks Walker) error {
 	if b.progress != nil {
 		b.progress.SetMax(ks.LeafNum())
 	}
-	return ks.Walk(func(prefix word.Word, branch []word.Code, vals []uint32) error {
+	return ks.WalkNode(func(prefix word.Word, branch []word.Code, vals []uint32) error {
 		return b.insert(da, prefix, branch, vals)
 	})
 }

@@ -10,6 +10,7 @@ import (
 	da "github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/keyset"
 	"github.com/ajiyoshi-vg/hairetsu/keytree"
+	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 	"github.com/ikawaha/dartsclone"
 	progress "github.com/ikawaha/dartsclone/progressbar"
@@ -25,7 +26,7 @@ type option struct {
 var opt option
 
 func init() {
-	flag.IntVar(&opt.size, "size", 1*1000*1000, "# of key")
+	flag.IntVar(&opt.size, "size", 100*1000, "# of key")
 	flag.StringVar(&opt.kind, "kind", "tree", "[set|tree|darts] default:tree")
 	flag.Parse()
 }
@@ -128,6 +129,14 @@ func benchHairetsu(data doublearray.Walker) error {
 	}
 	log.Println("build finished")
 	log.Println(x.Stat())
-
-	return nil
+	return data.WalkLeaf(func(key word.Word, val uint32) error {
+		actual, err := x.ExactMatchSearch(key)
+		if err != nil {
+			return err
+		}
+		if actual != node.Index(val) {
+			return fmt.Errorf("search key(%v): want %d got %d", key, val, actual)
+		}
+		return nil
+	})
 }

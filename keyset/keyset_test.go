@@ -17,7 +17,7 @@ func TestWalk(t *testing.T) {
 	})
 
 	ss := []string{"(prefix, branches)"}
-	err := x.Walk(func(pre word.Word, brs []word.Code, vals []uint32) error {
+	err := x.WalkNode(func(pre word.Word, brs []word.Code, vals []uint32) error {
 		ss = append(ss, fmt.Sprintf("(%v, %v)", pre, brs))
 		return nil
 	})

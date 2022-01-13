@@ -49,7 +49,7 @@ func (ks KeySet) LeafNum() int {
 	return len(ks)
 }
 
-func (ks KeySet) Walk(f func(word.Word, []word.Code, []uint32) error) error {
+func (ks KeySet) WalkNode(f func(word.Word, []word.Code, []uint32) error) error {
 	ks.Sort()
 	log.Println("sorted")
 	return ks.walkTrieNode(0, len(ks), 0, f)
@@ -97,4 +97,13 @@ func (ks KeySet) trieNode(begin, end, depth int) (word.Word, []word.Code, []uint
 		values = append(values, ks[i].Val)
 	}
 	return prefix, branch, values
+}
+
+func (ks KeySet) WalkLeaf(f func(word.Word, uint32) error) error {
+	for _, item := range ks {
+		if err := f(item.Key, item.Val); err != nil {
+			return err
+		}
+	}
+	return nil
 }

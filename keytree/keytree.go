@@ -55,7 +55,7 @@ func (x *Tree) Put(key word.Word, val uint32) {
 	node.value = &val
 }
 
-func (x *Tree) Walk(f func(word.Word, []word.Code, []uint32) error) error {
+func (x *Tree) WalkNode(f func(word.Word, []word.Code, []uint32) error) error {
 	return x.walkNode(word.Word{}, f)
 }
 
