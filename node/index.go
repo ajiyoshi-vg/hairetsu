@@ -5,6 +5,7 @@ import (
 	"reflect"
 
 	"github.com/ajiyoshi-vg/hairetsu/word"
+	"github.com/pkg/errors"
 )
 
 type Index uint32
@@ -17,6 +18,10 @@ func (x Index) Forward(c word.Code) Index {
 
 // Backword - return x such that x == offset.Forward(c)
 func (x Index) Backward(c word.Code) (Index, error) {
+	if x < Index(c) {
+		return 0, errors.Errorf("can't backword from %d by %d", x, c)
+	}
+
 	offset := x - Index(c)
 	return offset, nil
 }

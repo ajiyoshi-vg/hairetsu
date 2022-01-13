@@ -76,9 +76,10 @@ func (da *DoubleArray) traverse(index node.Index, branch word.Code) (node.Index,
 	next := offset.Forward(branch)
 	if int(next) >= len(da.nodes) {
 		return 0, errors.Errorf(
-			"out of range nodes[%d] index:%d branch:%v",
+			"out of range nodes[%d] index:%d(%v) branch:%v",
 			next,
 			index,
+			da.at(index),
 			branch,
 		)
 	}
