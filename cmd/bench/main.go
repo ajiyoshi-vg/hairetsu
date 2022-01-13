@@ -25,7 +25,7 @@ type option struct {
 var opt option
 
 func init() {
-	flag.IntVar(&opt.size, "size", 1000*1000, "# of key")
+	flag.IntVar(&opt.size, "size", 1*1000*1000, "# of key")
 	flag.StringVar(&opt.kind, "kind", "tree", "[set|tree|darts] default:tree")
 	flag.Parse()
 }
@@ -68,31 +68,36 @@ func benchKeyTree(num int) error {
 }
 
 func benchDartsClose(num int) error {
-	data := dartsCloseData(num)
+	keys, vals := dartsCloseData(num)
 	pbar := progress.New()
 	pbar.SetMaximum(num)
-	t, err := dartsclone.BuildTRIE(data, nil, pbar)
+	t, err := dartsclone.BuildTRIE(keys, vals, pbar)
 	if err != nil {
 		return err
 	}
-	for i, x := range data {
-		actual, _, err := t.ExactMatchSearch(x)
+	for i, key := range keys {
+		actual, size, err := t.ExactMatchSearch(key)
 		if err != nil {
 			return err
 		}
-		if i != actual {
-			return fmt.Errorf("(%v) want %d got %d", []byte(x), i, actual)
+		if len(key) != size {
+			log.Printf("want %d got %d", len(key), size)
+		}
+		if uint32(actual) != vals[i] {
+			log.Printf("want %d got %d", vals[i], actual)
 		}
 	}
 	return nil
 }
 
-func dartsCloseData(num int) []string {
+func dartsCloseData(num int) ([]string, []uint32) {
 	keys := make([]string, 0, num)
+	vals := make([]uint32, 0, num)
 	for i := 1; i < num; i++ {
 		keys = append(keys, fmt.Sprintf("%d", i))
+		vals = append(vals, uint32(i))
 	}
-	return keys
+	return keys, vals
 }
 
 func keysetData(num int) keyset.KeySet {

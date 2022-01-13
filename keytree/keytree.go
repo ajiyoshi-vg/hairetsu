@@ -56,10 +56,14 @@ func (x *Tree) Put(key word.Word, val uint32) {
 }
 
 func (x *Tree) Walk(f func(word.Word, []word.Code, []uint32) error) error {
-	return x.walk(word.Word{}, f)
+	return x.walkNode(word.Word{}, f)
 }
 
-func (x *Tree) walk(prefix word.Word, f func(word.Word, []word.Code, []uint32) error) error {
+func (x *Tree) WalkLeaf(f func(word.Word, uint32) error) error {
+	return x.walkLeaf(word.Word{}, f)
+}
+
+func (x *Tree) walkNode(prefix word.Word, f func(word.Word, []word.Code, []uint32) error) error {
 	branch := make([]word.Code, 0, len(x.children)+1)
 	values := make([]uint32, 0, len(x.children)+1)
 	if x.value != nil {
@@ -73,7 +77,21 @@ func (x *Tree) walk(prefix word.Word, f func(word.Word, []word.Code, []uint32) e
 		return err
 	}
 	for b, child := range x.children {
-		if err := child.walk(append(prefix, b), f); err != nil {
+		if err := child.walkNode(append(prefix, b), f); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (x *Tree) walkLeaf(prefix word.Word, f func(word.Word, uint32) error) error {
+	if x.value != nil {
+		if err := f(prefix, *x.value); err != nil {
+			return err
+		}
+	}
+	for b, child := range x.children {
+		if err := child.walkLeaf(append(prefix, b), f); err != nil {
 			return err
 		}
 	}

@@ -75,14 +75,16 @@ func (da *DoubleArray) traverse(index node.Index, branch word.Code) (node.Index,
 	offset := da.at(index).GetOffset()
 	next := offset.Forward(branch)
 	if int(next) >= len(da.nodes) {
-		return 0, errors.Errorf("out of range nodes[%d] index:%d branch:%v",
+		return 0, errors.Errorf(
+			"out of range nodes[%d] index:%d branch:%v",
 			next,
 			index,
 			branch,
 		)
 	}
 	if !da.at(next).IsChildOf(index) {
-		return 0, errors.Errorf("traverse fail node[%d](%v) is not child of node[%d](%v) branch:%d",
+		return 0, errors.Errorf(
+			"traverse fail node[%d](%v) is not child of node[%d](%v) branch:%d",
 			next,
 			da.at(next),
 			index,
