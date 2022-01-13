@@ -74,8 +74,21 @@ func (da *DoubleArray) Stat() Stat {
 func (da *DoubleArray) traverse(index node.Index, branch word.Code) (node.Index, error) {
 	offset := da.at(index).GetOffset()
 	next := offset.Forward(branch)
-	if int(next) >= len(da.nodes) || !da.at(next).IsChildOf(index) {
-		return 0, errors.Errorf("traverse fail index:%d branch:%v", index, branch)
+	if int(next) >= len(da.nodes) {
+		return 0, errors.Errorf("out of range nodes[%d] index:%d branch:%v",
+			next,
+			index,
+			branch,
+		)
+	}
+	if !da.at(next).IsChildOf(index) {
+		return 0, errors.Errorf("traverse fail node[%d](%v) is not child of node[%d](%v) branch:%d",
+			next,
+			da.at(next),
+			index,
+			da.at(index),
+			branch,
+		)
 	}
 	return next, nil
 }

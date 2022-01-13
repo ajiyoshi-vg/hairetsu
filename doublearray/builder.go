@@ -101,13 +101,7 @@ func (b *Builder) findValidOffset(da *DoubleArray, cs word.Word) (node.Index, er
 	for i := 0; i < len(cs); i++ {
 		next := offset.Forward(cs[i])
 
-		if int(next) >= len(da.nodes) {
-			break
-		}
-
-		if int(index) >= len(da.nodes) {
-			break
-		}
+		b.ensure(da, next)
 
 		if da.at(next).IsUsed() {
 			index, offset, err = b.findOffset(da, index, cs[0])
