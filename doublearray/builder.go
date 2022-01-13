@@ -11,7 +11,6 @@ import (
 )
 
 type Builder struct {
-	factory  nodeFactory
 	progress Progress
 }
 
@@ -21,9 +20,7 @@ type Progress interface {
 }
 
 func NewBuilder(opt ...Option) *Builder {
-	ret := &Builder{
-		factory: &factory{},
-	}
+	ret := &Builder{}
 	for _, f := range opt {
 		f(ret)
 	}
