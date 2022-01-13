@@ -18,6 +18,14 @@ func New() *Tree {
 	}
 }
 
+func FromBytes(xs [][]byte) *Tree {
+	ret := New()
+	for i, x := range xs {
+		ret.Put(word.FromBytes(x), uint32(i))
+	}
+	return ret
+}
+
 func FromWord(data []word.Word) *Tree {
 	root := New()
 	for i, x := range data {

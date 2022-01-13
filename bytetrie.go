@@ -2,7 +2,7 @@ package hairetsu
 
 import (
 	da "github.com/ajiyoshi-vg/hairetsu/doublearray"
-	"github.com/ajiyoshi-vg/hairetsu/keyset"
+	"github.com/ajiyoshi-vg/hairetsu/keytree"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 )
@@ -27,7 +27,7 @@ func NewByteTrieBuilder() *ByteTrieBuilder {
 
 func (b *ByteTrieBuilder) Build(xs [][]byte) (*ByteTrie, error) {
 	ret := da.New(len(xs) * 2)
-	ks := keyset.FromBytes(xs)
+	ks := keytree.FromBytes(xs)
 	if err := b.builder.Build(ret, ks); err != nil {
 		return nil, err
 	}

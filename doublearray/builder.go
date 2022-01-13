@@ -1,6 +1,9 @@
 package doublearray
 
 import (
+	"fmt"
+	"log"
+
 	"github.com/ajiyoshi-vg/hairetsu/keyset"
 	"github.com/ajiyoshi-vg/hairetsu/keytree"
 	"github.com/ajiyoshi-vg/hairetsu/node"
@@ -52,7 +55,7 @@ func (b *Builder) Build(da *DoubleArray, ks Walker) error {
 }
 
 func (b *Builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code, val *uint32) error {
-	//log.Printf("insert(prefix, branch)=(%v, %v)", prefix, branch)
+	//logInsert(prefix, branch, val)
 
 	// prefixが入っているところを探して、
 	index, err := da.searchIndex(prefix)
@@ -96,9 +99,8 @@ func (b *Builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code, 
 }
 
 func (b *Builder) findValidOffset(da *DoubleArray, cs word.Word) (node.Index, error) {
-	if len(cs) == 0 {
-	}
-	index, offset, err := b.findOffset(da, 0, cs[0])
+	root := node.Index(0)
+	index, offset, err := b.findOffset(da, root, cs[0])
 	if err != nil {
 		return 0, err
 	}
@@ -109,7 +111,7 @@ func (b *Builder) findValidOffset(da *DoubleArray, cs word.Word) (node.Index, er
 
 		b.ensure(da, next)
 
-		if da.at(next).IsUsed() {
+		if da.at(next).IsUsed() || next == root {
 			index, offset, err = b.findOffset(da, index, cs[0])
 			if err != nil {
 				return 0, err
@@ -192,4 +194,14 @@ func (b *Builder) setNextEmptyNode(da *DoubleArray, i, next node.Index) error {
 func (b *Builder) setPrevEmptyNode(da *DoubleArray, i, prev node.Index) error {
 	b.ensure(da, i)
 	return da.at(i).SetPrevEmptyNode(prev)
+}
+
+func logInsert(prefix word.Word, branch []word.Code, val *uint32) {
+	str := func(x *uint32) string {
+		if x == nil {
+			return "nil"
+		}
+		return fmt.Sprintf("%d", *x)
+	}
+	log.Printf("insert(prefix, branch)=(%v, %v, %s)", prefix, branch, str(val))
 }
