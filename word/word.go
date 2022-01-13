@@ -3,6 +3,8 @@ package word
 import (
 	"fmt"
 	"math"
+	"math/rand"
+	"reflect"
 	"sort"
 )
 
@@ -60,4 +62,9 @@ func Compare(lhs, rhs Word) int {
 	}
 
 	return len(lhs) - len(rhs)
+}
+
+func (x Code) Generate(r *rand.Rand, size int) reflect.Value {
+	ret := Code(rand.Uint32())
+	return reflect.ValueOf(ret)
 }
