@@ -127,16 +127,8 @@ func (b *Builder) findOffset(da *DoubleArray, index node.Index, branch word.Code
 	if err != nil {
 		return 0, 0, err
 	}
-	for {
-		offset, err := next.Backward(branch)
-		if err == nil {
-			return next, offset, nil
-		}
-		next, err = b.nextEmptyNode(da, next)
-		if err != nil {
-			return 0, 0, err
-		}
-	}
+	offset := next.Backward(branch)
+	return next, offset, nil
 }
 
 func (b *Builder) init(da *DoubleArray, after int) {

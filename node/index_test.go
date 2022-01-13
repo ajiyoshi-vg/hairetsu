@@ -9,10 +9,7 @@ import (
 
 func TestIndex(t *testing.T) {
 	mustInverse := func(i Index, c word.Code) bool {
-		actual, err := i.Forward(c).Backward(c)
-		if err != nil {
-			return false
-		}
+		actual := i.Forward(c).Backward(c)
 		return i == actual
 	}
 

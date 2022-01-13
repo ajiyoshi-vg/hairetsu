@@ -16,9 +16,8 @@ func (x Index) Forward(c word.Code) Index {
 }
 
 // Backword - return x such that x == offset.Forward(c)
-func (x Index) Backward(c word.Code) (Index, error) {
-	offset := x ^ Index(c)
-	return offset, nil
+func (x Index) Backward(c word.Code) Index {
+	return x ^ Index(c)
 }
 
 func (x Index) Generate(r *rand.Rand, size int) reflect.Value {
