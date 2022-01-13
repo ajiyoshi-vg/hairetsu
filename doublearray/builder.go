@@ -105,18 +105,19 @@ func (b *Builder) findValidOffset(da *DoubleArray, cs word.Word) (node.Index, er
 		return 0, err
 	}
 
-	// offset からcs を全部格納可能なところを探す
+	// ensure every offset.Forward(cs[i]) is empty
 	for i := 0; i < len(cs); i++ {
 		next := offset.Forward(cs[i])
 
 		b.ensure(da, next)
 
 		if da.at(next).IsUsed() || next == root {
+			// it was used
 			index, offset, err = b.findOffset(da, index, cs[0])
 			if err != nil {
 				return 0, err
 			}
-			// cs[0] からやりなおし
+			// retry from cs[0]
 			i = 0
 		}
 	}
