@@ -38,7 +38,7 @@ func (da *DoubleArray) Array() []uint64 {
 
 func (da *DoubleArray) ExactMatchSearch(cs word.Word) (node.Index, error) {
 	var index node.Index
-	length := node.Index(len(da.nodes))
+	length := node.Index(da.length())
 
 	for _, c := range cs {
 		next := da.at(index).GetOffset().Forward(c)
@@ -60,7 +60,7 @@ func (da *DoubleArray) ExactMatchSearch(cs word.Word) (node.Index, error) {
 func (da *DoubleArray) CommonPrefixSearch(cs word.Word) ([]node.Index, error) {
 	ret := make([]node.Index, 0, 10)
 	var index node.Index
-	length := node.Index(len(da.nodes))
+	length := node.Index(da.length())
 
 	for _, c := range cs {
 		next := da.at(index).GetOffset().Forward(c)
@@ -103,4 +103,8 @@ func (da *DoubleArray) WriteTo(w io.Writer) (int64, error) {
 
 func (da *DoubleArray) at(i node.Index) *node.Node {
 	return &da.nodes[i]
+}
+
+func (da *DoubleArray) length() int {
+	return len(da.nodes)
 }
