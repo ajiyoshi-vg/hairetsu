@@ -111,7 +111,13 @@ func (da *DoubleArray) Trace(cs word.Word) string {
 			return strings.Join(ss, "\n")
 		}
 	}
-	ss = append(ss, fmt.Sprintf("%s\nfound", da.debug(index, word.EOS)))
+	ss = append(ss, fmt.Sprintf("%s", da.debug(index, word.EOS)))
+	if da.at(index).IsTerminal() {
+		data := da.at(index).GetOffset().Forward(word.EOS)
+		if int(data) < len(da.nodes) {
+			ss = append(ss, fmt.Sprintf("%s value", da.debug(data, word.EOS)))
+		}
+	}
 	return strings.Join(ss, "\n")
 }
 

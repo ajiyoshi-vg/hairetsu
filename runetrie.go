@@ -1,6 +1,10 @@
 package hairetsu
 
 import (
+	"bufio"
+	"io"
+	"os"
+
 	da "github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/keyset"
 	"github.com/ajiyoshi-vg/hairetsu/node"
@@ -16,6 +20,13 @@ type RuneTrieBuilder struct {
 	builder *da.Builder
 }
 
+func NewRuneTrie(data *da.DoubleArray, dict runedict.RuneDict) *RuneTrie {
+	return &RuneTrie{
+		data: data,
+		dict: dict,
+	}
+}
+
 func (t *RuneTrie) ExactMatchSearch(key string) (node.Index, error) {
 	return t.data.ExactMatchSearch(t.dict.Word(key))
 }
@@ -24,23 +35,48 @@ func (t *RuneTrie) CommonPrefixSearch(key string) ([]node.Index, error) {
 	return t.data.CommonPrefixSearch(t.dict.Word(key))
 }
 
-func NewRuneTrieBuilder() *RuneTrieBuilder {
+func (t *RuneTrie) WriteTo(w io.Writer) (int64, error) {
+	return t.data.WriteTo(w)
+}
+
+func (t *RuneTrie) GetDict() runedict.RuneDict {
+	return t.dict
+}
+
+func NewRuneTrieBuilder(opt ...da.Option) *RuneTrieBuilder {
 	return &RuneTrieBuilder{
-		builder: da.NewBuilder(),
+		builder: da.NewBuilder(opt...),
 	}
 }
 
 func (b *RuneTrieBuilder) Build(xs []string) (*RuneTrie, error) {
-	ret := da.New()
+	data := da.New()
 	dict := runedict.New(xs)
 	ks, err := b.keyset(xs, dict)
 	if err != nil {
 		return nil, err
 	}
-	if err := b.builder.Build(ret, ks); err != nil {
+	if err := b.builder.Build(data, ks); err != nil {
 		return nil, err
 	}
-	return &RuneTrie{data: ret, dict: dict}, nil
+	return &RuneTrie{data: data, dict: dict}, nil
+}
+
+func (b *RuneTrieBuilder) BuildFromFile(path string) (*RuneTrie, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	r := bufio.NewScanner(file)
+	ss := make([]string, 0, 100)
+	for r.Scan() {
+		line := r.Text()
+		ss = append(ss, line)
+	}
+
+	return b.Build(ss)
 }
 
 func (*RuneTrieBuilder) keyset(ss []string, d runedict.RuneDict) (keyset.KeySet, error) {

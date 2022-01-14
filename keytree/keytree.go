@@ -18,12 +18,15 @@ func New() *Tree {
 	}
 }
 
-func FromBytes(xs [][]byte) *Tree {
+func FromBytes(xs [][]byte) (*Tree, error) {
 	ret := New()
 	for i, x := range xs {
-		ret.Put(word.FromBytes(x), uint32(i))
+		err := ret.Put(word.FromBytes(x), uint32(i))
+		if err != nil {
+			return nil, err
+		}
 	}
-	return ret
+	return ret, nil
 }
 
 func FromWord(data []word.Word) *Tree {
@@ -49,7 +52,7 @@ func (x *Tree) Get(key word.Word) (*uint32, error) {
 	return node.value, nil
 }
 
-func (x *Tree) Put(key word.Word, val uint32) {
+func (x *Tree) Put(key word.Word, val uint32) error {
 	node := x
 	for _, b := range key {
 		child := node.children[b]
@@ -59,8 +62,12 @@ func (x *Tree) Put(key word.Word, val uint32) {
 		}
 		node = child
 	}
-	x.leafNum++
+	if node.value != nil {
+		return fmt.Errorf("%v was inserted twice. old:%d new:%d", key, *node.value, val)
+	}
 	node.value = &val
+	x.leafNum++
+	return nil
 }
 
 func (x *Tree) WalkNode(f func(word.Word, []word.Code, *uint32) error) error {

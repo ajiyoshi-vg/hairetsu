@@ -12,6 +12,7 @@ import (
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 	"github.com/pkg/profile"
+	"github.com/schollz/progressbar"
 )
 
 type option struct {
@@ -23,7 +24,7 @@ var opt option
 
 func init() {
 	flag.StringVar(&opt.in, "in", "bench.dat", "line sep text default: bench.txt")
-	flag.StringVar(&opt.data, "data", "trie.dat", "dumped file")
+	flag.StringVar(&opt.data, "data", "byte.dat", "dumped file")
 	flag.Parse()
 }
 
@@ -46,7 +47,14 @@ func run() error {
 		return err
 	}
 
+	p := progressbar.New(ks.LeafNum())
+	defer (func() {
+		log.Println(da.Stat())
+		log.Println(ks.LeafNum())
+	})()
+
 	return ks.WalkLeaf(func(key word.Word, val uint32) error {
+		p.Add(1)
 		actual, err := da.ExactMatchSearch(key)
 		if err != nil {
 			return err
@@ -70,7 +78,10 @@ func readFile(path string) (*keytree.Tree, error) {
 	scan := bufio.NewScanner(file)
 	for i := 0; scan.Scan(); i++ {
 		line := scan.Text()
-		ret.Put(word.FromBytes([]byte(line)), uint32(i))
+		key := word.FromBytes([]byte(line))
+		if err := ret.Put(key, uint32(i)); err != nil {
+			return nil, err
+		}
 	}
 	return ret, nil
 }

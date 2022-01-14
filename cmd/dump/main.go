@@ -4,29 +4,28 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
 
+	"github.com/ajiyoshi-vg/hairetsu"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
-	da "github.com/ajiyoshi-vg/hairetsu/doublearray"
-	"github.com/ajiyoshi-vg/hairetsu/keytree"
-	"github.com/ajiyoshi-vg/hairetsu/node"
-	"github.com/ajiyoshi-vg/hairetsu/word"
-	"github.com/pkg/profile"
+	"github.com/ajiyoshi-vg/hairetsu/runedict"
 	"github.com/schollz/progressbar"
 )
 
 type option struct {
-	in       string
-	out      string
-	validate bool
+	in   string
+	out  string
+	kind string
 }
 
 var opt option
 
 func init() {
 	flag.StringVar(&opt.in, "in", "bench.dat", "line sep text default: bench.txt")
-	flag.StringVar(&opt.out, "o", "trie.dat", "output")
+	flag.StringVar(&opt.out, "o", "out.dat", "output")
+	flag.StringVar(&opt.kind, "kind", "byte", "[rune|byte] default: byte")
 	flag.Parse()
 }
 
@@ -38,64 +37,69 @@ func main() {
 }
 
 func run() error {
-	defer profile.Start(profile.ProfilePath(".")).Stop()
-	ks, err := readFile(opt.in)
-	if err != nil {
-		return err
+	switch opt.kind {
+	case "byte":
+		return dumpByte()
+	case "rune":
+		return dumpRune()
+	default:
+		return fmt.Errorf("unkown kind %s", opt.kind)
 	}
-	da, err := build(ks)
-	if err != nil {
-		return err
-	}
+}
 
-	out, err := os.Create(opt.out)
+func dumpByte() error {
+	p := doublearray.OptionProgress(progressbar.New(0))
+	trie, err := hairetsu.NewByteTrieBuilder(p).BuildFromFile(opt.in)
+	if err != nil {
+		return err
+	}
+	return dumpDoubleArray(trie, opt.out)
+}
+
+func dumpRune() error {
+	p := doublearray.OptionProgress(progressbar.New(0))
+	trie, err := hairetsu.NewRuneTrieBuilder(p).BuildFromFile(opt.in)
+	if err != nil {
+		return err
+	}
+	path := fmt.Sprintf("%s.dict", opt.out)
+	if err := dumpRuneDict(trie.GetDict(), path); err != nil {
+		return err
+	}
+	return dumpDoubleArray(trie, opt.out)
+}
+
+type writable interface {
+	WriteTo(io.Writer) (int64, error)
+}
+
+func dumpDoubleArray(data writable, path string) error {
+	out, err := os.Create(path)
 	if err != nil {
 		return err
 	}
 	defer out.Close()
 	w := bufio.NewWriter(out)
 	defer w.Flush()
-	if _, err := da.WriteTo(w); err != nil {
+	if _, err := data.WriteTo(w); err != nil {
 		return err
 	}
 	return nil
 }
 
-func readFile(path string) (*keytree.Tree, error) {
-	file, err := os.Open(path)
+func dumpRuneDict(dict runedict.RuneDict, path string) error {
+	out, err := os.Create(path)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	defer file.Close()
+	defer out.Close()
+	w := bufio.NewWriter(out)
+	defer w.Flush()
 
-	ret := keytree.New()
-	scan := bufio.NewScanner(file)
-	for i := 0; scan.Scan(); i++ {
-		line := scan.Text()
-		ret.Put(word.FromBytes([]byte(line)), uint32(i))
-	}
-	return ret, nil
-}
-
-func build(data doublearray.Walker) (*doublearray.DoubleArray, error) {
-	x := da.New()
-	if err := da.NewBuilder(da.OptionProgress(progressbar.New(1))).Build(x, data); err != nil {
-		return nil, err
-	}
-	log.Println("build finished")
-	log.Println(x.Stat())
-	err := data.WalkLeaf(func(key word.Word, val uint32) error {
-		actual, err := x.ExactMatchSearch(key)
-		if err != nil {
-			return err
-		}
-		if actual != node.Index(val) {
-			return fmt.Errorf("search key(%v): want %d got %d", key, val, actual)
-		}
-		return nil
-	})
+	buf, err := dict.MarshalText()
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return x, nil
+	_, err = w.WriteString(buf)
+	return err
 }
