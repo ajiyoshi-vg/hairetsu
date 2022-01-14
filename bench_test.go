@@ -38,7 +38,7 @@ func BenchmarkTrie(b *testing.B) {
 	b.Run("dartsclone", func(b *testing.B) {
 		trie, err := dartsclone.Open("darts.dat")
 		assert.NoError(b, err)
-		b.Run("exact match search", func(b *testing.B) {
+		b.Run("exact", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				for _, v := range ss {
 					if id, _, err := trie.ExactMatchSearch(v); id < 0 || err != nil {
@@ -47,7 +47,7 @@ func BenchmarkTrie(b *testing.B) {
 				}
 			}
 		})
-		b.Run("common prefix match search", func(b *testing.B) {
+		b.Run("common prefix", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				for _, v := range ss {
 					if ret, err := trie.CommonPrefixSearch(v, 0); len(ret) == 0 || err != nil {
@@ -60,7 +60,7 @@ func BenchmarkTrie(b *testing.B) {
 	b.Run("da", func(b *testing.B) {
 		trie, err := readIndex("byte.dat")
 		assert.NoError(b, err)
-		b.Run("exact match search", func(b *testing.B) {
+		b.Run("exact", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				for _, v := range ws {
 					if id, err := trie.ExactMatchSearch(v); err != nil {
@@ -69,7 +69,7 @@ func BenchmarkTrie(b *testing.B) {
 				}
 			}
 		})
-		b.Run("common prefix match search", func(b *testing.B) {
+		b.Run("common prefix", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				for _, v := range ws {
 					if ret, err := trie.CommonPrefixSearch(v); len(ret) == 0 || err != nil {
@@ -83,7 +83,7 @@ func BenchmarkTrie(b *testing.B) {
 		da, err := readIndex("byte.dat")
 		assert.NoError(b, err)
 		trie := NewByteTrie(da)
-		b.Run("exact match search", func(b *testing.B) {
+		b.Run("exact", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				for _, v := range bs {
 					if id, err := trie.ExactMatchSearch(v); err != nil {
@@ -92,7 +92,7 @@ func BenchmarkTrie(b *testing.B) {
 				}
 			}
 		})
-		b.Run("common prefix match search", func(b *testing.B) {
+		b.Run("common prefix", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				for _, v := range bs {
 					if ret, err := trie.CommonPrefixSearch(v); len(ret) == 0 || err != nil {
@@ -108,7 +108,7 @@ func BenchmarkTrie(b *testing.B) {
 		dict, err := readDict("rune.dat.dict")
 		assert.NoError(b, err)
 		trie := NewRuneTrie(da, dict)
-		b.Run("exact match search", func(b *testing.B) {
+		b.Run("exact", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				for _, v := range ss {
 					if id, err := trie.ExactMatchSearch(v); err != nil {
@@ -117,7 +117,7 @@ func BenchmarkTrie(b *testing.B) {
 				}
 			}
 		})
-		b.Run("common prefix match search", func(b *testing.B) {
+		b.Run("common prefix", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				for _, v := range ss {
 					if ret, err := trie.CommonPrefixSearch(v); len(ret) == 0 || err != nil {
