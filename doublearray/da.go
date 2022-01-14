@@ -39,14 +39,23 @@ func (da *DoubleArray) Array() []uint64 {
 }
 
 func (da *DoubleArray) ExactMatchSearch(cs word.Word) (node.Index, error) {
-	index, err := da.searchIndex(cs)
-	if err != nil {
-		return 0, err
+	var index node.Index
+	length := node.Index(len(da.nodes))
+	for _, c := range cs {
+		next := da.nodes[index].GetOffset().Forward(c)
+		if next >= length || !da.nodes[next].IsChildOf(index) {
+			return 0, fmt.Errorf("word:%v", cs)
+		}
+		index = next
 	}
-	if da.at(index).IsTerminal() {
-		return da.getValue(index)
+	if !da.at(index).IsTerminal() {
+		return 0, fmt.Errorf("word:%v", cs)
 	}
-	return 0, errors.Errorf("not terminal. index:%d lookup:%v", index, cs)
+	data := da.nodes[index].GetOffset().Forward(word.EOS)
+	if data >= length || !da.nodes[data].IsChildOf(index) {
+		return 0, fmt.Errorf("word:%v", cs)
+	}
+	return da.nodes[data].GetOffset(), nil
 }
 
 func (da *DoubleArray) CommonPrefixSearch(cs word.Word) ([]node.Index, error) {

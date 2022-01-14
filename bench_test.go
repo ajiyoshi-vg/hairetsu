@@ -16,18 +16,21 @@ import (
 var (
 	ss []string
 	bs [][]byte
+	ws []word.Word
 )
 
 func init() {
 	var err error
-	ss, err = readRuneLines("head.dat")
+	bs, err = readByteLines("head.dat")
 	if err != nil {
 		panic(err)
 	}
 
-	bs, err = readByteLines("head.dat")
-	if err != nil {
-		panic(err)
+	ss = make([]string, 0, len(bs))
+	ws = make([]word.Word, 0, len(bs))
+	for _, b := range bs {
+		ws = append(ws, word.FromBytes(b))
+		ss = append(ss, string(b))
 	}
 }
 
@@ -59,8 +62,8 @@ func BenchmarkTrie(b *testing.B) {
 		assert.NoError(b, err)
 		b.Run("exact match search", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				for _, v := range bs {
-					if id, err := trie.ExactMatchSearch(word.FromBytes(v)); err != nil {
+				for _, v := range ws {
+					if id, err := trie.ExactMatchSearch(v); err != nil {
 						b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
 					}
 				}
@@ -68,8 +71,8 @@ func BenchmarkTrie(b *testing.B) {
 		})
 		b.Run("common prefix match search", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				for _, v := range bs {
-					if ret, err := trie.CommonPrefixSearch(word.FromBytes(v)); len(ret) == 0 || err != nil {
+				for _, v := range ws {
+					if ret, err := trie.CommonPrefixSearch(v); len(ret) == 0 || err != nil {
 						b.Fatalf("unexpected error, missing a keyword %v, err=%v", v, err)
 					}
 				}
