@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	EOS  = Code(0)
-	NONE = Code(math.MaxUint32)
+	EOS  = Code(math.MaxUint32)
+	NONE = Code(math.MaxUint32 - 1)
 )
 
 type Code uint32
@@ -30,7 +30,7 @@ func (x Word) bytes() ([]byte, error) {
 		if b > math.MaxUint8+1 {
 			return nil, fmt.Errorf("bad code(%d) > MaxUint8", b)
 		}
-		ret = append(ret, byte(b-1))
+		ret = append(ret, byte(b))
 	}
 	return ret, nil
 }
@@ -38,7 +38,7 @@ func (x Word) bytes() ([]byte, error) {
 func FromBytes(data []byte) Word {
 	ret := make(Word, 0, len(data))
 	for _, b := range data {
-		ret = append(ret, Code(b)+1)
+		ret = append(ret, Code(b))
 	}
 	return ret
 }

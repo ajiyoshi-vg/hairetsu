@@ -84,7 +84,7 @@ func newRuneDict(ss []string) RuneDict {
 
 	ret := make(RuneDict, len(buf))
 	for i, x := range buf {
-		ret[x.r] = word.Code(i + 1)
+		ret[x.r] = word.Code(i)
 	}
 	return ret
 }

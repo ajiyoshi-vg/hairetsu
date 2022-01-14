@@ -1,7 +1,6 @@
 package keyset
 
 import (
-	"log"
 	"sort"
 
 	"github.com/ajiyoshi-vg/hairetsu/word"
@@ -51,7 +50,6 @@ func (ks KeySet) LeafNum() int {
 
 func (ks KeySet) WalkNode(f func(word.Word, []word.Code, *uint32) error) error {
 	ks.Sort()
-	log.Println("sorted")
 	return ks.walkTrieNode(0, len(ks), 0, f)
 }
 
