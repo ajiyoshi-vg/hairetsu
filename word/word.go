@@ -5,7 +5,6 @@ import (
 	"math"
 	"math/rand"
 	"reflect"
-	"sort"
 )
 
 const (
@@ -41,12 +40,6 @@ func FromBytes(data []byte) Word {
 		ret = append(ret, Code(b))
 	}
 	return ret
-}
-
-func Sort(data []Word) {
-	sort.Slice(data, func(i, j int) bool {
-		return Compare(data[i], data[j]) < 0
-	})
 }
 
 func Compare(lhs, rhs Word) int {
