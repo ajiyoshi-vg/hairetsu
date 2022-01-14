@@ -9,6 +9,7 @@ import (
 	"github.com/ajiyoshi-vg/hairetsu/keytree"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/word"
+	"github.com/pkg/errors"
 )
 
 type Builder struct {
@@ -81,7 +82,7 @@ func (b *Builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code, 
 	//logInsert(prefix, branch, val)
 
 	// prefixが入っているところを探して、
-	index, err := da.searchIndex(prefix)
+	index, err := b.searchIndex(da, prefix)
 	if err != nil {
 		return err
 	}
@@ -119,6 +120,18 @@ func (b *Builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code, 
 	}
 
 	return nil
+}
+
+func (*Builder) searchIndex(da *DoubleArray, cs word.Word) (node.Index, error) {
+	var index node.Index
+	var err error
+	for _, c := range cs {
+		index, err = da.traverse(index, c)
+		if err != nil {
+			return 0, errors.WithMessagef(err, "word:%v", cs)
+		}
+	}
+	return index, nil
 }
 
 func (b *Builder) findValidOffset(da *DoubleArray, cs word.Word) (node.Index, error) {

@@ -41,40 +41,43 @@ func (da *DoubleArray) Array() []uint64 {
 func (da *DoubleArray) ExactMatchSearch(cs word.Word) (node.Index, error) {
 	var index node.Index
 	length := node.Index(len(da.nodes))
+
 	for _, c := range cs {
-		next := da.nodes[index].GetOffset().Forward(c)
-		if next >= length || !da.nodes[next].IsChildOf(index) {
-			return 0, fmt.Errorf("word:%v", cs)
+		next := da.at(index).GetOffset().Forward(c)
+		if next >= length || !da.at(next).IsChildOf(index) {
+			return 0, fmt.Errorf("ExactMatchSearch(%v) : error broken index", cs)
 		}
 		index = next
 	}
 	if !da.at(index).IsTerminal() {
-		return 0, fmt.Errorf("word:%v", cs)
+		return 0, fmt.Errorf("ExactMatchSearch(%v) : not stored", cs)
 	}
-	data := da.nodes[index].GetOffset().Forward(word.EOS)
-	if data >= length || !da.nodes[data].IsChildOf(index) {
-		return 0, fmt.Errorf("word:%v", cs)
+	data := da.at(index).GetOffset().Forward(word.EOS)
+	if data >= length || !da.at(data).IsChildOf(index) {
+		return 0, fmt.Errorf("ExactMatchSearch(%v) : error broken data node", cs)
 	}
-	return da.nodes[data].GetOffset(), nil
+	return da.at(data).GetOffset(), nil
 }
 
 func (da *DoubleArray) CommonPrefixSearch(cs word.Word) ([]node.Index, error) {
 	ret := make([]node.Index, 0, 10)
-
 	var index node.Index
-	var err error
+	length := node.Index(len(da.nodes))
+
 	for _, c := range cs {
-		index, err = da.traverse(index, c)
-		if err != nil {
+		next := da.at(index).GetOffset().Forward(c)
+		if next >= length || !da.at(next).IsChildOf(index) {
 			return ret, nil
 		}
+		index = next
 
 		if da.at(index).IsTerminal() {
-			val, err := da.getValue(index)
-			if err != nil {
+			data := da.at(index).GetOffset().Forward(word.EOS)
+			if data >= length || !da.at(data).IsChildOf(index) {
+				err := fmt.Errorf("CommonPrefixSearch(%v) : error broken data node", cs)
 				return nil, err
 			}
-			ret = append(ret, val)
+			ret = append(ret, da.at(data).GetOffset())
 		}
 	}
 	return ret, nil
@@ -171,18 +174,6 @@ func (da *DoubleArray) getValue(term node.Index) (node.Index, error) {
 		return 0, err
 	}
 	return da.at(data).GetOffset(), nil
-}
-
-func (da *DoubleArray) searchIndex(cs word.Word) (node.Index, error) {
-	var index node.Index
-	var err error
-	for _, c := range cs {
-		index, err = da.traverse(index, c)
-		if err != nil {
-			return 0, errors.WithMessagef(err, "word:%v", cs)
-		}
-	}
-	return index, nil
 }
 
 func (da *DoubleArray) at(i node.Index) *node.Node {
