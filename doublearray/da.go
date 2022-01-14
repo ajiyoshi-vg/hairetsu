@@ -1,6 +1,7 @@
 package doublearray
 
 import (
+	"errors"
 	"fmt"
 	"io"
 
@@ -79,6 +80,19 @@ func (da *DoubleArray) CommonPrefixSearch(cs word.Word) ([]node.Index, error) {
 		}
 	}
 	return ret, nil
+}
+
+var errNotChild = errors.New("not a child")
+
+func (da *DoubleArray) Traverse(parent node.Index, c word.Code) (node.Index, error) {
+	child := da.at(parent).GetOffset().Forward(c)
+	if int(child) >= len(da.nodes) {
+		return 0, fmt.Errorf("Traverse(%d, %d) failed : index out of range", parent, c)
+	}
+	if parent != da.at(child).GetParent() {
+		return 0, errNotChild
+	}
+	return child, nil
 }
 
 func (da *DoubleArray) Stat() Stat {
