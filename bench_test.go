@@ -47,7 +47,7 @@ func BenchmarkTrie(b *testing.B) {
 				}
 			}
 		})
-		b.Run("common prefix", func(b *testing.B) {
+		b.Run("prefix", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				for _, v := range ss {
 					if ret, err := trie.CommonPrefixSearch(v, 0); len(ret) == 0 || err != nil {
@@ -69,7 +69,7 @@ func BenchmarkTrie(b *testing.B) {
 				}
 			}
 		})
-		b.Run("common prefix", func(b *testing.B) {
+		b.Run("prefix", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				for _, v := range ws {
 					if ret, err := trie.CommonPrefixSearch(v); len(ret) == 0 || err != nil {
@@ -92,7 +92,7 @@ func BenchmarkTrie(b *testing.B) {
 				}
 			}
 		})
-		b.Run("common prefix", func(b *testing.B) {
+		b.Run("prefix", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				for _, v := range bs {
 					if ret, err := trie.CommonPrefixSearch(v); len(ret) == 0 || err != nil {
@@ -117,7 +117,7 @@ func BenchmarkTrie(b *testing.B) {
 				}
 			}
 		})
-		b.Run("common prefix", func(b *testing.B) {
+		b.Run("prefix", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				for _, v := range ss {
 					if ret, err := trie.CommonPrefixSearch(v); len(ret) == 0 || err != nil {
