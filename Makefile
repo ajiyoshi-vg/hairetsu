@@ -25,8 +25,8 @@ jawiki-latest-all-titles.gz:
 bench.dat: jawiki-latest-all-titles.gz
 	gunzip -c $< | cut -f 2 | sort | uniq > $@
 
-head.dat:
-	tail -n 1000000 bench.dat > $@
+head.dat: Makefile
+	tail -n 100000 bench.dat > $@
 
 byte.dat: head.dat
 	go run cmd/dump/main.go -o $@ -in $< -kind byte
