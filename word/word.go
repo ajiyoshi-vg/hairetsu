@@ -22,8 +22,8 @@ func (x Word) At(i int) Code {
 	return EOS
 }
 
-// bytes : inverse of FromBytes(). it's for test purpose
-func (x Word) bytes() ([]byte, error) {
+// Bytes : inverse of FromBytes(). it's for test purpose
+func (x Word) Bytes() ([]byte, error) {
 	ret := make([]byte, 0, len(x))
 	for _, b := range x {
 		if b > math.MaxUint8+1 {

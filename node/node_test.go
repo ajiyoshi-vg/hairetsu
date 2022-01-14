@@ -2,6 +2,7 @@ package node
 
 import (
 	"testing"
+	"testing/quick"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -77,4 +78,25 @@ func TestNode(t *testing.T) {
 	assert.Error(t, err)
 	assert.Error(t, x.SetNextEmptyNode(10))
 	assert.Error(t, x.SetPrevEmptyNode(10))
+}
+
+func TestMarshal(t *testing.T) {
+	mustInverse := func(n Node) bool {
+		buf, err := n.MarshalBinary()
+		if err != nil {
+			return false
+		}
+		var that Node
+		if err := that.UnmarshalBinary(buf); err != nil {
+			return false
+		}
+		return n == that
+	}
+
+	c := &quick.Config{
+		MaxCountScale: 10000,
+	}
+	if err := quick.Check(mustInverse, c); err != nil {
+		t.Error(err)
+	}
 }

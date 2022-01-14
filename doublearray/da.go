@@ -2,6 +2,7 @@ package doublearray
 
 import (
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/ajiyoshi-vg/hairetsu/node"
@@ -72,6 +73,22 @@ func (da *DoubleArray) CommonPrefixSearch(cs word.Word) ([]node.Index, error) {
 
 func (da *DoubleArray) Stat() Stat {
 	return newStat(da)
+}
+
+func (da *DoubleArray) WriteTo(w io.Writer) (int64, error) {
+	var ret int64
+	for _, node := range da.nodes {
+		buf, err := node.MarshalBinary()
+		if err != nil {
+			return ret, err
+		}
+		n, err := w.Write(buf)
+		ret += int64(n)
+		if err != nil {
+			return ret, err
+		}
+	}
+	return ret, nil
 }
 
 func (da *DoubleArray) Trace(cs word.Word) string {

@@ -2,6 +2,7 @@ package doublearray
 
 import (
 	"fmt"
+	"io"
 	"log"
 
 	"github.com/ajiyoshi-vg/hairetsu/keyset"
@@ -25,6 +26,31 @@ func NewBuilder(opt ...Option) *Builder {
 		f(ret)
 	}
 	return ret
+}
+
+func (b *Builder) ReadFrom(da *DoubleArray, r io.Reader) (int64, error) {
+	var ret int64
+	length := 8
+	buf := make([]byte, length)
+	for i := node.Index(0); ; i++ {
+		n, err := r.Read(buf)
+		ret += int64(n)
+
+		if n == length {
+			b.ensure(da, i)
+			if err := da.at(i).UnmarshalBinary(buf); err != nil {
+				return ret, err
+			}
+		}
+
+		if n > 0 && n < len(buf) {
+			return ret, fmt.Errorf("short read(%d), bad align at %d", n, ret)
+		}
+
+		if io.EOF == err {
+			return ret, nil
+		}
+	}
 }
 
 type Walker interface {

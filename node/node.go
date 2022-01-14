@@ -3,7 +3,11 @@
 package node
 
 import (
+	"encoding"
+	"encoding/binary"
 	"fmt"
+	"math/rand"
+	"reflect"
 
 	"github.com/pkg/errors"
 )
@@ -54,7 +58,10 @@ type Interface interface {
 
 type Node uint64
 
-var _ Interface = (*Node)(nil)
+var (
+	_ Interface                = (*Node)(nil)
+	_ encoding.BinaryMarshaler = (*Node)(nil)
+)
 
 func Root() Node {
 	var ret Node
@@ -178,4 +185,18 @@ func (x Node) String() string {
 		ret += "#"
 	}
 	return ret
+}
+func (x Node) MarshalBinary() ([]byte, error) {
+	buf := make([]byte, 8)
+	binary.BigEndian.PutUint64(buf, uint64(x))
+	return buf, nil
+}
+func (x *Node) UnmarshalBinary(data []byte) error {
+	v := binary.BigEndian.Uint64(data)
+	*x = Node(v)
+	return nil
+}
+func (x Node) Generate(r *rand.Rand, size int) reflect.Value {
+	ret := Node(r.Uint64())
+	return reflect.ValueOf(ret)
 }
