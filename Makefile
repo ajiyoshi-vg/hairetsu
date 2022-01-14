@@ -25,11 +25,14 @@ jawiki-latest-all-titles.gz:
 bench.dat: jawiki-latest-all-titles.gz
 	gunzip -c $< | cut -f 2 | sort | uniq > $@
 
-byte.dat: bench.dat
+head.dat:
+	tail -n 1000000 bench.dat > $@
+
+byte.dat: head.dat
 	go run cmd/dump/main.go -o $@ -in $< -kind byte
 
-rune.dat rune.dat.dict: bench.dat
+rune.dat rune.dat.dict: head.dat
 	go run cmd/dump/main.go -o $@ -in $< -kind rune
 
-bench: bench.dat byte.dat rune.dat rune.dat.dict
+bench: head.dat byte.dat rune.dat rune.dat.dict
 	go test -bench .

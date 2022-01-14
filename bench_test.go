@@ -20,7 +20,7 @@ func BenchmarkByteSearch(b *testing.B) {
 
 	trie := NewByteTrie(da)
 
-	bs, err := readByteLines("bench.dat")
+	bs, err := readByteLines("head.dat")
 	assert.NoError(b, err)
 
 	b.ResetTimer()
@@ -43,7 +43,7 @@ func BenchmarkRuneSearch(b *testing.B) {
 
 	trie := NewRuneTrie(da, dict)
 
-	bs, err := readRuneLines("bench.dat")
+	bs, err := readRuneLines("head.dat")
 	assert.NoError(b, err)
 
 	b.ResetTimer()
