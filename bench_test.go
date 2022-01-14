@@ -3,7 +3,6 @@ package hairetsu
 import (
 	"bufio"
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"os"
 	"testing"
@@ -17,7 +16,7 @@ import (
 func BenchmarkByteSearch(b *testing.B) {
 	da, err := readIndex("byte.dat")
 	assert.NoError(b, err)
-	log.Println(da.Stat())
+	b.Log(da.Stat())
 
 	trie := NewByteTrie(da)
 
@@ -37,7 +36,7 @@ func BenchmarkByteSearch(b *testing.B) {
 func BenchmarkRuneSearch(b *testing.B) {
 	da, err := readIndex("rune.dat")
 	assert.NoError(b, err)
-	log.Println(da.Stat())
+	b.Log(da.Stat())
 
 	dict, err := readDict("rune.dat.dict")
 	assert.NoError(b, err)
