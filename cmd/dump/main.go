@@ -10,6 +10,8 @@ import (
 
 	"github.com/ajiyoshi-vg/hairetsu"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
+	"github.com/ikawaha/dartsclone"
+	dartsprog "github.com/ikawaha/dartsclone/progressbar"
 	"github.com/schollz/progressbar"
 )
 
@@ -24,7 +26,7 @@ var opt option
 func init() {
 	flag.StringVar(&opt.in, "in", "bench.dat", "line sep text default: bench.txt")
 	flag.StringVar(&opt.out, "o", "out.dat", "output")
-	flag.StringVar(&opt.kind, "kind", "byte", "[rune|byte] default: byte")
+	flag.StringVar(&opt.kind, "kind", "byte", "[rune|byte|darts] default: byte")
 	flag.Parse()
 }
 
@@ -41,6 +43,8 @@ func run() error {
 		return dumpByte()
 	case "rune":
 		return dumpRune()
+	case "darts":
+		return dumpDarts()
 	default:
 		return fmt.Errorf("unkown kind %s", opt.kind)
 	}
@@ -66,6 +70,38 @@ func dumpRune() error {
 		return err
 	}
 	return dumpDoubleArray(trie, opt.out)
+}
+
+func dumpDarts() error {
+	r, err := os.Open(opt.in)
+	if err != nil {
+		return err
+	}
+	defer r.Close()
+	ret := make([]string, 0, 1000)
+	scan := bufio.NewScanner(r)
+	for i := 0; scan.Scan(); i++ {
+		line := scan.Text()
+		ret = append(ret, line)
+	}
+
+	p := dartsprog.New()
+	p.SetMaximum(len(ret))
+	b := dartsclone.NewBuilder(p)
+	if err := b.Build(ret, nil); err != nil {
+		return err
+	}
+
+	out, err := os.Create(opt.out)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	w := bufio.NewWriter(out)
+	defer w.Flush()
+	_, err = b.WriteTo(w)
+	return err
 }
 
 type writable interface {

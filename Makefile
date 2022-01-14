@@ -34,5 +34,8 @@ byte.dat: head.dat
 rune.dat rune.dat.dict: head.dat
 	go run cmd/dump/main.go -o $@ -in $< -kind rune
 
-bench: head.dat byte.dat rune.dat rune.dat.dict
+darts.dat : head.dat
+	go run cmd/dump/main.go -o $@ -in $< -kind darts
+
+bench: head.dat byte.dat rune.dat rune.dat.dict darts.dat
 	go test -bench .

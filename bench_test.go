@@ -3,57 +3,127 @@ package hairetsu
 import (
 	"bufio"
 	"io/ioutil"
-	"math/rand"
 	"os"
 	"testing"
 
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
-	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/runedict"
+	"github.com/ajiyoshi-vg/hairetsu/word"
+	"github.com/ikawaha/dartsclone"
 	"github.com/stretchr/testify/assert"
 )
 
-func BenchmarkByteSearch(b *testing.B) {
-	da, err := readIndex("byte.dat")
-	assert.NoError(b, err)
-	b.Log(da.Stat())
+var (
+	ss []string
+	bs [][]byte
+)
 
-	trie := NewByteTrie(da)
+func init() {
+	var err error
+	ss, err = readRuneLines("head.dat")
+	if err != nil {
+		panic(err)
+	}
 
-	bs, err := readByteLines("head.dat")
-	assert.NoError(b, err)
-
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
-		idx := node.Index(rand.Intn(len(bs)))
-		actual, err := trie.ExactMatchSearch(bs[idx])
-		assert.NoError(b, err)
-		assert.Equal(b, int(idx), int(actual))
+	bs, err = readByteLines("head.dat")
+	if err != nil {
+		panic(err)
 	}
 }
 
-func BenchmarkRuneSearch(b *testing.B) {
-	da, err := readIndex("rune.dat")
-	assert.NoError(b, err)
-	b.Log(da.Stat())
-
-	dict, err := readDict("rune.dat.dict")
-	assert.NoError(b, err)
-
-	trie := NewRuneTrie(da, dict)
-
-	bs, err := readRuneLines("head.dat")
-	assert.NoError(b, err)
-
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
-		idx := node.Index(rand.Intn(len(bs)))
-		actual, err := trie.ExactMatchSearch(bs[idx])
+func BenchmarkTrie(b *testing.B) {
+	b.Run("dartsclone", func(b *testing.B) {
+		trie, err := dartsclone.Open("darts.dat")
 		assert.NoError(b, err)
-		assert.Equal(b, int(idx), int(actual))
-	}
+		b.Run("exact match search", func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				for _, v := range ss {
+					if id, _, err := trie.ExactMatchSearch(v); id < 0 || err != nil {
+						b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
+					}
+				}
+			}
+		})
+		b.Run("common prefix match search", func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				for _, v := range ss {
+					if ret, err := trie.CommonPrefixSearch(v, 0); len(ret) == 0 || err != nil {
+						b.Fatalf("unexpected error, missing a keyword %v, err=%v", v, err)
+					}
+				}
+			}
+		})
+	})
+	b.Run("da", func(b *testing.B) {
+		trie, err := readIndex("byte.dat")
+		assert.NoError(b, err)
+		b.Run("exact match search", func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				for _, v := range bs {
+					if id, err := trie.ExactMatchSearch(word.FromBytes(v)); err != nil {
+						b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
+					}
+				}
+			}
+		})
+		b.Run("common prefix match search", func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				for _, v := range bs {
+					if ret, err := trie.CommonPrefixSearch(word.FromBytes(v)); len(ret) == 0 || err != nil {
+						b.Fatalf("unexpected error, missing a keyword %v, err=%v", v, err)
+					}
+				}
+			}
+		})
+	})
+	b.Run("byte", func(b *testing.B) {
+		da, err := readIndex("byte.dat")
+		assert.NoError(b, err)
+		trie := NewByteTrie(da)
+		b.Run("exact match search", func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				for _, v := range bs {
+					if id, err := trie.ExactMatchSearch(v); err != nil {
+						b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
+					}
+				}
+			}
+		})
+		b.Run("common prefix match search", func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				for _, v := range bs {
+					if ret, err := trie.CommonPrefixSearch(v); len(ret) == 0 || err != nil {
+						b.Fatalf("unexpected error, missing a keyword %v, err=%v", v, err)
+					}
+				}
+			}
+		})
+	})
+	b.Run("rune", func(b *testing.B) {
+		da, err := readIndex("rune.dat")
+		assert.NoError(b, err)
+		dict, err := readDict("rune.dat.dict")
+		assert.NoError(b, err)
+		trie := NewRuneTrie(da, dict)
+		b.Run("exact match search", func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				for _, v := range ss {
+					if id, err := trie.ExactMatchSearch(v); err != nil {
+						b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
+					}
+				}
+			}
+		})
+		b.Run("common prefix match search", func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				for _, v := range ss {
+					if ret, err := trie.CommonPrefixSearch(v); len(ret) == 0 || err != nil {
+						b.Fatalf("unexpected error, missing a keyword %v, err=%v", v, err)
+					}
+				}
+			}
+		})
+	})
 }
 
 func readIndex(path string) (*doublearray.DoubleArray, error) {
