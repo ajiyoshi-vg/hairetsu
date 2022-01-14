@@ -1,6 +1,9 @@
 package doublearray
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 	"github.com/pkg/errors"
@@ -69,6 +72,40 @@ func (da *DoubleArray) CommonPrefixSearch(cs word.Word) ([]node.Index, error) {
 
 func (da *DoubleArray) Stat() Stat {
 	return newStat(da)
+}
+
+func (da *DoubleArray) Trace(cs word.Word) string {
+	var index node.Index
+	var err error
+	ss := make([]string, 0, len(cs)+2)
+	ss = append(ss, fmt.Sprintf("search:%v", cs))
+	for _, c := range cs {
+		ss = append(ss, da.debug(index, c))
+
+		tmp := index
+		index, err = da.traverse(index, c)
+		if err != nil {
+			ss = append(ss, fmt.Sprintf(
+				"got error:%s at(%d) branch:%d",
+				err,
+				tmp,
+				c,
+			))
+			return strings.Join(ss, "\n")
+		}
+	}
+	ss = append(ss, fmt.Sprintf("%s\nfound", da.debug(index, word.EOS)))
+	return strings.Join(ss, "\n")
+}
+
+func (da *DoubleArray) debug(i node.Index, c word.Code) string {
+	return fmt.Sprintf(
+		"at(%d):%s branch:%d forward:%d",
+		i,
+		da.at(i),
+		c,
+		da.at(i).GetOffset().Forward(c),
+	)
 }
 
 func (da *DoubleArray) traverse(index node.Index, branch word.Code) (node.Index, error) {
