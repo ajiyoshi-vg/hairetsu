@@ -16,7 +16,7 @@ URL := https://dumps.wikimedia.org/jawiki/latest/jawiki-latest-all-titles.gz
 
 jawiki-latest-all-titles.gz:
 	# donwloading wikipedia article titles.
-	# see there license
+	# see their license
 	#   https://dumps.wikimedia.org/legal.html
 	# CC BY-SA 3.0
 	#   https://creativecommons.org/licenses/by-sa/3.0/
