@@ -9,7 +9,6 @@ import (
 	"github.com/ajiyoshi-vg/hairetsu/keytree"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/word"
-	"github.com/pkg/errors"
 )
 
 type Builder struct {
@@ -124,12 +123,12 @@ func (b *Builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code, 
 
 func (*Builder) searchIndex(da *DoubleArray, cs word.Word) (node.Index, error) {
 	var index node.Index
-	var err error
 	for _, c := range cs {
-		index, err = da.traverse(index, c)
-		if err != nil {
-			return 0, errors.WithMessagef(err, "word:%v", cs)
+		next := da.at(index).GetOffset().Forward(c)
+		if int(next) >= len(da.nodes) || !da.at(next).IsChildOf(index) {
+			return 0, fmt.Errorf("searchIndex(%v) fail", cs)
 		}
+		index = next
 	}
 	return index, nil
 }

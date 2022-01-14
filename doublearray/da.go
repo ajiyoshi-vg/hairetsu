@@ -3,11 +3,9 @@ package doublearray
 import (
 	"fmt"
 	"io"
-	"strings"
 
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/word"
-	"github.com/pkg/errors"
 )
 
 type DoubleArray struct {
@@ -101,79 +99,6 @@ func (da *DoubleArray) WriteTo(w io.Writer) (int64, error) {
 		}
 	}
 	return ret, nil
-}
-
-func (da *DoubleArray) Trace(cs word.Word) string {
-	var index node.Index
-	var err error
-	ss := make([]string, 0, len(cs)+2)
-	ss = append(ss, fmt.Sprintf("search:%v", cs))
-	for _, c := range cs {
-		ss = append(ss, da.debug(index, c))
-
-		tmp := index
-		index, err = da.traverse(index, c)
-		if err != nil {
-			ss = append(ss, fmt.Sprintf(
-				"got error:%s at(%d) branch:%d",
-				err,
-				tmp,
-				c,
-			))
-			return strings.Join(ss, "\n")
-		}
-	}
-	ss = append(ss, fmt.Sprintf("%s", da.debug(index, word.EOS)))
-	if da.at(index).IsTerminal() {
-		data := da.at(index).GetOffset().Forward(word.EOS)
-		if int(data) < len(da.nodes) {
-			ss = append(ss, fmt.Sprintf("%s value", da.debug(data, word.EOS)))
-		}
-	}
-	return strings.Join(ss, "\n")
-}
-
-func (da *DoubleArray) debug(i node.Index, c word.Code) string {
-	return fmt.Sprintf(
-		"at(%d):%s branch:%d forward:%d",
-		i,
-		da.at(i),
-		c,
-		da.at(i).GetOffset().Forward(c),
-	)
-}
-
-func (da *DoubleArray) traverse(index node.Index, branch word.Code) (node.Index, error) {
-	offset := da.at(index).GetOffset()
-	next := offset.Forward(branch)
-	if int(next) >= len(da.nodes) {
-		return 0, errors.Errorf(
-			"out of range nodes[%d] index:%d(%v) branch:%v",
-			next,
-			index,
-			da.at(index),
-			branch,
-		)
-	}
-	if !da.at(next).IsChildOf(index) {
-		return 0, errors.Errorf(
-			"traverse fail node[%d](%v) is not child of node[%d](%v) branch:%d",
-			next,
-			da.at(next),
-			index,
-			da.at(index),
-			branch,
-		)
-	}
-	return next, nil
-}
-
-func (da *DoubleArray) getValue(term node.Index) (node.Index, error) {
-	data, err := da.traverse(term, word.EOS)
-	if err != nil {
-		return 0, err
-	}
-	return da.at(data).GetOffset(), nil
 }
 
 func (da *DoubleArray) at(i node.Index) *node.Node {
