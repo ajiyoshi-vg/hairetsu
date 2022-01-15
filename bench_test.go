@@ -128,6 +128,48 @@ func BenchmarkTrie(b *testing.B) {
 		})
 	})
 }
+func BenchmarkOverhead(b *testing.B) {
+	trie, err := readIndex("byte.dat")
+	assert.NoError(b, err)
+	b.Run("method", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			for _, v := range ws {
+				if id, err := trie.ExactMatchSearch(v); err != nil {
+					b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
+				}
+			}
+		}
+	})
+	/* need go 1.18
+	b.Run("generics", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			for _, v := range ws {
+				if id, err := exactMatchSearchGenerics(trie, v); err != nil {
+					b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
+				}
+			}
+		}
+	})
+	*/
+	b.Run("pointer", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			for _, v := range ws {
+				if id, err := doublearray.ExactMatchSearchPointer(trie, v); err != nil {
+					b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
+				}
+			}
+		}
+	})
+	b.Run("interface", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			for _, v := range ws {
+				if id, err := doublearray.ExactMatchSearchInterface(trie, v); err != nil {
+					b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
+				}
+			}
+		}
+	})
+}
 
 func readIndex(path string) (*doublearray.DoubleArray, error) {
 	file, err := os.Open(path)

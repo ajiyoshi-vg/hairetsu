@@ -39,3 +39,6 @@ darts.dat : head.dat
 
 bench: head.dat byte.dat rune.dat rune.dat.dict darts.dat
 	go test -bench .
+
+test_overhead: head.dat byte.dat
+	go test -bench Overhead
