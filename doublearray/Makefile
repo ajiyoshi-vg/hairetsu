@@ -1,0 +1,41 @@
+DONT_EDIT := // Code generated DO NOT EDIT
+FILES := \
+		 mmap.words.go \
+		 mmap.bytes.go \
+		 mmap.runes.go \
+		 search.bytes.go \
+		 search.runes.go
+SED := sed -i "" -e
+
+all: generate
+
+generate: $(FILES)
+
+clear_generated:
+	rm $(FILES)
+
+mmap.words.go: search.words.go
+	echo "$(DONT_EDIT)" > $@
+	cat $< >> $@
+	$(SED) "s/Words/WordsMmap/" $@
+	$(SED) "s/DoubleArray/Mmap/" $@
+	goimports -w $@
+
+%.bytes.go: %.words.go
+	echo "$(DONT_EDIT)" > $@
+	cat $< >> $@
+	$(SED) "s/Words/Bytes/" $@
+	$(SED) "s/cs word.Word/cs []byte/" $@
+	$(SED) "s/Forward(c)/Forward(word.Code(c))/" $@
+	goimports -w $@
+
+%.runes.go: %.words.go
+	echo "$(DONT_EDIT)" > $@
+	cat $< >> $@
+	$(SED) "s/struct{}/runedict.RuneDict/" $@
+	$(SED) "s/(Words)/(s Runes)/" $@
+	$(SED) "s/(WordsMmap)/(s RunesMmap)/" $@
+	$(SED) "s/Words/Runes/" $@
+	$(SED) "s/cs word.Word/cs string/" $@
+	$(SED) "s/Forward(c)/Forward(s[c])/" $@
+	goimports -w $@
