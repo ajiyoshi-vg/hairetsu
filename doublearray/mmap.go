@@ -5,6 +5,7 @@ import (
 
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/word"
+	"github.com/pkg/errors"
 	"golang.org/x/exp/mmap"
 )
 
@@ -23,20 +24,20 @@ func NewMmap(path string) (*Mmap, error) {
 	return &Mmap{r: r}, nil
 }
 
-func (da *Mmap) at(i node.Index) node.Node {
+func (da *Mmap) at(i node.Index) (node.Node, error) {
 	s := make([]byte, nodeSize)
 	n, err := da.r.ReadAt(s, int64(i)*nodeSize)
 	if n != nodeSize {
-		panic("bad size")
+		return 0, errors.New("bad size")
 	}
 	if err != nil {
-		panic(err)
+		return 0, err
 	}
 	var ret node.Node
 	if err := ret.UnmarshalBinary(s); err != nil {
-		panic(err)
+		return 0, err
 	}
-	return ret
+	return ret, nil
 }
 
 func (da *Mmap) length() int {
@@ -45,45 +46,71 @@ func (da *Mmap) length() int {
 
 func (da *Mmap) ExactMatchSearch(cs word.Word) (node.Index, error) {
 	var index node.Index
-	length := node.Index(da.length())
-
 	for _, c := range cs {
-		next := da.at(index).GetOffset().Forward(c)
-		if next >= length || !da.at(next).IsChildOf(index) {
-			return 0, fmt.Errorf("ExactMatchSearch(%v) : error broken index", cs)
+		next, err := da.Traverse(index, c)
+		if err != nil {
+			return 0, err
 		}
 		index = next
 	}
-	if !da.at(index).IsTerminal() {
-		return 0, fmt.Errorf("ExactMatchSearch(%v) : not stored", cs)
-	}
-	data := da.at(index).GetOffset().Forward(word.EOS)
-	if data >= length || !da.at(data).IsChildOf(index) {
-		return 0, fmt.Errorf("ExactMatchSearch(%v) : error broken data node", cs)
-	}
-	return da.at(data).GetOffset(), nil
+	return da.getValue(index)
 }
 
 func (da *Mmap) CommonPrefixSearch(cs word.Word) ([]node.Index, error) {
 	var ret []node.Index
 	var index node.Index
-	length := node.Index(da.length())
 
 	for _, c := range cs {
-		next := da.at(index).GetOffset().Forward(c)
-		if next >= length || !da.at(next).IsChildOf(index) {
+		next, err := da.Traverse(index, c)
+		if err != nil {
 			return ret, nil
 		}
 		index = next
 
-		if da.at(index).IsTerminal() {
-			data := da.at(index).GetOffset().Forward(word.EOS)
-			if data >= length || !da.at(data).IsChildOf(index) {
-				err := fmt.Errorf("CommonPrefixSearch(%v) : error broken data node", cs)
-				return nil, err
-			}
-			ret = append(ret, da.at(data).GetOffset())
+		if data, err := da.getValue(index); err == nil {
+			ret = append(ret, data)
 		}
 	}
 	return ret, nil
+}
+
+func (da *Mmap) Traverse(parent node.Index, c word.Code) (node.Index, error) {
+	p, err := da.at(parent)
+	if err != nil {
+		return 0, err
+	}
+
+	child := p.GetOffset().Forward(c)
+	if int(child) >= da.length() {
+		return 0, fmt.Errorf("Traverse(%d, %d) failed : index out of range", parent, c)
+	}
+
+	ch, err := da.at(child)
+	if err != nil {
+		return 0, err
+	}
+
+	if parent != ch.GetParent() {
+		return 0, errNotChild
+	}
+	return child, nil
+}
+
+func (da *Mmap) getValue(index node.Index) (node.Index, error) {
+	n, err := da.at(index)
+	if err != nil {
+		return 0, err
+	}
+	if !n.IsTerminal() {
+		return 0, errors.New("not a terminal")
+	}
+	offset, err := da.Traverse(index, word.EOS)
+	if err != nil {
+		return 0, err
+	}
+	data, err := da.at(offset)
+	if err != nil {
+		return 0, err
+	}
+	return data.GetOffset(), nil
 }
