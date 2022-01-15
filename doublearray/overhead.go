@@ -10,7 +10,6 @@ import (
 type Nodes interface {
 	at(node.Index) (node.Node, error)
 	length() int
-	getValue(node.Node) (node.Index, error)
 }
 
 func ExactMatchSearchPointer(da *DoubleArray, cs word.Word) (node.Index, error) {
@@ -33,7 +32,11 @@ func ExactMatchSearchPointer(da *DoubleArray, cs word.Word) (node.Index, error) 
 	if !n.IsTerminal() {
 		return 0, fmt.Errorf("not a terminal")
 	}
-	return da.getValue(n)
+	data, err := da.at(n.GetOffset().Forward(word.EOS))
+	if err != nil {
+		return 0, err
+	}
+	return data.GetOffset(), nil
 }
 
 func ExactMatchSearchInterface(da Nodes, cs word.Word) (node.Index, error) {
@@ -56,7 +59,11 @@ func ExactMatchSearchInterface(da Nodes, cs word.Word) (node.Index, error) {
 	if !n.IsTerminal() {
 		return 0, fmt.Errorf("not a terminal")
 	}
-	return da.getValue(n)
+	data, err := da.at(n.GetOffset().Forward(word.EOS))
+	if err != nil {
+		return 0, err
+	}
+	return data.GetOffset(), nil
 }
 
 /*

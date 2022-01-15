@@ -28,11 +28,11 @@ func NewRuneTrie(data *da.DoubleArray, dict runedict.RuneDict) *RuneTrie {
 }
 
 func (t *RuneTrie) ExactMatchSearch(key string) (node.Index, error) {
-	return da.Strings(t.dict).ExactMatchSearch(t.data, key)
+	return da.Runes(t.dict).ExactMatchSearch(t.data, key)
 }
 
 func (t *RuneTrie) CommonPrefixSearch(key string) ([]node.Index, error) {
-	return da.Strings(t.dict).CommonPrefixSearch(t.data, key)
+	return da.Runes(t.dict).CommonPrefixSearch(t.data, key)
 }
 
 func (t *RuneTrie) WriteTo(w io.Writer) (int64, error) {

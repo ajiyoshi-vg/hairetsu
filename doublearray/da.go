@@ -58,53 +58,11 @@ func (da *DoubleArray) WriteTo(w io.Writer) (int64, error) {
 }
 
 func (da *DoubleArray) ExactMatchSearch(cs word.Word) (node.Index, error) {
-	var index node.Index
-	n, err := da.at(index)
-	if err != nil {
-		return 0, err
-	}
-	for _, c := range cs {
-		next := n.GetOffset().Forward(c)
-		n, err = da.at(next)
-		if err != nil {
-			return 0, err
-		}
-		if !n.IsChildOf(index) {
-			return 0, errNotChild
-		}
-		index = next
-	}
-	if !n.IsTerminal() {
-		return 0, fmt.Errorf("not a terminal")
-	}
-	return da.getValue(n)
+	return Words{}.ExactMatchSearch(da, cs)
 }
 
 func (da *DoubleArray) CommonPrefixSearch(cs word.Word) ([]node.Index, error) {
-	var ret []node.Index
-	var index node.Index
-	n, err := da.at(index)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, c := range cs {
-		next := n.GetOffset().Forward(c)
-		n, err = da.at(next)
-		if err != nil {
-			return ret, err
-		}
-		if !n.IsChildOf(index) {
-			return ret, nil
-		}
-		index = next
-		if n.IsTerminal() {
-			if data, err := da.getValue(n); err == nil {
-				ret = append(ret, data)
-			}
-		}
-	}
-	return ret, nil
+	return Words{}.CommonPrefixSearch(da, cs)
 }
 
 var errNotChild = errors.New("not a child")
@@ -118,13 +76,4 @@ func (da *DoubleArray) at(i node.Index) (node.Node, error) {
 
 func (da *DoubleArray) length() int {
 	return len(da.nodes)
-}
-
-func (da *DoubleArray) getValue(n node.Node) (node.Index, error) {
-	offset := n.GetOffset().Forward(word.EOS)
-	data, err := da.at(offset)
-	if err != nil {
-		return 0, err
-	}
-	return data.GetOffset(), nil
 }

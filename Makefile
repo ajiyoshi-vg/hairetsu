@@ -14,6 +14,49 @@ clean:
 
 URL := https://dumps.wikimedia.org/jawiki/latest/jawiki-latest-all-titles.gz
 
+DONT_EDIT := // Code generated DO NOT EDIT
+
+FILES := \
+		 doublearray/mmap.words.go \
+		 doublearray/mmap.bytes.go \
+		 doublearray/mmap.runes.go \
+		 doublearray/search.bytes.go \
+		 doublearray/search.runes.go
+
+generate: $(FILES)
+
+SED := sed -i "" -e
+
+clear_generated:
+	rm $(FILES)
+
+doublearray/mmap.words.go: doublearray/search.words.go
+	echo "$(DONT_EDIT)" > $@
+	cat $< >> $@
+	$(SED) "s/Words/WordsMmap/" $@
+	$(SED) "s/DoubleArray/Mmap/" $@
+	goimports -w $@
+
+%.bytes.go: %.words.go
+	echo "$(DONT_EDIT)" > $@
+	cat $< >> $@
+	$(SED) "s/Words/Bytes/" $@
+	$(SED) "s/cs word.Word/cs []byte/" $@
+	$(SED) "s/Forward(c)/Forward(word.Code(c))/" $@
+	goimports -w $@
+
+%.runes.go: %.words.go
+	echo "$(DONT_EDIT)" > $@
+	cat $< >> $@
+	$(SED) "s/struct{}/runedict.RuneDict/" $@
+	$(SED) "s/(Words)/(s Runes)/" $@
+	$(SED) "s/(WordsMmap)/(s RunesMmap)/" $@
+	$(SED) "s/Words/Runes/" $@
+	$(SED) "s/cs word.Word/cs string/" $@
+	$(SED) "s/Forward(c)/Forward(s[c])/" $@
+	goimports -w $@
+
+
 jawiki-latest-all-titles.gz:
 	# donwloading wikipedia article titles.
 	# see their license
