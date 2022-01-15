@@ -21,7 +21,7 @@ func (t *ByteTrie) ExactMatchSearch(key []byte) (node.Index, error) {
 }
 
 func (t *ByteTrie) CommonPrefixSearch(key []byte) ([]node.Index, error) {
-	return t.data.CommonPrefixSearch(word.FromBytes(key))
+	return t.b.CommonPrefixSearch(t.data, key)
 }
 
 func (t *ByteTrie) WriteTo(w io.Writer) (int64, error) {

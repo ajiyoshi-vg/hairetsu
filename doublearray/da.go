@@ -59,7 +59,7 @@ func (da *DoubleArray) ExactMatchSearch(cs word.Word) (node.Index, error) {
 }
 
 func (da *DoubleArray) CommonPrefixSearch(cs word.Word) ([]node.Index, error) {
-	ret := make([]node.Index, 0, 10)
+	var ret []node.Index
 	var index node.Index
 	length := node.Index(da.length())
 

@@ -32,7 +32,7 @@ func (Bytes) ExactMatchSearch(da *DoubleArray, cs []byte) (node.Index, error) {
 }
 
 func (Bytes) CommonPrefixSearch(da *DoubleArray, cs []byte) ([]node.Index, error) {
-	ret := make([]node.Index, 0, 10)
+	var ret []node.Index
 	var index node.Index
 	length := node.Index(da.length())
 
@@ -79,7 +79,7 @@ func (s Strings) ExactMatchSearch(da *DoubleArray, cs string) (node.Index, error
 }
 
 func (s Strings) CommonPrefixSearch(da *DoubleArray, cs string) ([]node.Index, error) {
-	ret := make([]node.Index, 0, 10)
+	var ret []node.Index
 	var index node.Index
 	length := node.Index(da.length())
 

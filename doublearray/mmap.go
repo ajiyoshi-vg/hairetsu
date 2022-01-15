@@ -65,7 +65,7 @@ func (da *Mmap) ExactMatchSearch(cs word.Word) (node.Index, error) {
 }
 
 func (da *Mmap) CommonPrefixSearch(cs word.Word) ([]node.Index, error) {
-	ret := make([]node.Index, 0, 10)
+	var ret []node.Index
 	var index node.Index
 	length := node.Index(da.length())
 
