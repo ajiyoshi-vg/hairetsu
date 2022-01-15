@@ -1,6 +1,8 @@
 package doublearray
 
 import (
+	"fmt"
+
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 )
@@ -8,32 +10,53 @@ import (
 type Nodes interface {
 	at(node.Index) (node.Node, error)
 	length() int
-	Traverse(node.Index, word.Code) (node.Index, error)
-	getValue(node.Index) (node.Index, error)
+	getValue(node.Node) (node.Index, error)
 }
 
 func ExactMatchSearchPointer(da *DoubleArray, cs word.Word) (node.Index, error) {
 	var index node.Index
+	n, err := da.at(index)
+	if err != nil {
+		return 0, err
+	}
 	for _, c := range cs {
-		next, err := da.Traverse(index, c)
+		next := n.GetOffset().Forward(c)
+		n, err = da.at(next)
 		if err != nil {
 			return 0, err
 		}
+		if !n.IsChildOf(index) {
+			return 0, errNotChild
+		}
 		index = next
 	}
-	return da.getValue(index)
+	if !n.IsTerminal() {
+		return 0, fmt.Errorf("not a terminal")
+	}
+	return da.getValue(n)
 }
 
 func ExactMatchSearchInterface(da Nodes, cs word.Word) (node.Index, error) {
 	var index node.Index
+	n, err := da.at(index)
+	if err != nil {
+		return 0, err
+	}
 	for _, c := range cs {
-		next, err := da.Traverse(index, c)
+		next := n.GetOffset().Forward(c)
+		n, err = da.at(next)
 		if err != nil {
 			return 0, err
 		}
+		if !n.IsChildOf(index) {
+			return 0, errNotChild
+		}
 		index = next
 	}
-	return da.getValue(index)
+	if !n.IsTerminal() {
+		return 0, fmt.Errorf("not a terminal")
+	}
+	return da.getValue(n)
 }
 
 /*

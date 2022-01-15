@@ -24,6 +24,56 @@ func NewMmap(path string) (*Mmap, error) {
 	return &Mmap{r: r}, nil
 }
 
+func (da *Mmap) ExactMatchSearch(cs word.Word) (node.Index, error) {
+	var index node.Index
+	n, err := da.at(index)
+	if err != nil {
+		return 0, err
+	}
+	for _, c := range cs {
+		next := n.GetOffset().Forward(c)
+		n, err = da.at(next)
+		if err != nil {
+			return 0, err
+		}
+		if !n.IsChildOf(index) {
+			return 0, errNotChild
+		}
+		index = next
+	}
+	if !n.IsTerminal() {
+		return 0, fmt.Errorf("not a terminal")
+	}
+	return da.getValue(n)
+}
+
+func (da *Mmap) CommonPrefixSearch(cs word.Word) ([]node.Index, error) {
+	var ret []node.Index
+	var index node.Index
+	n, err := da.at(index)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, c := range cs {
+		next := n.GetOffset().Forward(c)
+		n, err = da.at(next)
+		if err != nil {
+			return ret, err
+		}
+		if !n.IsChildOf(index) {
+			return ret, nil
+		}
+		index = next
+		if n.IsTerminal() {
+			if data, err := da.getValue(n); err == nil {
+				ret = append(ret, data)
+			}
+		}
+	}
+	return ret, nil
+}
+
 func (da *Mmap) at(i node.Index) (node.Node, error) {
 	s := make([]byte, nodeSize)
 	n, err := da.r.ReadAt(s, int64(i)*nodeSize)
@@ -44,70 +94,8 @@ func (da *Mmap) length() int {
 	return da.r.Len()
 }
 
-func (da *Mmap) ExactMatchSearch(cs word.Word) (node.Index, error) {
-	var index node.Index
-	for _, c := range cs {
-		next, err := da.Traverse(index, c)
-		if err != nil {
-			return 0, err
-		}
-		index = next
-	}
-	return da.getValue(index)
-}
-
-func (da *Mmap) CommonPrefixSearch(cs word.Word) ([]node.Index, error) {
-	var ret []node.Index
-	var index node.Index
-
-	for _, c := range cs {
-		next, err := da.Traverse(index, c)
-		if err != nil {
-			return ret, nil
-		}
-		index = next
-
-		if data, err := da.getValue(index); err == nil {
-			ret = append(ret, data)
-		}
-	}
-	return ret, nil
-}
-
-func (da *Mmap) Traverse(parent node.Index, c word.Code) (node.Index, error) {
-	p, err := da.at(parent)
-	if err != nil {
-		return 0, err
-	}
-
-	child := p.GetOffset().Forward(c)
-	if int(child) >= da.length() {
-		return 0, fmt.Errorf("Traverse(%d, %d) failed : index out of range", parent, c)
-	}
-
-	ch, err := da.at(child)
-	if err != nil {
-		return 0, err
-	}
-
-	if parent != ch.GetParent() {
-		return 0, errNotChild
-	}
-	return child, nil
-}
-
-func (da *Mmap) getValue(index node.Index) (node.Index, error) {
-	n, err := da.at(index)
-	if err != nil {
-		return 0, err
-	}
-	if !n.IsTerminal() {
-		return 0, errors.New("not a terminal")
-	}
-	offset, err := da.Traverse(index, word.EOS)
-	if err != nil {
-		return 0, err
-	}
+func (da *Mmap) getValue(n node.Node) (node.Index, error) {
+	offset := n.GetOffset().Forward(word.EOS)
 	data, err := da.at(offset)
 	if err != nil {
 		return 0, err
