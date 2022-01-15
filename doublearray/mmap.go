@@ -1,7 +1,6 @@
 package doublearray
 
 import (
-	"encoding/binary"
 	"fmt"
 
 	"github.com/ajiyoshi-vg/hairetsu/node"
@@ -33,9 +32,10 @@ func (da *Mmap) at(i node.Index) node.Node {
 	if err != nil {
 		panic(err)
 	}
-
-	v := binary.BigEndian.Uint64(s)
-	ret := node.Node(v)
+	var ret node.Node
+	if err := ret.UnmarshalBinary(s); err != nil {
+		panic(err)
+	}
 	return ret
 }
 
