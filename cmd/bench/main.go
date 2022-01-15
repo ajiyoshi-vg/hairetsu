@@ -128,7 +128,7 @@ func benchHairetsu(data doublearray.Walker) error {
 		return err
 	}
 	log.Println("build finished")
-	log.Println(x.Stat())
+	log.Println(da.GetStat(x))
 	return data.WalkLeaf(func(key word.Word, val uint32) error {
 		actual, err := x.ExactMatchSearch(key)
 		if err != nil {

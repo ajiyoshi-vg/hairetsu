@@ -65,10 +65,5 @@ func (s RunesMmap) CommonPrefixSearch(da *Mmap, cs string) ([]node.Index, error)
 			ret = append(ret, data.GetOffset())
 		}
 	}
-	data, err := da.at(n.GetOffset().Forward(word.EOS))
-	if err != nil {
-		return ret, err
-	}
-	ret = append(ret, data.GetOffset())
 	return ret, nil
 }

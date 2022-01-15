@@ -3,6 +3,7 @@ package hairetsu
 import (
 	"testing"
 
+	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/stretchr/testify/assert"
 )
@@ -57,7 +58,7 @@ func TestRuneTrieSearch(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, c.num, len(is))
 
-			t.Log(da.data.Stat())
+			t.Log(doublearray.GetStat(da.data))
 		})
 	}
 }

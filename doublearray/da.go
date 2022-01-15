@@ -37,10 +37,6 @@ func (da *DoubleArray) Array() []uint64 {
 	return ret
 }
 
-func (da *DoubleArray) Stat() Stat {
-	return newStat(da)
-}
-
 func (da *DoubleArray) WriteTo(w io.Writer) (int64, error) {
 	var ret int64
 	for _, node := range da.nodes {
@@ -55,6 +51,9 @@ func (da *DoubleArray) WriteTo(w io.Writer) (int64, error) {
 		}
 	}
 	return ret, nil
+}
+func (da *DoubleArray) ReadFrom(r io.Reader) (int64, error) {
+	return NewBuilder().ReadFrom(da, r)
 }
 
 func (da *DoubleArray) ExactMatchSearch(cs word.Word) (node.Index, error) {

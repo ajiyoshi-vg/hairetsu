@@ -1,6 +1,10 @@
 package doublearray
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/ajiyoshi-vg/hairetsu/node"
+)
 
 type Stat struct {
 	Size  int
@@ -9,11 +13,12 @@ type Stat struct {
 	Leaf  int
 }
 
-func newStat(da *DoubleArray) Stat {
+func GetStat(da Nodes) Stat {
 	ret := Stat{
-		Size: len(da.nodes),
+		Size: da.length(),
 	}
-	for _, x := range da.nodes {
+	for i := 0; i < da.length(); i++ {
+		x, _ := da.at(node.Index(i))
 		if x.IsTerminal() {
 			ret.Leaf++
 		}

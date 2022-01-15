@@ -64,10 +64,5 @@ func (s Runes) CommonPrefixSearch(da *DoubleArray, cs string) ([]node.Index, err
 			ret = append(ret, data.GetOffset())
 		}
 	}
-	data, err := da.at(n.GetOffset().Forward(word.EOS))
-	if err != nil {
-		return ret, err
-	}
-	ret = append(ret, data.GetOffset())
 	return ret, nil
 }

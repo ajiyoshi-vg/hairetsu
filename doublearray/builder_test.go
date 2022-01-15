@@ -55,7 +55,7 @@ func TestDoubleArray(t *testing.T) {
 		err := b.Build(da, c.data)
 		assert.NoError(t, err)
 
-		s := da.Stat()
+		s := GetStat(da)
 		assert.Equal(t, c.data.LeafNum(), s.Leaf)
 
 		c.data.WalkLeaf(func(key word.Word, val uint32) error {
