@@ -8,7 +8,7 @@ import (
 )
 
 type Nodes interface {
-	at(node.Index) *node.Node
+	at(node.Index) node.Node
 	length() int
 }
 

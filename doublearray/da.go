@@ -115,8 +115,8 @@ func (da *DoubleArray) WriteTo(w io.Writer) (int64, error) {
 	return ret, nil
 }
 
-func (da *DoubleArray) at(i node.Index) *node.Node {
-	return &da.nodes[i]
+func (da *DoubleArray) at(i node.Index) node.Node {
+	return da.nodes[i]
 }
 
 func (da *DoubleArray) length() int {

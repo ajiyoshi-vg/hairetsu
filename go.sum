@@ -1,6 +1,8 @@
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/euclidr/darts v0.0.0-20180401113647-e0859b23b68e h1:SJ6NVXT96EzZgSX2V5NBVYGsHyxHXrDhhtrWOKe4n/k=
 github.com/euclidr/darts v0.0.0-20180401113647-e0859b23b68e/go.mod h1:uZOcB9m9tCkJHZFC3diz9McvyuzFL3wWG+Wn1IiNXjI=
+github.com/ikawaha/da v0.0.0-20141126165404-5556b9e515ca h1:Ye8wDuFVpINaiKj26eAOwmqBAWDEEVdhgEtyUCfUMw8=
 github.com/ikawaha/da v0.0.0-20141126165404-5556b9e515ca/go.mod h1:JZfcL9+WaPkxDS7OBk09o8VkkV7YYI9yLQG610HxZds=
 github.com/ikawaha/dartsclone v1.0.0 h1:Z6R0BASHSNSxlcIY6UE1+aR6azYW6j3ge6dbmT+JWA0=
 github.com/ikawaha/dartsclone v1.0.0/go.mod h1:6+lg0WgpO3ZJaqHu/qOSNIjxbeD1qpTpimD8YYnBnJY=
@@ -19,8 +21,11 @@ github.com/schollz/progressbar/v2 v2.7.1/go.mod h1:l6tn6yU6ZdQoF8lwX/VoAUQ3FjhCb
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5CcY=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
-golang.org/x/sys v0.0.0-20181213200352-4d1cda033e06 h1:0oC8rFnE+74kEmuHZ46F6KHsMr5Gx2gUQPuNz28iQZM=
+golang.org/x/exp v0.0.0-20220114162006-9d54fb35363c h1:aT7yTyPzmwDVPLHo6C/scvxQYjn6J7/NNTKaiCe+qxQ=
+golang.org/x/exp v0.0.0-20220114162006-9d54fb35363c/go.mod h1:M50CtfS+xv2iy/epuEazynj250ScQ0/DOjcsin9UE8k=
 golang.org/x/sys v0.0.0-20181213200352-4d1cda033e06/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
+golang.org/x/sys v0.0.0-20211019181941-9d821ace8654 h1:id054HUawV2/6IGm2IV8KZQjqtwAOo2CYlOToYqa0d0=
+golang.org/x/sys v0.0.0-20211019181941-9d821ace8654/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c h1:dUUwHk2QECo/6vqA44rthZ8ie2QXMNeKRTHCNY2nXvo=

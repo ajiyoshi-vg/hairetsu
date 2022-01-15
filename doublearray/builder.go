@@ -38,7 +38,7 @@ func (b *Builder) ReadFrom(da *DoubleArray, r io.Reader) (int64, error) {
 
 		if n == length {
 			b.ensure(da, i)
-			if err := da.at(i).UnmarshalBinary(buf); err != nil {
+			if err := da.nodes[i].UnmarshalBinary(buf); err != nil {
 				return ret, err
 			}
 		}
@@ -93,12 +93,12 @@ func (b *Builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code, 
 	}
 
 	// nodes[index]にbranchを格納できるoffsetを指定
-	da.at(index).SetOffset(offset)
+	da.nodes[index].SetOffset(offset)
 
 	for _, c := range branch {
 		next := offset.Forward(c)
 		b.ensure(da, next)
-		if da.at(next).IsUsed() {
+		if da.nodes[next].IsUsed() {
 			// branch can have same labels
 			// skip if it have already inserted
 			continue
@@ -106,12 +106,12 @@ func (b *Builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code, 
 		if err := b.popNode(da, next); err != nil {
 			return err
 		}
-		da.at(next).SetParent(index)
+		da.nodes[next].SetParent(index)
 
 		if c == word.EOS {
 			//terminated
-			da.at(index).Terminate()
-			da.at(next).SetOffset(node.Index(*val))
+			da.nodes[index].Terminate()
+			da.nodes[next].SetOffset(node.Index(*val))
 			if b.progress != nil {
 				b.progress.Add(1)
 			}
@@ -124,8 +124,8 @@ func (b *Builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code, 
 func (*Builder) searchIndex(da *DoubleArray, cs word.Word) (node.Index, error) {
 	var index node.Index
 	for _, c := range cs {
-		next := da.at(index).GetOffset().Forward(c)
-		if int(next) >= len(da.nodes) || !da.at(next).IsChildOf(index) {
+		next := da.nodes[index].GetOffset().Forward(c)
+		if int(next) >= len(da.nodes) || !da.nodes[next].IsChildOf(index) {
 			return 0, fmt.Errorf("searchIndex(%v) fail", cs)
 		}
 		index = next
@@ -146,7 +146,7 @@ func (b *Builder) findValidOffset(da *DoubleArray, cs word.Word) (node.Index, er
 
 		b.ensure(da, next)
 
-		if da.at(next).IsUsed() || next == root {
+		if da.nodes[next].IsUsed() || next == root {
 			// it was used
 			index, offset, err = b.findOffset(da, index, cs[0])
 			if err != nil {
@@ -169,7 +169,7 @@ func (b *Builder) findOffset(da *DoubleArray, index node.Index, branch word.Code
 
 func (b *Builder) init(da *DoubleArray, after int) {
 	for i := after; i < len(da.nodes); i++ {
-		da.at(node.Index(i)).Reset(i)
+		da.nodes[i].Reset(i)
 	}
 }
 func (b *Builder) extend(da *DoubleArray) {
@@ -209,19 +209,19 @@ func (b *Builder) popNode(da *DoubleArray, i node.Index) error {
 
 func (b *Builder) nextEmptyNode(da *DoubleArray, i node.Index) (node.Index, error) {
 	b.ensure(da, i)
-	return da.at(i).GetNextEmptyNode()
+	return da.nodes[i].GetNextEmptyNode()
 }
 func (b *Builder) prevEmptyNode(da *DoubleArray, i node.Index) (node.Index, error) {
 	b.ensure(da, i)
-	return da.at(i).GetPrevEmptyNode()
+	return da.nodes[i].GetPrevEmptyNode()
 }
 func (b *Builder) setNextEmptyNode(da *DoubleArray, i, next node.Index) error {
 	b.ensure(da, i)
-	return da.at(i).SetNextEmptyNode(next)
+	return da.nodes[i].SetNextEmptyNode(next)
 }
 func (b *Builder) setPrevEmptyNode(da *DoubleArray, i, prev node.Index) error {
 	b.ensure(da, i)
-	return da.at(i).SetPrevEmptyNode(prev)
+	return da.nodes[i].SetPrevEmptyNode(prev)
 }
 
 func logInsert(prefix word.Word, branch []word.Code, val *uint32) {

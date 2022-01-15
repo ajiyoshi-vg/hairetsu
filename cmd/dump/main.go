@@ -10,6 +10,7 @@ import (
 
 	"github.com/ajiyoshi-vg/hairetsu"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
+	"github.com/ajiyoshi-vg/hairetsu/runedict"
 	"github.com/ikawaha/dartsclone"
 	dartsprog "github.com/ikawaha/dartsclone/progressbar"
 	"github.com/schollz/progressbar"
@@ -122,7 +123,7 @@ func dumpDoubleArray(data writable, path string) error {
 	return nil
 }
 
-func dumpRuneDict(dict hairetsu.Dict, path string) error {
+func dumpRuneDict(dict runedict.RuneDict, path string) error {
 	out, err := os.Create(path)
 	if err != nil {
 		return err

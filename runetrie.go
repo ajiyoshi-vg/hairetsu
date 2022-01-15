@@ -9,18 +9,11 @@ import (
 	"github.com/ajiyoshi-vg/hairetsu/keyset"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/runedict"
-	"github.com/ajiyoshi-vg/hairetsu/word"
 )
 
 type RuneTrie struct {
 	data *da.DoubleArray
-	dict Dict
-}
-
-type Dict interface {
-	Word(string) word.Word
-	StrictWord(string) (word.Word, error)
-	MarshalText() (string, error)
+	dict runedict.RuneDict
 }
 
 type RuneTrieBuilder struct {
@@ -35,7 +28,7 @@ func NewRuneTrie(data *da.DoubleArray, dict runedict.RuneDict) *RuneTrie {
 }
 
 func (t *RuneTrie) ExactMatchSearch(key string) (node.Index, error) {
-	return t.data.ExactMatchSearch(t.dict.Word(key))
+	return da.Strings(t.dict).ExactMatchSearch(t.data, key)
 }
 
 func (t *RuneTrie) CommonPrefixSearch(key string) ([]node.Index, error) {
@@ -46,7 +39,7 @@ func (t *RuneTrie) WriteTo(w io.Writer) (int64, error) {
 	return t.data.WriteTo(w)
 }
 
-func (t *RuneTrie) GetDict() Dict {
+func (t *RuneTrie) GetDict() runedict.RuneDict {
 	return t.dict
 }
 

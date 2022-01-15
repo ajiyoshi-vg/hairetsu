@@ -13,10 +13,11 @@ import (
 
 type ByteTrie struct {
 	data *da.DoubleArray
+	b    da.Bytes
 }
 
 func (t *ByteTrie) ExactMatchSearch(key []byte) (node.Index, error) {
-	return t.data.ExactMatchSearch(word.FromBytes(key))
+	return t.b.ExactMatchSearch(t.data, key)
 }
 
 func (t *ByteTrie) CommonPrefixSearch(key []byte) ([]node.Index, error) {

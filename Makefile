@@ -38,7 +38,7 @@ darts.dat : head.dat
 	go run cmd/dump/main.go -o $@ -in $< -kind darts
 
 bench: head.dat byte.dat rune.dat rune.dat.dict darts.dat
-	go test -bench .
+	go test -benchmem -bench .
 
 test_overhead: head.dat byte.dat
 	go test -bench Overhead
