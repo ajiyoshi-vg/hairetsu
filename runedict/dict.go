@@ -42,6 +42,14 @@ func New(ss []string) RuneDict {
 	return ret
 }
 
+func (d RuneDict) Code(r rune) word.Code {
+	ret, ok := d[r]
+	if !ok {
+		return word.NONE
+	}
+	return ret
+}
+
 func (d RuneDict) Word(s string) (word.Word, error) {
 	ret := make(word.Word, 0, len(s))
 	for _, r := range s {

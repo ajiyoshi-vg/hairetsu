@@ -18,7 +18,7 @@ func (s Runes) ExactMatchSearch(da *DoubleArray, cs string) (node.Index, error) 
 		return 0, err
 	}
 	for _, c := range cs {
-		next := n.GetOffset().Forward(s[c])
+		next := n.GetOffset().Forward(runedict.RuneDict(s).Code(c))
 		n, err = da.at(next)
 		if err != nil {
 			return 0, err
@@ -43,14 +43,14 @@ func (s Runes) CommonPrefixSearch(da *DoubleArray, cs string) ([]node.Index, err
 	var index node.Index
 	n, err := da.at(index)
 	if err != nil {
-		return nil, err
+		return ret, nil
 	}
 
 	for _, c := range cs {
-		next := n.GetOffset().Forward(s[c])
+		next := n.GetOffset().Forward(runedict.RuneDict(s).Code(c))
 		n, err = da.at(next)
 		if err != nil {
-			return ret, err
+			return ret, nil
 		}
 		if !n.IsChildOf(index) {
 			return ret, nil
@@ -59,7 +59,7 @@ func (s Runes) CommonPrefixSearch(da *DoubleArray, cs string) ([]node.Index, err
 		if n.IsTerminal() {
 			data, err := da.at(n.GetOffset().Forward(word.EOS))
 			if err != nil {
-				return ret, err
+				return ret, nil
 			}
 			ret = append(ret, data.GetOffset())
 		}

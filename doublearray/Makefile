@@ -37,5 +37,5 @@ mmap.words.go: search.words.go
 	$(SED) "s/(WordsMmap)/(s RunesMmap)/" $@
 	$(SED) "s/Words/Runes/" $@
 	$(SED) "s/cs word.Word/cs string/" $@
-	$(SED) "s/Forward(c)/Forward(s[c])/" $@
+	$(SED) "s/Forward(c)/Forward(runedict.RuneDict(s).Code(c))/" $@
 	goimports -w $@

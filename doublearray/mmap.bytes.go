@@ -43,14 +43,14 @@ func (BytesMmap) CommonPrefixSearch(da *Mmap, cs []byte) ([]node.Index, error) {
 	var index node.Index
 	n, err := da.at(index)
 	if err != nil {
-		return nil, err
+		return ret, nil
 	}
 
 	for _, c := range cs {
 		next := n.GetOffset().Forward(word.Code(c))
 		n, err = da.at(next)
 		if err != nil {
-			return ret, err
+			return ret, nil
 		}
 		if !n.IsChildOf(index) {
 			return ret, nil
@@ -59,7 +59,7 @@ func (BytesMmap) CommonPrefixSearch(da *Mmap, cs []byte) ([]node.Index, error) {
 		if n.IsTerminal() {
 			data, err := da.at(n.GetOffset().Forward(word.EOS))
 			if err != nil {
-				return ret, err
+				return ret, nil
 			}
 			ret = append(ret, data.GetOffset())
 		}
