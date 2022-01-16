@@ -5,9 +5,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"sort"
 	"strings"
 
+	"github.com/ajiyoshi-vg/hairetsu/lines"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 )
 
@@ -87,6 +89,18 @@ func (d RuneDict) UnmarshalText(s string) error {
 	return nil
 }
 
+func (d RuneDict) WriteTo(w io.Writer) (int64, error) {
+	out := bufio.NewWriter(w)
+	defer out.Flush()
+
+	buf, err := d.MarshalText()
+	if err != nil {
+		return 0, err
+	}
+	n, err := out.WriteString(buf)
+	return int64(n), err
+}
+
 func NewBuilder() *Builder {
 	return &Builder{
 		runeCount: map[rune]uint32{},
@@ -119,4 +133,13 @@ func (b *Builder) Build() RuneDict {
 		ret[x.r] = word.Code(i)
 	}
 	return ret
+}
+
+func FromLines(r io.Reader) (RuneDict, error) {
+	b := NewBuilder()
+	lines.AsString(r, func(s string) error {
+		b.Add(s)
+		return nil
+	})
+	return b.Build(), nil
 }

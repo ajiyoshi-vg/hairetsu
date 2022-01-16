@@ -10,7 +10,8 @@ import (
 
 	"github.com/ajiyoshi-vg/hairetsu"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
-	"github.com/ajiyoshi-vg/hairetsu/runedict"
+	"github.com/ajiyoshi-vg/hairetsu/keytree"
+	"github.com/ajiyoshi-vg/hairetsu/lines"
 	"github.com/ikawaha/dartsclone"
 	dartsprog "github.com/ikawaha/dartsclone/progressbar"
 	"github.com/schollz/progressbar"
@@ -52,37 +53,49 @@ func run() error {
 }
 
 func dumpByte() error {
-	ss, err := readLinesByte(opt.in)
+	file, err := os.Open(opt.in)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	ks, err := keytree.FromLines(file)
 	if err != nil {
 		return err
 	}
 	p := doublearray.OptionProgress(progressbar.New(0))
-	trie, err := hairetsu.NewByteTrieBuilder(p).BuildSlice(ss)
+	trie, err := hairetsu.NewByteTrieBuilder(p).Build(ks)
 	if err != nil {
 		return err
 	}
-	return dumpDoubleArray(trie, opt.out)
+	return writeTo(trie, opt.out)
 }
 
 func dumpRune() error {
-	ss, err := readLines(opt.in)
+	file, err := os.Open(opt.in)
 	if err != nil {
 		return err
 	}
+	defer file.Close()
+
 	p := doublearray.OptionProgress(progressbar.New(0))
-	trie, err := hairetsu.NewRuneTrieBuilder(p).BuildSlice(ss)
+	trie, err := hairetsu.NewRuneTrieBuilder(p).BuildFromLines(file)
 	if err != nil {
 		return err
 	}
 	path := fmt.Sprintf("%s.dict", opt.out)
-	if err := dumpRuneDict(trie.GetDict(), path); err != nil {
+	if err := writeTo(trie.GetDict(), path); err != nil {
 		return err
 	}
-	return dumpDoubleArray(trie, opt.out)
+	return writeTo(trie, opt.out)
 }
 
 func dumpDarts() error {
-	ss, err := readLines(opt.in)
+	file, err := os.Open(opt.in)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	ss, err := lines.StringSlice(file)
 	if err != nil {
 		return err
 	}
@@ -94,52 +107,10 @@ func dumpDarts() error {
 		return err
 	}
 
-	out, err := os.Create(opt.out)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-
-	w := bufio.NewWriter(out)
-	defer w.Flush()
-	_, err = b.WriteTo(w)
-	return err
+	return writeTo(b, opt.out)
 }
 
-func readLines(path string) ([]string, error) {
-	r, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer r.Close()
-	ret := make([]string, 0, 1000)
-	scan := bufio.NewScanner(r)
-	for i := 0; scan.Scan(); i++ {
-		line := scan.Text()
-		ret = append(ret, line)
-	}
-	return ret, nil
-}
-func readLinesByte(path string) ([][]byte, error) {
-	r, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer r.Close()
-	ret := make([][]byte, 0, 1000)
-	scan := bufio.NewScanner(r)
-	for i := 0; scan.Scan(); i++ {
-		line := scan.Text()
-		ret = append(ret, []byte(line))
-	}
-	return ret, nil
-}
-
-type writable interface {
-	WriteTo(io.Writer) (int64, error)
-}
-
-func dumpDoubleArray(data writable, path string) error {
+func writeTo(data io.WriterTo, path string) error {
 	out, err := os.Create(path)
 	if err != nil {
 		return err
@@ -151,21 +122,4 @@ func dumpDoubleArray(data writable, path string) error {
 		return err
 	}
 	return nil
-}
-
-func dumpRuneDict(dict runedict.RuneDict, path string) error {
-	out, err := os.Create(path)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-	w := bufio.NewWriter(out)
-	defer w.Flush()
-
-	buf, err := dict.MarshalText()
-	if err != nil {
-		return err
-	}
-	_, err = w.WriteString(buf)
-	return err
 }
