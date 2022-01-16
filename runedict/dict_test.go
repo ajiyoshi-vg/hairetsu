@@ -2,6 +2,7 @@ package runedict
 
 import (
 	"bytes"
+	"strings"
 	"testing"
 
 	"github.com/ajiyoshi-vg/hairetsu/word"
@@ -26,19 +27,22 @@ func TestBuild(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		actual, err := FromLines(bytes.NewBufferString(c.input))
-		assert.NoError(t, err)
+		actual := New(strings.Split(c.input, "\n"))
 		assert.Equal(t, c.expect, actual)
 
-		tmp, err := actual.MarshalText()
+		restored0, err := FromLines(bytes.NewBufferString(c.input))
+		assert.NoError(t, err)
+		assert.Equal(t, c.expect, restored0)
+
+		tmp, err := restored0.MarshalText()
 		assert.NoError(t, err)
 
-		restored := RuneDict{}
-		assert.NoError(t, restored.UnmarshalText(tmp))
-		assert.Equal(t, c.expect, restored)
+		restored1 := RuneDict{}
+		assert.NoError(t, restored1.UnmarshalText(tmp))
+		assert.Equal(t, c.expect, restored1)
 
 		buf := &bytes.Buffer{}
-		n, err := restored.WriteTo(buf)
+		n, err := restored1.WriteTo(buf)
 		assert.NoError(t, err)
 		assert.Equal(t, int64(buf.Len()), n)
 
