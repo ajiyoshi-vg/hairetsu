@@ -1,7 +1,9 @@
 package keytree
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"sort"
 	"strings"
 	"testing"
@@ -84,4 +86,33 @@ func TestWalkLeaf(t *testing.T) {
 	sort.Strings(ss)
 	actual := strings.Join(ss, "\n")
 	assert.Equal(t, expect, actual)
+}
+
+func TestRead(t *testing.T) {
+	cases := []struct {
+		title  string
+		input  io.Reader
+		expect []word.Word
+	}{
+		{
+			title: "normal",
+			input: bytes.NewBufferString("aaa\nbb\ncccc"),
+			expect: []word.Word{
+				word.FromBytes([]byte("aaa")),
+				word.FromBytes([]byte("bb")),
+				word.FromBytes([]byte("cccc")),
+			},
+		},
+	}
+	for _, c := range cases {
+		t.Run(c.title, func(t *testing.T) {
+			tree, err := FromLines(c.input)
+			assert.NoError(t, err)
+			for _, w := range c.expect {
+				i, err := tree.Get(w)
+				assert.NoError(t, err)
+				assert.NotNil(t, i)
+			}
+		})
+	}
 }
