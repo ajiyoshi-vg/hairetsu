@@ -66,7 +66,7 @@ func TestSearch(t *testing.T) {
 			err = f.Close()
 			assert.NoError(t, err)
 
-			m, err := doublearray.NewMmap(f.Name())
+			m, err := doublearray.OpenMmap(f.Name())
 			assert.NoError(t, err)
 			mmaped := NewByteTrie(m)
 

@@ -11,7 +11,7 @@ func BenchmarkMmap(b *testing.B) {
 	trie, err := readIndex("byte.dat")
 	assert.NoError(b, err)
 
-	mmap, err := doublearray.NewMmap("byte.dat")
+	mmap, err := doublearray.OpenMmap("byte.dat")
 	assert.NoError(b, err)
 
 	b.Run("trie", func(b *testing.B) {

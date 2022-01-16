@@ -10,23 +10,28 @@ import (
 )
 
 type Mmap struct {
-	r *mmap.ReaderAt
+	r      *mmap.ReaderAt
+	offset int64
 }
 
 const nodeSize = 8
 
-func NewMmap(path string) (*Mmap, error) {
+func NewMmap(r *mmap.ReaderAt, offset int64) *Mmap {
+	return &Mmap{r: r, offset: offset}
+}
+
+func OpenMmap(path string) (*Mmap, error) {
 	// will be closed by runtime.SetFinalizer
 	r, err := mmap.Open(path)
 	if err != nil {
 		return nil, err
 	}
-	return &Mmap{r: r}, nil
+	return NewMmap(r, 0), nil
 }
 
 func (da *Mmap) At(i node.Index) (node.Node, error) {
 	s := make([]byte, nodeSize)
-	n, err := da.r.ReadAt(s, int64(i)*nodeSize)
+	n, err := da.r.ReadAt(s, int64(i)*nodeSize+da.offset)
 	if n != nodeSize {
 		return 0, errors.New("bad size")
 	}
