@@ -2,6 +2,7 @@ package doublearray
 
 import (
 	"fmt"
+	"io"
 
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/word"
@@ -9,7 +10,13 @@ import (
 
 type Nodes interface {
 	at(node.Index) (node.Node, error)
+	io.WriterTo
 }
+
+var (
+	_ Nodes = (*DoubleArray)(nil)
+	_ Nodes = (*Mmap)(nil)
+)
 
 func ExactMatchSearchPointer(da *DoubleArray, cs word.Word) (node.Index, error) {
 	var index node.Index

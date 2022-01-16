@@ -10,7 +10,7 @@ import (
 )
 
 type ByteTrie struct {
-	data *da.DoubleArray
+	data da.Nodes
 	b    da.Bytes
 }
 
@@ -26,7 +26,7 @@ func (t *ByteTrie) WriteTo(w io.Writer) (int64, error) {
 	return t.data.WriteTo(w)
 }
 
-func NewByteTrie(data *da.DoubleArray) *ByteTrie {
+func NewByteTrie(data da.Nodes) *ByteTrie {
 	return &ByteTrie{data: data}
 }
 
@@ -40,16 +40,12 @@ func NewByteTrieBuilder(opt ...da.Option) *ByteTrieBuilder {
 	}
 }
 
-func (b *ByteTrieBuilder) Build(xs [][]byte) (*ByteTrie, error) {
-	ret := da.New()
+func (b *ByteTrieBuilder) BuildSlice(xs [][]byte) (*ByteTrie, error) {
 	ks, err := keytree.FromBytes(xs)
 	if err != nil {
 		return nil, err
 	}
-	if err := b.builder.Build(ret, ks); err != nil {
-		return nil, err
-	}
-	return &ByteTrie{data: ret}, nil
+	return b.Build(ks)
 }
 
 func (b *ByteTrieBuilder) BuildFromFile(path string) (*ByteTrie, error) {
@@ -63,6 +59,10 @@ func (b *ByteTrieBuilder) BuildFromFile(path string) (*ByteTrie, error) {
 	if err != nil {
 		return nil, err
 	}
+	return b.Build(ks)
+}
+
+func (b *ByteTrieBuilder) Build(ks da.Walker) (*ByteTrie, error) {
 	x := da.New()
 	if err := b.builder.Build(x, ks); err != nil {
 		return nil, err

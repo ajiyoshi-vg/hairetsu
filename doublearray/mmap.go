@@ -1,6 +1,8 @@
 package doublearray
 
 import (
+	"io"
+
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 	"github.com/pkg/errors"
@@ -44,4 +46,23 @@ func (da *Mmap) ExactMatchSearch(cs word.Word) (node.Index, error) {
 
 func (da *Mmap) CommonPrefixSearch(cs word.Word) ([]node.Index, error) {
 	return Words{}.CommonPrefixSearch(da, cs)
+}
+
+func (da *Mmap) WriteTo(w io.Writer) (int64, error) {
+	var ret int64
+	for i := 0; ; i++ {
+		node, err := da.at(node.Index(i))
+		if err != nil {
+			return ret, nil
+		}
+		buf, err := node.MarshalBinary()
+		if err != nil {
+			return ret, err
+		}
+		n, err := w.Write(buf)
+		ret += int64(n)
+		if err != nil {
+			return ret, err
+		}
+	}
 }
