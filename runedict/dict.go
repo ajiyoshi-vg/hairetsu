@@ -13,33 +13,16 @@ import (
 
 type RuneDict map[rune]word.Code
 
+type Builder struct {
+	runeCount map[rune]uint32
+}
+
 func New(ss []string) RuneDict {
-	runeCount := make(map[rune]uint32, len(ss))
+	b := NewBuilder()
 	for _, s := range ss {
-		for _, r := range s {
-			runeCount[r] += 1
-		}
+		b.Add(s)
 	}
-
-	type tmp struct {
-		r rune
-		n uint32
-	}
-
-	buf := make([]tmp, 0, len(runeCount))
-	for r, n := range runeCount {
-		buf = append(buf, tmp{r: r, n: n})
-	}
-
-	sort.Slice(buf, func(i, j int) bool {
-		return buf[i].n > buf[j].n
-	})
-
-	ret := make(RuneDict, len(buf))
-	for i, x := range buf {
-		ret[x.r] = word.Code(i)
-	}
-	return ret
+	return b.Build()
 }
 
 func (d RuneDict) Code(r rune) word.Code {
@@ -102,4 +85,38 @@ func (d RuneDict) UnmarshalText(s string) error {
 	}
 
 	return nil
+}
+
+func NewBuilder() *Builder {
+	return &Builder{
+		runeCount: map[rune]uint32{},
+	}
+}
+
+func (b *Builder) Add(s string) {
+	for _, r := range s {
+		b.runeCount[r] += 1
+	}
+}
+
+func (b *Builder) Build() RuneDict {
+	type tmp struct {
+		r rune
+		n uint32
+	}
+
+	buf := make([]tmp, 0, len(b.runeCount))
+	for r, n := range b.runeCount {
+		buf = append(buf, tmp{r: r, n: n})
+	}
+
+	sort.Slice(buf, func(i, j int) bool {
+		return buf[i].n > buf[j].n
+	})
+
+	ret := make(RuneDict, len(buf))
+	for i, x := range buf {
+		ret[x.r] = word.Code(i)
+	}
+	return ret
 }
