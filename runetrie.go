@@ -12,7 +12,7 @@ import (
 )
 
 type RuneTrie struct {
-	data *da.DoubleArray
+	data da.Nodes
 	dict runedict.RuneDict
 }
 
@@ -20,7 +20,7 @@ type RuneTrieBuilder struct {
 	builder *da.Builder
 }
 
-func NewRuneTrie(data *da.DoubleArray, dict runedict.RuneDict) *RuneTrie {
+func NewRuneTrie(data da.Nodes, dict runedict.RuneDict) *RuneTrie {
 	return &RuneTrie{
 		data: data,
 		dict: dict,
@@ -50,16 +50,16 @@ func NewRuneTrieBuilder(opt ...da.Option) *RuneTrieBuilder {
 }
 
 func (b *RuneTrieBuilder) Build(xs []string) (*RuneTrie, error) {
-	data := da.New()
 	dict := runedict.New(xs)
 	ks, err := b.keyset(xs, dict)
 	if err != nil {
 		return nil, err
 	}
+	data := da.New()
 	if err := b.builder.Build(data, ks); err != nil {
 		return nil, err
 	}
-	return &RuneTrie{data: data, dict: dict}, nil
+	return NewRuneTrie(data, dict), nil
 }
 
 func (b *RuneTrieBuilder) BuildFromFile(path string) (*RuneTrie, error) {
