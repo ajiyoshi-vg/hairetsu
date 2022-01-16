@@ -2,33 +2,14 @@ package hairetsu
 
 import (
 	"encoding/binary"
+	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/stretchr/testify/assert"
 )
-
-func trimLeft(b []byte) []byte {
-	if len(b) < 2 {
-		return b
-	}
-	if b[0] == 0 {
-		return trimLeft(b[1:])
-	}
-	return b
-}
-
-func generateBytes(num uint32) [][]byte {
-	ret := make([][]byte, 0, num)
-	for i := 0; i < int(num); i++ {
-		buf := make([]byte, 4)
-		binary.BigEndian.PutUint32(buf, uint32(i))
-		buf = trimLeft(buf)
-		ret = append(ret, buf)
-	}
-	return ret
-}
 
 func TestSearch(t *testing.T) {
 	cases := []struct {
@@ -72,23 +53,62 @@ func TestSearch(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
 			data := c.data
-			da, err := NewByteTrieBuilder().BuildSlice(data)
+			origin, err := NewByteTrieBuilder().BuildSlice(data)
 			assert.NoError(t, err)
 
-			for i, x := range data {
-				actual, err := da.ExactMatchSearch(x)
-				assert.NoError(t, err, x)
-				assert.Equal(t, node.Index(i), actual)
-			}
-			for _, x := range c.ng {
-				_, err := da.ExactMatchSearch(x)
-				assert.Error(t, err, x)
-			}
-
-			is, err := da.CommonPrefixSearch(c.prefix)
+			f, err := ioutil.TempFile("", "bytes")
 			assert.NoError(t, err)
-			assert.Equal(t, c.num, len(is))
-			t.Log(doublearray.GetStat(da.data))
+			defer os.Remove(f.Name())
+
+			_, err = origin.WriteTo(f)
+			assert.NoError(t, err)
+
+			err = f.Close()
+			assert.NoError(t, err)
+
+			m, err := doublearray.NewMmap(f.Name())
+			assert.NoError(t, err)
+			mmaped := NewByteTrie(m)
+
+			xs := []*ByteTrie{origin, mmaped}
+
+			for _, da := range xs {
+				for i, x := range data {
+					actual, err := da.ExactMatchSearch(x)
+					assert.NoError(t, err, x)
+					assert.Equal(t, node.Index(i), actual)
+				}
+				for _, x := range c.ng {
+					_, err := da.ExactMatchSearch(x)
+					assert.Error(t, err, x)
+				}
+
+				is, err := da.CommonPrefixSearch(c.prefix)
+				assert.NoError(t, err)
+				assert.Equal(t, c.num, len(is))
+				t.Log(doublearray.GetStat(da.data))
+			}
 		})
 	}
+}
+
+func trimLeft(b []byte) []byte {
+	if len(b) < 2 {
+		return b
+	}
+	if b[0] == 0 {
+		return trimLeft(b[1:])
+	}
+	return b
+}
+
+func generateBytes(num uint32) [][]byte {
+	ret := make([][]byte, 0, num)
+	for i := 0; i < int(num); i++ {
+		buf := make([]byte, 4)
+		binary.BigEndian.PutUint32(buf, uint32(i))
+		buf = trimLeft(buf)
+		ret = append(ret, buf)
+	}
+	return ret
 }

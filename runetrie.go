@@ -1,9 +1,7 @@
 package hairetsu
 
 import (
-	"bufio"
 	"io"
-	"os"
 
 	da "github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/keyset"
@@ -60,23 +58,6 @@ func (b *RuneTrieBuilder) BuildSlice(xs []string) (*RuneTrie, error) {
 		return nil, err
 	}
 	return NewRuneTrie(data, dict), nil
-}
-
-func (b *RuneTrieBuilder) BuildFromFile(path string) (*RuneTrie, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	r := bufio.NewScanner(file)
-	ss := make([]string, 0, 100)
-	for r.Scan() {
-		line := r.Text()
-		ss = append(ss, line)
-	}
-
-	return b.BuildSlice(ss)
 }
 
 func (*RuneTrieBuilder) keyset(ss []string, d runedict.RuneDict) (keyset.KeySet, error) {

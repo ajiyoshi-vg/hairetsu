@@ -2,7 +2,6 @@ package hairetsu
 
 import (
 	"io"
-	"os"
 
 	da "github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/keytree"
@@ -42,20 +41,6 @@ func NewByteTrieBuilder(opt ...da.Option) *ByteTrieBuilder {
 
 func (b *ByteTrieBuilder) BuildSlice(xs [][]byte) (*ByteTrie, error) {
 	ks, err := keytree.FromBytes(xs)
-	if err != nil {
-		return nil, err
-	}
-	return b.Build(ks)
-}
-
-func (b *ByteTrieBuilder) BuildFromFile(path string) (*ByteTrie, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	ks, err := keytree.FromLines(file)
 	if err != nil {
 		return nil, err
 	}

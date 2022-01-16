@@ -52,8 +52,12 @@ func run() error {
 }
 
 func dumpByte() error {
+	ss, err := readLinesByte(opt.in)
+	if err != nil {
+		return err
+	}
 	p := doublearray.OptionProgress(progressbar.New(0))
-	trie, err := hairetsu.NewByteTrieBuilder(p).BuildFromFile(opt.in)
+	trie, err := hairetsu.NewByteTrieBuilder(p).BuildSlice(ss)
 	if err != nil {
 		return err
 	}
@@ -61,8 +65,12 @@ func dumpByte() error {
 }
 
 func dumpRune() error {
+	ss, err := readLines(opt.in)
+	if err != nil {
+		return err
+	}
 	p := doublearray.OptionProgress(progressbar.New(0))
-	trie, err := hairetsu.NewRuneTrieBuilder(p).BuildFromFile(opt.in)
+	trie, err := hairetsu.NewRuneTrieBuilder(p).BuildSlice(ss)
 	if err != nil {
 		return err
 	}
@@ -74,22 +82,15 @@ func dumpRune() error {
 }
 
 func dumpDarts() error {
-	r, err := os.Open(opt.in)
+	ss, err := readLines(opt.in)
 	if err != nil {
 		return err
 	}
-	defer r.Close()
-	ret := make([]string, 0, 1000)
-	scan := bufio.NewScanner(r)
-	for i := 0; scan.Scan(); i++ {
-		line := scan.Text()
-		ret = append(ret, line)
-	}
 
 	p := dartsprog.New()
-	p.SetMaximum(len(ret))
+	p.SetMaximum(len(ss))
 	b := dartsclone.NewBuilder(p)
-	if err := b.Build(ret, nil); err != nil {
+	if err := b.Build(ss, nil); err != nil {
 		return err
 	}
 
@@ -103,6 +104,35 @@ func dumpDarts() error {
 	defer w.Flush()
 	_, err = b.WriteTo(w)
 	return err
+}
+
+func readLines(path string) ([]string, error) {
+	r, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer r.Close()
+	ret := make([]string, 0, 1000)
+	scan := bufio.NewScanner(r)
+	for i := 0; scan.Scan(); i++ {
+		line := scan.Text()
+		ret = append(ret, line)
+	}
+	return ret, nil
+}
+func readLinesByte(path string) ([][]byte, error) {
+	r, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer r.Close()
+	ret := make([][]byte, 0, 1000)
+	scan := bufio.NewScanner(r)
+	for i := 0; scan.Scan(); i++ {
+		line := scan.Text()
+		ret = append(ret, []byte(line))
+	}
+	return ret, nil
 }
 
 type writable interface {
