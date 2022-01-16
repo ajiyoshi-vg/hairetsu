@@ -1,6 +1,8 @@
 package hairetsu
 
 import (
+	"bytes"
+	"strings"
 	"testing"
 
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
@@ -57,6 +59,42 @@ func TestRuneTrieSearch(t *testing.T) {
 			is, err := da.CommonPrefixSearch(c.prefix)
 			assert.NoError(t, err)
 			assert.Equal(t, c.num, len(is))
+
+			t.Log(doublearray.GetStat(da.data))
+		})
+	}
+}
+
+func TestRuneTrieBuildLines(t *testing.T) {
+	cases := []struct {
+		title string
+		data  string
+		ng    []string
+	}{
+		{
+			title: "BuildLines",
+			data:  "aaa\nbbb\nabc\nabb",
+			ng: []string{
+				("hoge"),
+				("印"),
+			},
+		},
+	}
+	for _, c := range cases {
+		t.Run(c.title, func(t *testing.T) {
+			data := bytes.NewBufferString(c.data)
+			da, err := NewRuneTrieBuilder().BuildFromLines(data)
+			assert.NoError(t, err)
+
+			for i, x := range strings.Split(c.data, "\n") {
+				actual, err := da.ExactMatchSearch(x)
+				assert.NoError(t, err, x)
+				assert.Equal(t, node.Index(i), actual)
+			}
+			for _, x := range c.ng {
+				_, err := da.ExactMatchSearch(x)
+				assert.Error(t, err, x)
+			}
 
 			t.Log(doublearray.GetStat(da.data))
 		})

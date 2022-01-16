@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"sort"
 	"strings"
 
@@ -99,6 +100,18 @@ func (d RuneDict) WriteTo(w io.Writer) (int64, error) {
 	}
 	n, err := out.WriteString(buf)
 	return int64(n), err
+}
+
+func (d RuneDict) ReadFrom(r io.Reader) (int64, error) {
+	buf, err := ioutil.ReadAll(r)
+	ret := int64(len(buf))
+	if err != nil {
+		return ret, err
+	}
+	if err := d.UnmarshalText(string(buf)); err != nil {
+		return ret, err
+	}
+	return ret, nil
 }
 
 func NewBuilder() *Builder {
