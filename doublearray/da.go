@@ -72,7 +72,3 @@ func (da *DoubleArray) at(i node.Index) (node.Node, error) {
 	}
 	return da.nodes[i], nil
 }
-
-func (da *DoubleArray) length() int {
-	return len(da.nodes)
-}

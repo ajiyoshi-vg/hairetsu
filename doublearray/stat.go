@@ -14,11 +14,13 @@ type Stat struct {
 }
 
 func GetStat(da Nodes) Stat {
-	ret := Stat{
-		Size: da.length(),
-	}
-	for i := 0; i < da.length(); i++ {
-		x, _ := da.at(node.Index(i))
+	ret := Stat{}
+	for i := 0; ; i++ {
+		x, err := da.at(node.Index(i))
+		if err != nil {
+			return ret
+		}
+		ret.Size++
 		if x.IsTerminal() {
 			ret.Leaf++
 		}
@@ -28,7 +30,6 @@ func GetStat(da Nodes) Stat {
 			ret.Empty++
 		}
 	}
-	return ret
 }
 
 func (s Stat) String() string {

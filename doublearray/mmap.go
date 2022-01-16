@@ -38,10 +38,6 @@ func (da *Mmap) at(i node.Index) (node.Node, error) {
 	return ret, nil
 }
 
-func (da *Mmap) length() int {
-	return da.r.Len()
-}
-
 func (da *Mmap) ExactMatchSearch(cs word.Word) (node.Index, error) {
 	return WordsMmap{}.ExactMatchSearch(da, cs)
 }
