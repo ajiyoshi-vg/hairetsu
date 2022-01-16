@@ -24,7 +24,7 @@ func NewMmap(path string) (*Mmap, error) {
 	return &Mmap{r: r}, nil
 }
 
-func (da *Mmap) at(i node.Index) (node.Node, error) {
+func (da *Mmap) At(i node.Index) (node.Node, error) {
 	s := make([]byte, nodeSize)
 	n, err := da.r.ReadAt(s, int64(i)*nodeSize)
 	if n != nodeSize {
@@ -51,7 +51,7 @@ func (da *Mmap) CommonPrefixSearch(cs word.Word) ([]node.Index, error) {
 func (da *Mmap) WriteTo(w io.Writer) (int64, error) {
 	var ret int64
 	for i := 0; ; i++ {
-		nod, err := da.at(node.Index(i))
+		nod, err := da.At(node.Index(i))
 		if err != nil {
 			return ret, nil
 		}

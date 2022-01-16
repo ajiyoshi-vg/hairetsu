@@ -69,7 +69,7 @@ func (da *DoubleArray) CommonPrefixSearch(cs word.Word) ([]node.Index, error) {
 	return Words{}.CommonPrefixSearch(da, cs)
 }
 
-func (da *DoubleArray) at(i node.Index) (node.Node, error) {
+func (da *DoubleArray) At(i node.Index) (node.Node, error) {
 	if int(i) >= len(da.nodes) {
 		return 0, fmt.Errorf("index(%d) out of range", i)
 	}

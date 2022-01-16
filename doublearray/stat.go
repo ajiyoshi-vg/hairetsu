@@ -16,7 +16,7 @@ type Stat struct {
 func GetStat(da Nodes) Stat {
 	ret := Stat{}
 	for i := 0; ; i++ {
-		x, err := da.at(node.Index(i))
+		x, err := da.At(node.Index(i))
 		if err != nil {
 			return ret
 		}

@@ -8,7 +8,7 @@ import (
 )
 
 type Nodes interface {
-	at(node.Index) (node.Node, error)
+	At(node.Index) (node.Node, error)
 	io.WriterTo
 }
 
@@ -19,13 +19,13 @@ var (
 
 func ExactMatchSearchPointer(da *DoubleArray, cs word.Word) (node.Index, error) {
 	var index node.Index
-	nod, err := da.at(index)
+	nod, err := da.At(index)
 	if err != nil {
 		return 0, err
 	}
 	for _, c := range cs {
 		next := nod.GetOffset().Forward(c)
-		nod, err = da.at(next)
+		nod, err = da.At(next)
 		if err != nil {
 			return 0, err
 		}
@@ -37,7 +37,7 @@ func ExactMatchSearchPointer(da *DoubleArray, cs word.Word) (node.Index, error) 
 	if !nod.IsTerminal() {
 		return 0, ErrNotATerminal
 	}
-	data, err := da.at(nod.GetOffset().Forward(word.EOS))
+	data, err := da.At(nod.GetOffset().Forward(word.EOS))
 	if err != nil {
 		return 0, err
 	}
@@ -46,13 +46,13 @@ func ExactMatchSearchPointer(da *DoubleArray, cs word.Word) (node.Index, error) 
 
 func ExactMatchSearchInterface(da Nodes, cs word.Word) (node.Index, error) {
 	var index node.Index
-	nod, err := da.at(index)
+	nod, err := da.At(index)
 	if err != nil {
 		return 0, err
 	}
 	for _, c := range cs {
 		next := nod.GetOffset().Forward(c)
-		nod, err = da.at(next)
+		nod, err = da.At(next)
 		if err != nil {
 			return 0, err
 		}
@@ -64,7 +64,7 @@ func ExactMatchSearchInterface(da Nodes, cs word.Word) (node.Index, error) {
 	if !nod.IsTerminal() {
 		return 0, ErrNotATerminal
 	}
-	data, err := da.at(nod.GetOffset().Forward(word.EOS))
+	data, err := da.At(nod.GetOffset().Forward(word.EOS))
 	if err != nil {
 		return 0, err
 	}
@@ -73,13 +73,13 @@ func ExactMatchSearchInterface(da Nodes, cs word.Word) (node.Index, error) {
 
 func ExactMatchSearchPointerMmap(da *Mmap, cs word.Word) (node.Index, error) {
 	var index node.Index
-	nod, err := da.at(index)
+	nod, err := da.At(index)
 	if err != nil {
 		return 0, err
 	}
 	for _, c := range cs {
 		next := nod.GetOffset().Forward(c)
-		nod, err = da.at(next)
+		nod, err = da.At(next)
 		if err != nil {
 			return 0, err
 		}
@@ -91,7 +91,7 @@ func ExactMatchSearchPointerMmap(da *Mmap, cs word.Word) (node.Index, error) {
 	if !nod.IsTerminal() {
 		return 0, ErrNotATerminal
 	}
-	data, err := da.at(nod.GetOffset().Forward(word.EOS))
+	data, err := da.At(nod.GetOffset().Forward(word.EOS))
 	if err != nil {
 		return 0, err
 	}
