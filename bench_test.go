@@ -158,17 +158,6 @@ func BenchmarkOverhead(b *testing.B) {
 			}
 		}
 	})
-	/* need go 1.18
-	b.Run("generics", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
-			for _, v := range ws {
-				if id, err := exactMatchSearchGenerics(trie, v); err != nil {
-					b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
-				}
-			}
-		}
-	})
-	*/
 }
 
 func readIndex(path string) (*doublearray.DoubleArray, error) {
