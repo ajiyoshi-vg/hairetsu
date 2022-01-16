@@ -16,6 +16,7 @@ func TestNode(t *testing.T) {
 	assert.False(t, x.HasOffset())
 	assert.False(t, x.IsTerminal())
 	assert.False(t, x.IsUsed())
+	assert.Equal(t, "{prev:0, next:1}", x.String())
 	_, err = x.GetNextEmptyNode()
 	assert.NoError(t, err)
 	_, err = x.GetPrevEmptyNode()
@@ -24,6 +25,7 @@ func TestNode(t *testing.T) {
 	// can SetNext/SetPrev
 	assert.NoError(t, x.SetNextEmptyNode(10))
 	assert.NoError(t, x.SetPrevEmptyNode(10))
+	assert.Equal(t, "{prev:10, next:10}", x.String())
 
 	// SetNext/SetPrev never changes state
 	// still can GetNext/GetPrev
@@ -41,6 +43,7 @@ func TestNode(t *testing.T) {
 	assert.True(t, x.HasOffset()) // changed by SetOffset
 	assert.False(t, x.IsTerminal())
 	assert.True(t, x.IsUsed()) // changed by SetOffset
+	assert.Equal(t, "{base:42, next:10}", x.String())
 	_, err = x.GetNextEmptyNode()
 	assert.NoError(t, err)
 	_, err = x.GetPrevEmptyNode()
@@ -57,6 +60,7 @@ func TestNode(t *testing.T) {
 	assert.True(t, x.HasOffset())
 	assert.False(t, x.IsTerminal())
 	assert.True(t, x.IsUsed())
+	assert.Equal(t, "{base:42, check:0}", x.String())
 	_, err = x.GetNextEmptyNode()
 	assert.Error(t, err) // now can't GetNext
 	_, err = x.GetPrevEmptyNode()
@@ -72,6 +76,7 @@ func TestNode(t *testing.T) {
 	assert.True(t, x.HasOffset())
 	assert.True(t, x.IsTerminal()) // changed by Terminate
 	assert.True(t, x.IsUsed())
+	assert.Equal(t, "{base:42, check:0}#", x.String())
 	_, err = x.GetNextEmptyNode()
 	assert.Error(t, err)
 	_, err = x.GetPrevEmptyNode()
