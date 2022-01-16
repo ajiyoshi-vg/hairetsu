@@ -1,7 +1,9 @@
 package keytree
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 
 	"github.com/ajiyoshi-vg/hairetsu/word"
 )
@@ -27,6 +29,19 @@ func FromBytes(xs [][]byte) (*Tree, error) {
 		}
 	}
 	return ret, nil
+}
+
+func FromLines(file io.Reader) (*Tree, error) {
+	ks := New()
+	r := bufio.NewScanner(file)
+	for i := 0; r.Scan(); i++ {
+		line := r.Text()
+		key := word.FromBytes([]byte(line))
+		if err := ks.Put(key, uint32(i)); err != nil {
+			return nil, err
+		}
+	}
+	return ks, nil
 }
 
 func FromWord(data []word.Word) *Tree {

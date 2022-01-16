@@ -1,14 +1,12 @@
 package hairetsu
 
 import (
-	"bufio"
 	"io"
 	"os"
 
 	da "github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/keytree"
 	"github.com/ajiyoshi-vg/hairetsu/node"
-	"github.com/ajiyoshi-vg/hairetsu/word"
 )
 
 type ByteTrie struct {
@@ -55,26 +53,19 @@ func (b *ByteTrieBuilder) Build(xs [][]byte) (*ByteTrie, error) {
 }
 
 func (b *ByteTrieBuilder) BuildFromFile(path string) (*ByteTrie, error) {
-	ret := da.New()
-
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
 	defer file.Close()
 
-	ks := keytree.New()
-
-	r := bufio.NewScanner(file)
-	for i := 0; r.Scan(); i++ {
-		line := r.Text()
-		key := word.FromBytes([]byte(line))
-		if err := ks.Put(key, uint32(i)); err != nil {
-			return nil, err
-		}
-	}
-	if err := b.builder.Build(ret, ks); err != nil {
+	ks, err := keytree.FromLines(file)
+	if err != nil {
 		return nil, err
 	}
-	return &ByteTrie{data: ret}, nil
+	x := da.New()
+	if err := b.builder.Build(x, ks); err != nil {
+		return nil, err
+	}
+	return NewByteTrie(x), nil
 }
