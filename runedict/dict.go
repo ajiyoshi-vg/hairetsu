@@ -42,20 +42,7 @@ func New(ss []string) RuneDict {
 	return ret
 }
 
-func (d RuneDict) Word(s string) word.Word {
-	ret := make(word.Word, 0, len(s))
-	for _, r := range s {
-		c, ok := d[r]
-		if !ok {
-			ret = append(ret, word.NONE)
-		} else {
-			ret = append(ret, c)
-		}
-	}
-	return ret
-}
-
-func (d RuneDict) StrictWord(s string) (word.Word, error) {
+func (d RuneDict) Word(s string) (word.Word, error) {
 	ret := make(word.Word, 0, len(s))
 	for _, r := range s {
 		c, ok := d[r]

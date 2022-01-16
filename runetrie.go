@@ -82,7 +82,7 @@ func (b *RuneTrieBuilder) BuildFromFile(path string) (*RuneTrie, error) {
 func (*RuneTrieBuilder) keyset(ss []string, d runedict.RuneDict) (keyset.KeySet, error) {
 	ret := make(keyset.KeySet, 0, len(ss))
 	for i, s := range ss {
-		w, err := d.StrictWord(s)
+		w, err := d.Word(s)
 		if err != nil {
 			return nil, err
 		}
