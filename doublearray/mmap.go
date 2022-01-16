@@ -39,9 +39,9 @@ func (da *Mmap) at(i node.Index) (node.Node, error) {
 }
 
 func (da *Mmap) ExactMatchSearch(cs word.Word) (node.Index, error) {
-	return WordsMmap{}.ExactMatchSearch(da, cs)
+	return Words{}.ExactMatchSearch(da, cs)
 }
 
 func (da *Mmap) CommonPrefixSearch(cs word.Word) ([]node.Index, error) {
-	return WordsMmap{}.CommonPrefixSearch(da, cs)
+	return Words{}.CommonPrefixSearch(da, cs)
 }

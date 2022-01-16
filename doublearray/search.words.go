@@ -9,7 +9,7 @@ import (
 
 type Words struct{}
 
-func (Words) ExactMatchSearch(da *DoubleArray, cs word.Word) (node.Index, error) {
+func (Words) ExactMatchSearch(da Nodes, cs word.Word) (node.Index, error) {
 	var index node.Index
 	n, err := da.at(index)
 	if err != nil {
@@ -36,7 +36,7 @@ func (Words) ExactMatchSearch(da *DoubleArray, cs word.Word) (node.Index, error)
 	return data.GetOffset(), nil
 }
 
-func (Words) CommonPrefixSearch(da *DoubleArray, cs word.Word) ([]node.Index, error) {
+func (Words) CommonPrefixSearch(da Nodes, cs word.Word) ([]node.Index, error) {
 	var ret []node.Index
 	var index node.Index
 	n, err := da.at(index)

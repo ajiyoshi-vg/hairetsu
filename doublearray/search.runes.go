@@ -11,7 +11,7 @@ import (
 
 type Runes runedict.RuneDict
 
-func (s Runes) ExactMatchSearch(da *DoubleArray, cs string) (node.Index, error) {
+func (s Runes) ExactMatchSearch(da Nodes, cs string) (node.Index, error) {
 	var index node.Index
 	n, err := da.at(index)
 	if err != nil {
@@ -38,7 +38,7 @@ func (s Runes) ExactMatchSearch(da *DoubleArray, cs string) (node.Index, error) 
 	return data.GetOffset(), nil
 }
 
-func (s Runes) CommonPrefixSearch(da *DoubleArray, cs string) ([]node.Index, error) {
+func (s Runes) CommonPrefixSearch(da Nodes, cs string) ([]node.Index, error) {
 	var ret []node.Index
 	var index node.Index
 	n, err := da.at(index)

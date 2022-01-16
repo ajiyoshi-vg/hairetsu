@@ -10,7 +10,7 @@ import (
 
 type Bytes struct{}
 
-func (Bytes) ExactMatchSearch(da *DoubleArray, cs []byte) (node.Index, error) {
+func (Bytes) ExactMatchSearch(da Nodes, cs []byte) (node.Index, error) {
 	var index node.Index
 	n, err := da.at(index)
 	if err != nil {
@@ -37,7 +37,7 @@ func (Bytes) ExactMatchSearch(da *DoubleArray, cs []byte) (node.Index, error) {
 	return data.GetOffset(), nil
 }
 
-func (Bytes) CommonPrefixSearch(da *DoubleArray, cs []byte) ([]node.Index, error) {
+func (Bytes) CommonPrefixSearch(da Nodes, cs []byte) ([]node.Index, error) {
 	var ret []node.Index
 	var index node.Index
 	n, err := da.at(index)
