@@ -49,7 +49,7 @@ func NewRuneTrieBuilder(opt ...da.Option) *RuneTrieBuilder {
 	}
 }
 
-func (b *RuneTrieBuilder) Build(xs []string) (*RuneTrie, error) {
+func (b *RuneTrieBuilder) BuildSlice(xs []string) (*RuneTrie, error) {
 	dict := runedict.New(xs)
 	ks, err := b.keyset(xs, dict)
 	if err != nil {
@@ -76,7 +76,7 @@ func (b *RuneTrieBuilder) BuildFromFile(path string) (*RuneTrie, error) {
 		ss = append(ss, line)
 	}
 
-	return b.Build(ss)
+	return b.BuildSlice(ss)
 }
 
 func (*RuneTrieBuilder) keyset(ss []string, d runedict.RuneDict) (keyset.KeySet, error) {
