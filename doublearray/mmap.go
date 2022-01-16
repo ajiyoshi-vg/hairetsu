@@ -51,11 +51,11 @@ func (da *Mmap) CommonPrefixSearch(cs word.Word) ([]node.Index, error) {
 func (da *Mmap) WriteTo(w io.Writer) (int64, error) {
 	var ret int64
 	for i := 0; ; i++ {
-		node, err := da.at(node.Index(i))
+		nod, err := da.at(node.Index(i))
 		if err != nil {
 			return ret, nil
 		}
-		buf, err := node.MarshalBinary()
+		buf, err := nod.MarshalBinary()
 		if err != nil {
 			return ret, err
 		}

@@ -41,4 +41,13 @@ func BenchmarkMmap(b *testing.B) {
 			}
 		}
 	})
+	b.Run("mmap+p", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			for _, v := range ws {
+				if id, err := doublearray.ExactMatchSearchPointerMmap(mmap, v); err != nil {
+					b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
+				}
+			}
+		}
+	})
 }

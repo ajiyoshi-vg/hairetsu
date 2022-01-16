@@ -1,7 +1,6 @@
 package doublearray
 
 import (
-	"fmt"
 	"io"
 
 	"github.com/ajiyoshi-vg/hairetsu/node"
@@ -20,25 +19,25 @@ var (
 
 func ExactMatchSearchPointer(da *DoubleArray, cs word.Word) (node.Index, error) {
 	var index node.Index
-	n, err := da.at(index)
+	nod, err := da.at(index)
 	if err != nil {
 		return 0, err
 	}
 	for _, c := range cs {
-		next := n.GetOffset().Forward(c)
-		n, err = da.at(next)
+		next := nod.GetOffset().Forward(c)
+		nod, err = da.at(next)
 		if err != nil {
 			return 0, err
 		}
-		if !n.IsChildOf(index) {
-			return 0, errNotChild
+		if !nod.IsChildOf(index) {
+			return 0, ErrNotAChild
 		}
 		index = next
 	}
-	if !n.IsTerminal() {
-		return 0, fmt.Errorf("not a terminal")
+	if !nod.IsTerminal() {
+		return 0, ErrNotATerminal
 	}
-	data, err := da.at(n.GetOffset().Forward(word.EOS))
+	data, err := da.at(nod.GetOffset().Forward(word.EOS))
 	if err != nil {
 		return 0, err
 	}
@@ -47,25 +46,52 @@ func ExactMatchSearchPointer(da *DoubleArray, cs word.Word) (node.Index, error) 
 
 func ExactMatchSearchInterface(da Nodes, cs word.Word) (node.Index, error) {
 	var index node.Index
-	n, err := da.at(index)
+	nod, err := da.at(index)
 	if err != nil {
 		return 0, err
 	}
 	for _, c := range cs {
-		next := n.GetOffset().Forward(c)
-		n, err = da.at(next)
+		next := nod.GetOffset().Forward(c)
+		nod, err = da.at(next)
 		if err != nil {
 			return 0, err
 		}
-		if !n.IsChildOf(index) {
-			return 0, errNotChild
+		if !nod.IsChildOf(index) {
+			return 0, ErrNotAChild
 		}
 		index = next
 	}
-	if !n.IsTerminal() {
-		return 0, fmt.Errorf("not a terminal")
+	if !nod.IsTerminal() {
+		return 0, ErrNotATerminal
 	}
-	data, err := da.at(n.GetOffset().Forward(word.EOS))
+	data, err := da.at(nod.GetOffset().Forward(word.EOS))
+	if err != nil {
+		return 0, err
+	}
+	return data.GetOffset(), nil
+}
+
+func ExactMatchSearchPointerMmap(da *Mmap, cs word.Word) (node.Index, error) {
+	var index node.Index
+	nod, err := da.at(index)
+	if err != nil {
+		return 0, err
+	}
+	for _, c := range cs {
+		next := nod.GetOffset().Forward(c)
+		nod, err = da.at(next)
+		if err != nil {
+			return 0, err
+		}
+		if !nod.IsChildOf(index) {
+			return 0, ErrNotAChild
+		}
+		index = next
+	}
+	if !nod.IsTerminal() {
+		return 0, ErrNotATerminal
+	}
+	data, err := da.at(nod.GetOffset().Forward(word.EOS))
 	if err != nil {
 		return 0, err
 	}

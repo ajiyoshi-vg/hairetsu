@@ -9,6 +9,11 @@ import (
 	"github.com/ajiyoshi-vg/hairetsu/word"
 )
 
+var (
+	ErrNotAChild    = errors.New("not a child")
+	ErrNotATerminal = errors.New("not a terminal")
+)
+
 type DoubleArray struct {
 	nodes []node.Node
 }
@@ -63,8 +68,6 @@ func (da *DoubleArray) ExactMatchSearch(cs word.Word) (node.Index, error) {
 func (da *DoubleArray) CommonPrefixSearch(cs word.Word) ([]node.Index, error) {
 	return Words{}.CommonPrefixSearch(da, cs)
 }
-
-var errNotChild = errors.New("not a child")
 
 func (da *DoubleArray) at(i node.Index) (node.Node, error) {
 	if int(i) >= len(da.nodes) {

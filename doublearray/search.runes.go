@@ -2,8 +2,6 @@
 package doublearray
 
 import (
-	"fmt"
-
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/runedict"
 	"github.com/ajiyoshi-vg/hairetsu/word"
@@ -13,25 +11,25 @@ type Runes runedict.RuneDict
 
 func (s Runes) ExactMatchSearch(da Nodes, cs string) (node.Index, error) {
 	var index node.Index
-	n, err := da.at(index)
+	nod, err := da.at(index)
 	if err != nil {
 		return 0, err
 	}
 	for _, c := range cs {
-		next := n.GetOffset().Forward(runedict.RuneDict(s).Code(c))
-		n, err = da.at(next)
+		next := nod.GetOffset().Forward(runedict.RuneDict(s).Code(c))
+		nod, err = da.at(next)
 		if err != nil {
 			return 0, err
 		}
-		if !n.IsChildOf(index) {
-			return 0, errNotChild
+		if !nod.IsChildOf(index) {
+			return 0, ErrNotAChild
 		}
 		index = next
 	}
-	if !n.IsTerminal() {
-		return 0, fmt.Errorf("not a terminal")
+	if !nod.IsTerminal() {
+		return 0, ErrNotATerminal
 	}
-	data, err := da.at(n.GetOffset().Forward(word.EOS))
+	data, err := da.at(nod.GetOffset().Forward(word.EOS))
 	if err != nil {
 		return 0, err
 	}
@@ -41,23 +39,23 @@ func (s Runes) ExactMatchSearch(da Nodes, cs string) (node.Index, error) {
 func (s Runes) CommonPrefixSearch(da Nodes, cs string) ([]node.Index, error) {
 	var ret []node.Index
 	var index node.Index
-	n, err := da.at(index)
+	nod, err := da.at(index)
 	if err != nil {
 		return ret, nil
 	}
 
 	for _, c := range cs {
-		next := n.GetOffset().Forward(runedict.RuneDict(s).Code(c))
-		n, err = da.at(next)
+		next := nod.GetOffset().Forward(runedict.RuneDict(s).Code(c))
+		nod, err = da.at(next)
 		if err != nil {
 			return ret, nil
 		}
-		if !n.IsChildOf(index) {
+		if !nod.IsChildOf(index) {
 			return ret, nil
 		}
 		index = next
-		if n.IsTerminal() {
-			data, err := da.at(n.GetOffset().Forward(word.EOS))
+		if nod.IsTerminal() {
+			data, err := da.at(nod.GetOffset().Forward(word.EOS))
 			if err != nil {
 				return ret, nil
 			}
