@@ -7,9 +7,15 @@ import (
 	"reflect"
 )
 
+/*
+EOS is the end of string. Words must not contain EOS code.
+NONE is invalid code. Words must not contain NONE code.
+SEP is The separetor. Users can use it for separated namespace in key.
+*/
 const (
 	EOS  = Code(math.MaxUint32)
-	NONE = Code(math.MaxUint32 - 1)
+	SEP  = Code(math.MaxUint32 - 1)
+	NONE = Code(math.MaxUint32 - 2)
 )
 
 type Code uint32

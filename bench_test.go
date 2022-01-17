@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/overhead"
@@ -137,8 +138,10 @@ func BenchmarkOverhead(b *testing.B) {
 	trie, err := readIndex("byte.dat")
 	assert.NoError(b, err)
 
+	start := time.Now()
 	mmap, err := doublearray.OpenMmap("byte.dat")
 	assert.NoError(b, err)
+	b.Logf("OpenMmap %s", time.Since(start))
 
 	b.Run("method", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
