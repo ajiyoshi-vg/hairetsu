@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
+	"github.com/ajiyoshi-vg/hairetsu/overhead"
 	"github.com/ajiyoshi-vg/hairetsu/runedict"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 	"github.com/ikawaha/dartsclone"
@@ -131,6 +132,10 @@ func BenchmarkTrie(b *testing.B) {
 func BenchmarkOverhead(b *testing.B) {
 	trie, err := readIndex("byte.dat")
 	assert.NoError(b, err)
+
+	mmap, err := doublearray.OpenMmap("byte.dat")
+	assert.NoError(b, err)
+
 	b.Run("method", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			for _, v := range ws {
@@ -143,7 +148,7 @@ func BenchmarkOverhead(b *testing.B) {
 	b.Run("pointer", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			for _, v := range ws {
-				if id, err := doublearray.ExactMatchSearchPointer(trie, v); err != nil {
+				if id, err := overhead.ExactMatchSearchPointer(trie, v); err != nil {
 					b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
 				}
 			}
@@ -152,7 +157,34 @@ func BenchmarkOverhead(b *testing.B) {
 	b.Run("interface", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			for _, v := range ws {
-				if id, err := doublearray.ExactMatchSearchInterface(trie, v); err != nil {
+				if id, err := overhead.ExactMatchSearchInterface(trie, v); err != nil {
+					b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
+				}
+			}
+		}
+	})
+	b.Run("mmap-m", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			for _, v := range ws {
+				if id, err := mmap.ExactMatchSearch(v); err != nil {
+					b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
+				}
+			}
+		}
+	})
+	b.Run("mmap-p", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			for _, v := range ws {
+				if id, err := overhead.ExactMatchSearchPointerMmap(mmap, v); err != nil {
+					b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
+				}
+			}
+		}
+	})
+	b.Run("mmap-i", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			for _, v := range ws {
+				if id, err := overhead.ExactMatchSearchInterface(mmap, v); err != nil {
 					b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
 				}
 			}

@@ -49,11 +49,7 @@ func TestDoubleArraySearch(t *testing.T) {
 			assert.Equal(t, c.data.LeafNum(), s.Leaf)
 
 			c.data.WalkLeaf(func(ws word.Word, val uint32) error {
-				actual, err := ExactMatchSearchInterface(da, ws)
-				assert.NoError(t, err)
-				assert.Equal(t, node.Index(val), actual)
-
-				actual, err = Words{}.ExactMatchSearch(da, ws)
+				actual, err := Words{}.ExactMatchSearch(da, ws)
 				assert.NoError(t, err)
 				assert.Equal(t, node.Index(val), actual)
 
@@ -67,9 +63,6 @@ func TestDoubleArraySearch(t *testing.T) {
 			})
 
 			for _, x := range c.ng {
-				_, err = ExactMatchSearchInterface(da, x)
-				assert.Error(t, err)
-
 				_, err = Words{}.ExactMatchSearch(da, x)
 				assert.Error(t, err)
 

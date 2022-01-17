@@ -14,6 +14,16 @@ var (
 	ErrNotATerminal = errors.New("not a terminal")
 )
 
+type Nodes interface {
+	At(node.Index) (node.Node, error)
+	io.WriterTo
+}
+
+var (
+	_ Nodes = (*DoubleArray)(nil)
+	_ Nodes = (*Mmap)(nil)
+)
+
 type DoubleArray struct {
 	nodes []node.Node
 }

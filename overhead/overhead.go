@@ -1,8 +1,9 @@
-package doublearray
+package overhead
 
 import (
 	"io"
 
+	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 )
@@ -13,11 +14,11 @@ type Nodes interface {
 }
 
 var (
-	_ Nodes = (*DoubleArray)(nil)
-	_ Nodes = (*Mmap)(nil)
+	_ Nodes = (*doublearray.DoubleArray)(nil)
+	_ Nodes = (*doublearray.Mmap)(nil)
 )
 
-func ExactMatchSearchPointer(da *DoubleArray, cs word.Word) (node.Index, error) {
+func ExactMatchSearchPointer(da *doublearray.DoubleArray, cs word.Word) (node.Index, error) {
 	var index node.Index
 	nod, err := da.At(index)
 	if err != nil {
@@ -30,12 +31,12 @@ func ExactMatchSearchPointer(da *DoubleArray, cs word.Word) (node.Index, error) 
 			return 0, err
 		}
 		if !nod.IsChildOf(index) {
-			return 0, ErrNotAChild
+			return 0, doublearray.ErrNotAChild
 		}
 		index = next
 	}
 	if !nod.IsTerminal() {
-		return 0, ErrNotATerminal
+		return 0, doublearray.ErrNotATerminal
 	}
 	data, err := da.At(nod.GetOffset().Forward(word.EOS))
 	if err != nil {
@@ -57,12 +58,12 @@ func ExactMatchSearchInterface(da Nodes, cs word.Word) (node.Index, error) {
 			return 0, err
 		}
 		if !nod.IsChildOf(index) {
-			return 0, ErrNotAChild
+			return 0, doublearray.ErrNotAChild
 		}
 		index = next
 	}
 	if !nod.IsTerminal() {
-		return 0, ErrNotATerminal
+		return 0, doublearray.ErrNotATerminal
 	}
 	data, err := da.At(nod.GetOffset().Forward(word.EOS))
 	if err != nil {
@@ -71,7 +72,7 @@ func ExactMatchSearchInterface(da Nodes, cs word.Word) (node.Index, error) {
 	return data.GetOffset(), nil
 }
 
-func ExactMatchSearchPointerMmap(da *Mmap, cs word.Word) (node.Index, error) {
+func ExactMatchSearchPointerMmap(da *doublearray.Mmap, cs word.Word) (node.Index, error) {
 	var index node.Index
 	nod, err := da.At(index)
 	if err != nil {
@@ -84,12 +85,12 @@ func ExactMatchSearchPointerMmap(da *Mmap, cs word.Word) (node.Index, error) {
 			return 0, err
 		}
 		if !nod.IsChildOf(index) {
-			return 0, ErrNotAChild
+			return 0, doublearray.ErrNotAChild
 		}
 		index = next
 	}
 	if !nod.IsTerminal() {
-		return 0, ErrNotATerminal
+		return 0, doublearray.ErrNotATerminal
 	}
 	data, err := da.At(nod.GetOffset().Forward(word.EOS))
 	if err != nil {
