@@ -34,13 +34,13 @@ head.dat: bench.dat Makefile
 byte.dat: head.dat
 	go run cmd/dump/main.go -o $@ -in $< -kind byte
 
-rune.dat rune.dat.dict: head.dat
+rune.dat: head.dat
 	go run cmd/dump/main.go -o $@ -in $< -kind rune
 
 darts.dat : head.dat
 	go run cmd/dump/main.go -o $@ -in $< -kind darts
 
-bench: generate head.dat byte.dat rune.dat rune.dat.dict darts.dat
+bench: generate head.dat byte.dat rune.dat darts.dat
 	go test -benchmem -bench .
 
 test_overhead: generate head.dat byte.dat

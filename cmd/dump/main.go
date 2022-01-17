@@ -87,10 +87,6 @@ func dumpRune() error {
 	if err != nil {
 		return err
 	}
-	path := fmt.Sprintf("%s.dict", opt.out)
-	if err := writeTo(trie.GetDict(), path); err != nil {
-		return err
-	}
 	return writeTo(trie, opt.out)
 }
 

@@ -104,11 +104,15 @@ func BenchmarkTrie(b *testing.B) {
 		})
 	})
 	b.Run("rune", func(b *testing.B) {
-		da, err := readIndex("rune.dat")
-		assert.NoError(b, err)
-		dict, err := readDict("rune.dat.dict")
-		assert.NoError(b, err)
-		trie := NewRuneTrie(da, dict)
+		trie := NewRuneTrie(nil, nil)
+		{
+			file, err := os.Open("rune.dat")
+			assert.NoError(b, err)
+			defer file.Close()
+
+			_, err = trie.ReadFrom(bufio.NewReader(file))
+			assert.NoError(b, err)
+		}
 		b.Run("exact", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				for _, v := range ss {
