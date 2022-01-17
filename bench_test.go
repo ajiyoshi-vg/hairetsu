@@ -213,7 +213,7 @@ func readDict(path string) (runedict.RuneDict, error) {
 		return nil, err
 	}
 	ret := runedict.RuneDict{}
-	if err := ret.UnmarshalText(buf); err != nil {
+	if err := ret.UnmarshalBinary(buf); err != nil {
 		return nil, err
 	}
 	return ret, nil

@@ -65,7 +65,7 @@ func TestRuneTrieSearch(t *testing.T) {
 	}
 }
 
-func TestRuneTrieBuildLines(t *testing.T) {
+func TestRuneTrieBuild(t *testing.T) {
 	cases := []struct {
 		title string
 		data  string
@@ -80,23 +80,35 @@ func TestRuneTrieBuildLines(t *testing.T) {
 			},
 		},
 	}
+
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
 			data := bytes.NewBufferString(c.data)
-			da, err := NewRuneTrieBuilder().BuildFromLines(data)
+			origin, err := NewRuneTrieBuilder().BuildFromLines(data)
 			assert.NoError(t, err)
 
-			for i, x := range strings.Split(c.data, "\n") {
-				actual, err := da.ExactMatchSearch(x)
-				assert.NoError(t, err, x)
-				assert.Equal(t, node.Index(i), actual)
-			}
-			for _, x := range c.ng {
-				_, err := da.ExactMatchSearch(x)
-				assert.Error(t, err, x)
-			}
+			buf := &bytes.Buffer{}
+			origin.WriteTo(buf)
 
-			t.Log(doublearray.GetStat(da.data))
+			restored := &RuneTrie{}
+			_, err = restored.ReadFrom(buf)
+			assert.NoError(t, err)
+
+			das := []*RuneTrie{origin, restored}
+
+			for _, da := range das {
+
+				for i, x := range strings.Split(c.data, "\n") {
+					actual, err := da.ExactMatchSearch(x)
+					assert.NoError(t, err, x)
+					assert.Equal(t, node.Index(i), actual)
+				}
+				for _, x := range c.ng {
+					_, err := da.ExactMatchSearch(x)
+					assert.Error(t, err, x)
+				}
+				t.Log(doublearray.GetStat(da.data))
+			}
 		})
 	}
 }

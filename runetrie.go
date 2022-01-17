@@ -1,7 +1,10 @@
 package hairetsu
 
 import (
+	"bytes"
+	"encoding/binary"
 	"io"
+	"io/ioutil"
 
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	da "github.com/ajiyoshi-vg/hairetsu/doublearray"
@@ -35,8 +38,51 @@ func (t *RuneTrie) CommonPrefixSearch(key string) ([]node.Index, error) {
 	return t.dict.CommonPrefixSearch(t.data, key)
 }
 
+const runeTrieHeader = 4
+
 func (t *RuneTrie) WriteTo(w io.Writer) (int64, error) {
-	return t.data.WriteTo(w)
+	dict := &bytes.Buffer{}
+	n, err := t.GetDict().WriteTo(dict)
+	if err != nil {
+		return 0, err
+	}
+
+	buf := make([]byte, runeTrieHeader)
+	binary.BigEndian.PutUint32(buf, uint32(n))
+	size := bytes.NewBuffer(buf)
+
+	data := &bytes.Buffer{}
+	_, err = t.data.WriteTo(data)
+
+	return io.Copy(w, io.MultiReader(size, dict, data))
+}
+
+func (t *RuneTrie) ReadFrom(r io.Reader) (int64, error) {
+	buf, err := ioutil.ReadAll(r)
+	ret := int64(len(buf))
+	if err != nil {
+		return ret, err
+	}
+	if ret < runeTrieHeader {
+		return ret, io.ErrUnexpectedEOF
+	}
+	size := binary.BigEndian.Uint32(buf[0:runeTrieHeader])
+
+	dict := runedict.RuneDict{}
+	rDict := bytes.NewReader(buf[runeTrieHeader : runeTrieHeader+size])
+	if _, err := dict.ReadFrom(rDict); err != nil {
+		return ret, err
+	}
+	data := doublearray.New()
+	rData := bytes.NewReader(buf[runeTrieHeader+size:])
+
+	if _, err := data.ReadFrom(rData); err != nil {
+		return ret, err
+	}
+
+	*t = *NewRuneTrie(data, dict)
+
+	return ret, nil
 }
 
 func (t *RuneTrie) GetDict() runedict.RuneDict {
