@@ -90,6 +90,12 @@ func TestCompare(t *testing.T) {
 			rhs:     Word{1, 2},
 			checker: equal,
 		},
+		{
+			title:   "{1, 2} / {3, 4} > { 1, 2, 3 } / { 4 }",
+			lhs:     WithNameSpace([]byte{1, 2}, []byte{3, 4}),
+			rhs:     WithNameSpace([]byte{1, 2, 3}, []byte{4}),
+			checker: positive,
+		},
 	}
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {

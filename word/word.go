@@ -48,6 +48,18 @@ func FromBytes(data []byte) Word {
 	return ret
 }
 
+func WithNameSpace(ns, key []byte) Word {
+	ret := make(Word, 0, len(ns)+len(key)+1)
+	for _, b := range ns {
+		ret = append(ret, Code(b))
+	}
+	ret = append(ret, SEP)
+	for _, b := range key {
+		ret = append(ret, Code(b))
+	}
+	return ret
+}
+
 func Compare(lhs, rhs Word) int {
 	shorter := len(lhs)
 	if len(rhs) < shorter {
