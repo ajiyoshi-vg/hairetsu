@@ -1,14 +1,12 @@
 package hairetsu
 
 import (
-	"bytes"
 	"io"
 
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	da "github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/keyset"
 	"github.com/ajiyoshi-vg/hairetsu/keytree"
-	"github.com/ajiyoshi-vg/hairetsu/lines"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/runedict"
 )
@@ -69,22 +67,7 @@ func (b *RuneTrieBuilder) BuildSlice(xs []string) (*RuneTrie, error) {
 }
 
 func (b *RuneTrieBuilder) BuildFromLines(r io.Reader) (*RuneTrie, error) {
-	tee := &bytes.Buffer{}
-	dict, err := runedict.FromLines(io.TeeReader(r, tee))
-	if err != nil {
-		return nil, err
-	}
-
-	ks := keytree.New()
-	var i uint32
-	err = lines.AsString(tee, func(s string) error {
-		defer func() { i++ }()
-		w, err := dict.Word(s)
-		if err != nil {
-			return err
-		}
-		return ks.Put(w, i)
-	})
+	ks, dict, err := keytree.FromStringLines(r)
 	if err != nil {
 		return nil, err
 	}

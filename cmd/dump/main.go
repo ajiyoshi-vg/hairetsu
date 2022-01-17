@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"time"
 
 	"github.com/ajiyoshi-vg/hairetsu"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
@@ -33,13 +34,17 @@ func init() {
 }
 
 func main() {
+	start := time.Now()
+	log.Printf("%s -> %s start", opt.in, opt.out)
 	if err := run(); err != nil {
 		log.Fatal(err)
 	}
+	log.Printf("%s -> %s dumped in %s", opt.in, opt.out, time.Since(start))
 	os.Exit(0)
 }
 
 func run() error {
+	defer fmt.Println("finish")
 	switch opt.kind {
 	case "byte":
 		return dumpByte()
