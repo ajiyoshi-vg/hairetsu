@@ -3,18 +3,26 @@ package runedict
 import (
 	"bufio"
 	"bytes"
+	"encoding"
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"sort"
-	"strings"
 
 	"github.com/ajiyoshi-vg/hairetsu/lines"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 )
 
 type RuneDict map[rune]word.Code
+
+var (
+	_ encoding.BinaryMarshaler   = RuneDict(nil)
+	_ encoding.BinaryUnmarshaler = RuneDict(nil)
+	_ encoding.TextMarshaler     = RuneDict(nil)
+	_ encoding.TextUnmarshaler   = RuneDict(nil)
+)
 
 type Builder struct {
 	runeCount map[rune]uint32
@@ -55,7 +63,7 @@ type record struct {
 	Char string    `json:"char"`
 }
 
-func (d RuneDict) MarshalText() (string, error) {
+func (d RuneDict) MarshalText() ([]byte, error) {
 	rs := make([]record, 0, len(d))
 	for r, c := range d {
 		r := record{Code: c, Rune: r, Char: fmt.Sprintf("%c", r)}
@@ -64,19 +72,26 @@ func (d RuneDict) MarshalText() (string, error) {
 	sort.Slice(rs, func(i, j int) bool {
 		return rs[i].Code < rs[j].Code
 	})
-	ss := make([]string, 0, len(d))
+	buf := &bytes.Buffer{}
 	for _, r := range rs {
-		buf, err := json.Marshal(&r)
+		x, err := json.Marshal(&r)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
-		ss = append(ss, string(buf))
+		_, err = buf.Write(x)
+		if err != nil {
+			return nil, err
+		}
+		_, err = buf.WriteRune('\n')
+		if err != nil {
+			return nil, err
+		}
 	}
-	return strings.Join(ss, "\n"), nil
+	return buf.Bytes(), nil
 }
 
-func (d RuneDict) UnmarshalText(s string) error {
-	scan := bufio.NewScanner(bytes.NewBufferString(s))
+func (d RuneDict) UnmarshalText(s []byte) error {
+	scan := bufio.NewScanner(bytes.NewBuffer(s))
 	tmp := &record{}
 
 	for i := 0; scan.Scan(); i++ {
@@ -90,15 +105,46 @@ func (d RuneDict) UnmarshalText(s string) error {
 	return nil
 }
 
+func (d RuneDict) MarshalBinary() ([]byte, error) {
+	buf := &bytes.Buffer{}
+	for r, c := range d {
+		if err := binary.Write(buf, binary.BigEndian, uint32(r)); err != nil {
+			return nil, err
+		}
+		if err := binary.Write(buf, binary.BigEndian, uint32(c)); err != nil {
+			return nil, err
+		}
+	}
+	return buf.Bytes(), nil
+}
+
+func (d RuneDict) UnmarshalBinary(s []byte) error {
+	buf := bytes.NewReader(s)
+	for {
+		var r rune
+		var c word.Code
+		err := binary.Read(buf, binary.BigEndian, &r)
+		if err == io.EOF {
+			return nil
+		} else if err != nil {
+			return err
+		}
+		if err := binary.Read(buf, binary.BigEndian, &c); err != nil {
+			return err
+		}
+		d[r] = c
+	}
+}
+
 func (d RuneDict) WriteTo(w io.Writer) (int64, error) {
 	out := bufio.NewWriter(w)
 	defer out.Flush()
 
-	buf, err := d.MarshalText()
+	buf, err := d.MarshalBinary()
 	if err != nil {
 		return 0, err
 	}
-	n, err := out.WriteString(buf)
+	n, err := out.Write(buf)
 	return int64(n), err
 }
 
@@ -108,7 +154,7 @@ func (d RuneDict) ReadFrom(r io.Reader) (int64, error) {
 	if err != nil {
 		return ret, err
 	}
-	if err := d.UnmarshalText(string(buf)); err != nil {
+	if err := d.UnmarshalBinary(buf); err != nil {
 		return ret, err
 	}
 	return ret, nil

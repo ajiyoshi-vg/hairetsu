@@ -30,28 +30,41 @@ func TestBuild(t *testing.T) {
 		actual := New(strings.Split(c.input, "\n"))
 		assert.Equal(t, c.expect, actual)
 
-		restored0, err := FromLines(bytes.NewBufferString(c.input))
+		original, err := FromLines(bytes.NewBufferString(c.input))
 		assert.NoError(t, err)
-		assert.Equal(t, c.expect, restored0)
+		assert.Equal(t, c.expect, original)
 
-		tmp, err := restored0.MarshalText()
-		assert.NoError(t, err)
+		t.Run("MarshalText/UnmarshalText", func(t *testing.T) {
+			tmp, err := original.MarshalText()
+			assert.NoError(t, err)
 
-		restored1 := RuneDict{}
-		assert.NoError(t, restored1.UnmarshalText(tmp))
-		assert.Equal(t, c.expect, restored1)
+			restored := RuneDict{}
+			assert.NoError(t, restored.UnmarshalText(tmp))
+			assert.Equal(t, c.expect, restored)
+		})
 
-		buf := &bytes.Buffer{}
-		n, err := restored1.WriteTo(buf)
-		assert.NoError(t, err)
-		assert.Equal(t, int64(buf.Len()), n)
+		t.Run("MarshalBinary/UnmarshalBinary", func(t *testing.T) {
+			tmp, err := original.MarshalBinary()
+			assert.NoError(t, err)
 
-		restored2 := RuneDict{}
-		m, err := restored2.ReadFrom(bytes.NewReader(buf.Bytes()))
-		assert.NoError(t, err)
-		assert.Equal(t, m, n)
+			restored := RuneDict{}
+			assert.NoError(t, restored.UnmarshalBinary(tmp))
+			assert.Equal(t, c.expect, restored)
+		})
 
-		assert.Equal(t, c.expect, restored2)
+		t.Run("WriteTo/ReadFrom", func(t *testing.T) {
+			buf := &bytes.Buffer{}
+			n, err := original.WriteTo(buf)
+			assert.NoError(t, err)
+			assert.Equal(t, int64(buf.Len()), n)
+
+			restored := RuneDict{}
+			m, err := restored.ReadFrom(bytes.NewReader(buf.Bytes()))
+			assert.NoError(t, err)
+			assert.Equal(t, m, n)
+
+			assert.Equal(t, c.expect, restored)
+		})
 	}
 }
 
