@@ -13,7 +13,7 @@ import (
 
 type RuneTrie struct {
 	data da.Nodes
-	dict runedict.RuneDict
+	dict da.Runes
 }
 
 type RuneTrieBuilder struct {
@@ -23,16 +23,16 @@ type RuneTrieBuilder struct {
 func NewRuneTrie(data da.Nodes, dict runedict.RuneDict) *RuneTrie {
 	return &RuneTrie{
 		data: data,
-		dict: dict,
+		dict: da.Runes(dict),
 	}
 }
 
 func (t *RuneTrie) ExactMatchSearch(key string) (node.Index, error) {
-	return da.Runes(t.dict).ExactMatchSearch(t.data, key)
+	return t.dict.ExactMatchSearch(t.data, key)
 }
 
 func (t *RuneTrie) CommonPrefixSearch(key string) ([]node.Index, error) {
-	return da.Runes(t.dict).CommonPrefixSearch(t.data, key)
+	return t.dict.CommonPrefixSearch(t.data, key)
 }
 
 func (t *RuneTrie) WriteTo(w io.Writer) (int64, error) {
@@ -40,7 +40,7 @@ func (t *RuneTrie) WriteTo(w io.Writer) (int64, error) {
 }
 
 func (t *RuneTrie) GetDict() runedict.RuneDict {
-	return t.dict
+	return runedict.RuneDict(t.dict)
 }
 
 func NewRuneTrieBuilder(opt ...da.Option) *RuneTrieBuilder {
