@@ -2,6 +2,8 @@ package doublearray
 
 import (
 	"bytes"
+	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/ajiyoshi-vg/hairetsu/keyset"
@@ -40,17 +42,41 @@ func TestDoubleArrayReadWrite(t *testing.T) {
 		err := NewBuilder().Build(origin, c.data)
 		assert.NoError(t, err)
 
-		buf := &bytes.Buffer{}
-		_, err = origin.WriteTo(buf)
+		tmp, err := ioutil.TempFile("", "test")
+		assert.NoError(t, err)
+		defer os.Remove(tmp.Name())
+
+		_, err = origin.WriteTo(tmp)
+		assert.NoError(t, err)
+		assert.NoError(t, tmp.Close())
+
+		tmp, err = os.Open(tmp.Name())
 		assert.NoError(t, err)
 
-		restored := New()
-		_, err = restored.ReadFrom(buf)
+		restored1 := New()
+		_, err = restored1.ReadFrom(tmp)
 		assert.NoError(t, err)
+		assert.NoError(t, tmp.Close())
 
 		copied := FromArray(origin.Array())
 
-		das := []*DoubleArray{origin, restored, copied}
+		mmaped, err := OpenMmap(tmp.Name())
+		assert.NoError(t, err)
+
+		restored2 := New()
+		buf := &bytes.Buffer{}
+		_, err = mmaped.WriteTo(buf)
+		assert.NoError(t, err)
+		_, err = restored2.ReadFrom(buf)
+		assert.NoError(t, err)
+
+		type trie interface {
+			ExactMatchSearch(word.Word) (node.Index, error)
+			CommonPrefixSearch(word.Word) ([]node.Index, error)
+			Nodes
+		}
+
+		das := []trie{origin, restored1, copied, mmaped, restored2}
 
 		for _, da := range das {
 			s := GetStat(da)
