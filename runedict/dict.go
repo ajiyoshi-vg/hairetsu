@@ -39,7 +39,7 @@ func New(ss []string) RuneDict {
 func (d RuneDict) Code(r rune) word.Code {
 	ret, ok := d[r]
 	if !ok {
-		return word.NONE
+		return word.Unknown
 	}
 	return ret
 }

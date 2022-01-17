@@ -84,10 +84,10 @@ func TestCode(t *testing.T) {
 			expect: 42,
 		},
 		{
-			title:  "unknown rune returns word.NONE",
+			title:  "unknown rune returns word.Unknown",
 			dict:   RuneDict{},
 			input:  'a',
-			expect: word.NONE,
+			expect: word.Unknown,
 		},
 	}
 

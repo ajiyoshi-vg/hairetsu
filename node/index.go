@@ -15,10 +15,10 @@ func (x Index) Forward(c word.Code) Index {
 	switch c {
 	case word.EOS:
 		return x ^ 0
-	case word.SEP:
+	case word.Separator:
 		return x ^ 1
 	default:
-		return x ^ Index(c+2)
+		return x ^ Index(c+word.ReservedCodes)
 	}
 }
 
@@ -27,10 +27,10 @@ func (x Index) Backward(c word.Code) Index {
 	switch c {
 	case word.EOS:
 		return x ^ 0
-	case word.SEP:
+	case word.Separator:
 		return x ^ 1
 	default:
-		return x ^ Index(c+2)
+		return x ^ Index(c+word.ReservedCodes)
 	}
 }
 

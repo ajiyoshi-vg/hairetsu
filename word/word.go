@@ -8,14 +8,22 @@ import (
 )
 
 /*
+[math.MaxUint32 - ReservedCodes ... math.MaxUint32] are reserved special code.
+
+Unknown is invalid code. Words must not contain Unknown code.
+Separator is The separetor. Users can use it for separated namespace in key.
 EOS is the end of string. Words must not contain EOS code.
-NONE is invalid code. Words must not contain NONE code.
-SEP is The separetor. Users can use it for separated namespace in key.
 */
+const ReservedCodes = 8
 const (
-	EOS  = Code(math.MaxUint32)
-	SEP  = Code(math.MaxUint32 - 1)
-	NONE = Code(math.MaxUint32 - 2)
+	Unknown Code = iota + math.MaxUint32 - ReservedCodes
+	reserved1
+	reserved2
+	reserved3
+	reserved4
+	reserved5
+	Separator
+	EOS
 )
 
 type Code uint32
@@ -53,7 +61,7 @@ func WithNameSpace(ns, key []byte) Word {
 	for _, b := range ns {
 		ret = append(ret, Code(b))
 	}
-	ret = append(ret, SEP)
+	ret = append(ret, Separator)
 	for _, b := range key {
 		ret = append(ret, Code(b))
 	}
