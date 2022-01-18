@@ -4,7 +4,6 @@ import (
 	bt "bytes"
 	"io"
 	"io/ioutil"
-	"log"
 	"math"
 
 	"github.com/ajiyoshi-vg/hairetsu/bytes"
@@ -88,7 +87,6 @@ func (b *DictTrieBuilder) Build(ks doublearray.Walker, dict bytes.Dict) (*DictTr
 	if err := b.builder.Build(data, ks); err != nil {
 		return nil, err
 	}
-	log.Println(doublearray.GetStat(data))
 	return NewDictTrie(data, dict), nil
 }
 
