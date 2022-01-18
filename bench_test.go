@@ -38,7 +38,7 @@ func init() {
 
 func BenchmarkTrie(b *testing.B) {
 	b.Run("dartsclone", func(b *testing.B) {
-		trie, err := dartsclone.Open("darts.dat")
+		trie, err := dartsclone.Open("darts.trie")
 		assert.NoError(b, err)
 		b.Run("exact", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
@@ -60,8 +60,9 @@ func BenchmarkTrie(b *testing.B) {
 		})
 	})
 	b.Run("da", func(b *testing.B) {
-		trie, err := readIndex("byte.dat")
+		trie, err := readIndex("byte.trie")
 		assert.NoError(b, err)
+		b.Logf("byte.trie:%s", doublearray.GetStat(trie))
 		b.Run("exact", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				for _, v := range ws {
@@ -82,8 +83,8 @@ func BenchmarkTrie(b *testing.B) {
 		})
 	})
 	b.Run("byte", func(b *testing.B) {
-		da, err := readIndex("byte.dat")
-		b.Logf("byte.dat:%s", doublearray.GetStat(da))
+		da, err := readIndex("byte.trie")
+		b.Logf("byte.trie:%s", doublearray.GetStat(da))
 		assert.NoError(b, err)
 		trie := NewByteTrie(da)
 		b.Run("exact", func(b *testing.B) {
@@ -108,13 +109,13 @@ func BenchmarkTrie(b *testing.B) {
 	b.Run("rune", func(b *testing.B) {
 		trie := NewRuneTrie(nil, nil)
 		{
-			file, err := os.Open("rune.dat")
+			file, err := os.Open("rune.trie")
 			assert.NoError(b, err)
 			defer file.Close()
 
 			_, err = trie.ReadFrom(bufio.NewReader(file))
 			assert.NoError(b, err)
-			b.Logf("rune.dat:%s", doublearray.GetStat(trie.data))
+			b.Logf("rune.trie:%s", doublearray.GetStat(trie.data))
 		}
 		b.Run("exact", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
@@ -138,7 +139,7 @@ func BenchmarkTrie(b *testing.B) {
 	b.Run("dict", func(b *testing.B) {
 		var trie DictTrie
 		{
-			file, err := os.Open("dict.dat")
+			file, err := os.Open("dict.trie")
 			assert.NoError(b, err)
 			defer file.Close()
 
@@ -147,7 +148,7 @@ func BenchmarkTrie(b *testing.B) {
 				b.Fatal(err)
 				assert.NoError(b, err)
 			}
-			//b.Logf("dict.dat:%s", doublearray.GetStat(trie.data))
+			b.Logf("dict.trie:%s", doublearray.GetStat(trie.data))
 		}
 		b.Run("exact", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
@@ -170,11 +171,11 @@ func BenchmarkTrie(b *testing.B) {
 	})
 }
 func BenchmarkOverhead(b *testing.B) {
-	trie, err := readIndex("byte.dat")
+	trie, err := readIndex("byte.trie")
 	assert.NoError(b, err)
 
 	start := time.Now()
-	mmap, err := doublearray.OpenMmap("byte.dat")
+	mmap, err := doublearray.OpenMmap("byte.trie")
 	assert.NoError(b, err)
 	b.Logf("OpenMmap %s", time.Since(start))
 
