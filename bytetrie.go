@@ -6,6 +6,7 @@ import (
 	da "github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/keytree"
 	"github.com/ajiyoshi-vg/hairetsu/node"
+	"github.com/ajiyoshi-vg/hairetsu/word"
 )
 
 type ByteTrie struct {
@@ -40,9 +41,12 @@ func NewByteTrieBuilder(opt ...da.Option) *ByteTrieBuilder {
 }
 
 func (b *ByteTrieBuilder) BuildSlice(xs [][]byte) (*ByteTrie, error) {
-	ks, err := keytree.FromBytes(xs)
-	if err != nil {
-		return nil, err
+	ks := keytree.New()
+	for i, x := range xs {
+		err := ks.Put(word.FromBytes(x), uint32(i))
+		if err != nil {
+			return nil, err
+		}
 	}
 	return b.Build(ks)
 }

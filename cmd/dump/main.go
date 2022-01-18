@@ -13,6 +13,8 @@ import (
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/keytree"
 	"github.com/ajiyoshi-vg/hairetsu/lines"
+	"github.com/ajiyoshi-vg/hairetsu/token"
+	"github.com/ajiyoshi-vg/hairetsu/word"
 	"github.com/ikawaha/dartsclone"
 	dartsprog "github.com/ikawaha/dartsclone/progressbar"
 	"github.com/schollz/progressbar"
@@ -63,7 +65,7 @@ func dumpByte() error {
 		return err
 	}
 	defer file.Close()
-	ks, err := keytree.FromLines(file)
+	ks, err := fromLines(file)
 	if err != nil {
 		return err
 	}
@@ -123,4 +125,21 @@ func writeTo(data io.WriterTo, path string) error {
 		return err
 	}
 	return nil
+}
+
+func fromLines(file io.Reader) (*keytree.Tree, error) {
+	ks := keytree.New()
+	var i uint32
+	t := token.NewLinedWords(file)
+	err := t.Walk(func(w word.Word) error {
+		defer func() { i++ }()
+		if err := ks.Put(w, i); err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return ks, nil
 }

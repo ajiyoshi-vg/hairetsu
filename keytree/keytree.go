@@ -1,12 +1,8 @@
 package keytree
 
 import (
-	"bytes"
 	"fmt"
-	"io"
 
-	"github.com/ajiyoshi-vg/hairetsu/lines"
-	"github.com/ajiyoshi-vg/hairetsu/runes"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 )
 
@@ -20,56 +16,6 @@ func New() *Tree {
 	return &Tree{
 		children: map[word.Code]*Tree{},
 	}
-}
-
-func FromBytes(xs [][]byte) (*Tree, error) {
-	ret := New()
-	for i, x := range xs {
-		err := ret.Put(word.FromBytes(x), uint32(i))
-		if err != nil {
-			return nil, err
-		}
-	}
-	return ret, nil
-}
-
-func FromLines(file io.Reader) (*Tree, error) {
-	ks := New()
-	var i uint32
-	err := lines.AsWords(file, func(w word.Word) error {
-		defer func() { i++ }()
-		if err := ks.Put(w, i); err != nil {
-			return err
-		}
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	return ks, nil
-}
-
-func FromStringLines(r io.Reader) (*Tree, runes.Dict, error) {
-	tee := &bytes.Buffer{}
-	dict, err := runes.FromLines(io.TeeReader(r, tee))
-	if err != nil {
-		return nil, nil, err
-	}
-
-	ks := New()
-	var i uint32
-	err = lines.AsString(tee, func(s string) error {
-		defer func() { i++ }()
-		w, err := dict.Word(s)
-		if err != nil {
-			return err
-		}
-		return ks.Put(w, i)
-	})
-	if err != nil {
-		return nil, nil, err
-	}
-	return ks, dict, err
 }
 
 func FromWord(data []word.Word) *Tree {

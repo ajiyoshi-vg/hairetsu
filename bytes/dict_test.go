@@ -43,7 +43,7 @@ func TestBuild(t *testing.T) {
 
 			restored := Dict{}
 			assert.NoError(t, restored.UnmarshalBinary(tmp))
-			assert.Equal(t, original, &restored)
+			assert.Equal(t, original, restored)
 		})
 
 		t.Run("WriteTo/ReadFrom", func(t *testing.T) {
@@ -57,7 +57,7 @@ func TestBuild(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, m, n)
 
-			assert.Equal(t, original, &restored)
+			assert.Equal(t, original, restored)
 		})
 	}
 }

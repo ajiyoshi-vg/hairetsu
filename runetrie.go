@@ -9,14 +9,14 @@ import (
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	da "github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/keyset"
-	"github.com/ajiyoshi-vg/hairetsu/keytree"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/runes"
+	"github.com/ajiyoshi-vg/hairetsu/token"
 )
 
 type RuneTrie struct {
 	data da.Nodes
-	dict da.Runes
+	dict da.RunesDict
 }
 
 type RuneTrieBuilder struct {
@@ -26,7 +26,7 @@ type RuneTrieBuilder struct {
 func NewRuneTrie(data da.Nodes, dict runes.Dict) *RuneTrie {
 	return &RuneTrie{
 		data: data,
-		dict: da.Runes(dict),
+		dict: da.RunesDict(dict),
 	}
 }
 
@@ -113,7 +113,7 @@ func (b *RuneTrieBuilder) BuildSlice(xs []string) (*RuneTrie, error) {
 }
 
 func (b *RuneTrieBuilder) BuildFromLines(r io.Reader) (*RuneTrie, error) {
-	ks, dict, err := keytree.FromStringLines(r)
+	ks, dict, err := runes.FromWalker(token.NewLinedString(r))
 	if err != nil {
 		return nil, err
 	}

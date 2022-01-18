@@ -6,8 +6,9 @@ import (
 	"testing"
 
 	"github.com/ajiyoshi-vg/hairetsu/keyset"
-	"github.com/ajiyoshi-vg/hairetsu/keytree"
 	"github.com/ajiyoshi-vg/hairetsu/node"
+	"github.com/ajiyoshi-vg/hairetsu/runes"
+	"github.com/ajiyoshi-vg/hairetsu/token"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 	"github.com/stretchr/testify/assert"
 )
@@ -48,12 +49,12 @@ func TestDoubleArraySearch(t *testing.T) {
 			s := GetStat(da)
 			assert.Equal(t, c.data.LeafNum(), s.Leaf)
 
-			c.data.WalkLeaf(func(ws word.Word, val uint32) error {
-				actual, err := Words{}.ExactMatchSearch(da, ws)
+			c.data.WalkLeaf(func(wd word.Word, val uint32) error {
+				actual, err := Words{}.ExactMatchSearch(da, wd)
 				assert.NoError(t, err)
 				assert.Equal(t, node.Index(val), actual)
 
-				bs, err := ws.Bytes()
+				bs, err := wd.Bytes()
 				assert.NoError(t, err)
 				actual, err = Bytes{}.ExactMatchSearch(da, bs)
 				assert.NoError(t, err)
@@ -85,7 +86,7 @@ func TestDoubleArraySearch(t *testing.T) {
 	}
 }
 
-func TestStringSearch(t *testing.T) {
+func TestRunesDictSearch(t *testing.T) {
 	cases := []struct {
 		title  string
 		data   string
@@ -108,7 +109,8 @@ func TestStringSearch(t *testing.T) {
 
 	for _, c := range cases {
 		origin := New()
-		ks, dict, err := keytree.FromStringLines(bytes.NewBufferString(c.data))
+		r := bytes.NewBufferString(c.data)
+		ks, dict, err := runes.FromWalker(token.NewLinedString(r))
 		assert.NoError(t, err)
 
 		err = NewBuilder().Build(origin, ks)
@@ -121,16 +123,69 @@ func TestStringSearch(t *testing.T) {
 
 			ss := strings.Split(c.data, "\n")
 			for _, s := range ss {
-				_, err := Runes(dict).ExactMatchSearch(da, s)
+				_, err := RunesDict(dict).ExactMatchSearch(da, s)
 				assert.NoError(t, err)
 			}
 
 			for _, x := range c.ng {
-				_, err := Runes(dict).ExactMatchSearch(da, x)
+				_, err := RunesDict(dict).ExactMatchSearch(da, x)
 				assert.Error(t, err)
 			}
 
-			actual, err := Runes(dict).CommonPrefixSearch(da, c.prefix)
+			actual, err := RunesDict(dict).CommonPrefixSearch(da, c.prefix)
+			assert.NoError(t, err)
+			assert.Equal(t, c.num, len(actual))
+		}
+	}
+}
+
+func TestBytesDictSearch(t *testing.T) {
+	cases := []struct {
+		title  string
+		data   string
+		ng     []string
+		prefix string
+		num    int
+	}{
+		{
+			title: "keyset",
+			data:  "aaa\nab\nabc",
+			ng: []string{
+				"abcc",
+				"aa",
+				"a",
+			},
+			prefix: "abcc",
+			num:    2,
+		},
+	}
+
+	for _, c := range cases {
+		origin := New()
+		r := bytes.NewBufferString(c.data)
+		ks, dict, err := runes.FromWalker(token.NewLinedString(r))
+		assert.NoError(t, err)
+
+		err = NewBuilder().Build(origin, ks)
+		assert.NoError(t, err)
+
+		das := []Nodes{origin}
+
+		for _, da := range das {
+			assert.Equal(t, ks.LeafNum(), GetStat(da).Leaf)
+
+			ss := strings.Split(c.data, "\n")
+			for _, s := range ss {
+				_, err := RunesDict(dict).ExactMatchSearch(da, s)
+				assert.NoError(t, err)
+			}
+
+			for _, x := range c.ng {
+				_, err := RunesDict(dict).ExactMatchSearch(da, x)
+				assert.Error(t, err)
+			}
+
+			actual, err := RunesDict(dict).CommonPrefixSearch(da, c.prefix)
 			assert.NoError(t, err)
 			assert.Equal(t, c.num, len(actual))
 		}

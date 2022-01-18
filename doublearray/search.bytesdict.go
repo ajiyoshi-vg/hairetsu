@@ -2,21 +2,21 @@
 package doublearray
 
 import (
+	"github.com/ajiyoshi-vg/hairetsu/bytes"
 	"github.com/ajiyoshi-vg/hairetsu/node"
-	"github.com/ajiyoshi-vg/hairetsu/runes"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 )
 
-type Runes runes.Dict
+type BytesDict bytes.Dict
 
-func (s Runes) ExactMatchSearch(da Nodes, cs string) (node.Index, error) {
+func (s BytesDict) ExactMatchSearch(da Nodes, cs []byte) (node.Index, error) {
 	var index node.Index
 	nod, err := da.At(index)
 	if err != nil {
 		return 0, err
 	}
 	for _, c := range cs {
-		next := nod.GetOffset().Forward(runes.Dict(s).Code(c))
+		next := nod.GetOffset().Forward(bytes.Dict(s).Code(c))
 		nod, err = da.At(next)
 		if err != nil {
 			return 0, err
@@ -36,7 +36,7 @@ func (s Runes) ExactMatchSearch(da Nodes, cs string) (node.Index, error) {
 	return data.GetOffset(), nil
 }
 
-func (s Runes) CommonPrefixSearch(da Nodes, cs string) ([]node.Index, error) {
+func (s BytesDict) CommonPrefixSearch(da Nodes, cs []byte) ([]node.Index, error) {
 	var ret []node.Index
 	var index node.Index
 	nod, err := da.At(index)
@@ -45,7 +45,7 @@ func (s Runes) CommonPrefixSearch(da Nodes, cs string) ([]node.Index, error) {
 	}
 
 	for _, c := range cs {
-		next := nod.GetOffset().Forward(runes.Dict(s).Code(c))
+		next := nod.GetOffset().Forward(bytes.Dict(s).Code(c))
 		nod, err = da.At(next)
 		if err != nil {
 			return ret, nil

@@ -3,7 +3,6 @@ package doublearray
 import (
 	"testing"
 
-	"github.com/ajiyoshi-vg/hairetsu/keyset"
 	"github.com/ajiyoshi-vg/hairetsu/keytree"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/word"
@@ -21,7 +20,7 @@ func TestDoubleArray(t *testing.T) {
 	}{
 		{
 			title: "keyset",
-			data: keyset.FromWord([]word.Word{
+			data: fromWord([]word.Word{
 				word.Word{5, 4, 3},
 				word.Word{5, 4, 3, 2, 1},
 			}),
@@ -35,7 +34,7 @@ func TestDoubleArray(t *testing.T) {
 		},
 		{
 			title: "keytree",
-			data: keytree.FromWord([]word.Word{
+			data: fromWord([]word.Word{
 				word.Word{5, 4, 3},
 				word.Word{5, 4, 3, 2, 1},
 			}),
@@ -74,4 +73,12 @@ func TestDoubleArray(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, c.num, len(actual))
 	}
+}
+
+func fromWord(data []word.Word) *keytree.Tree {
+	ks := keytree.New()
+	for i, x := range data {
+		ks.Put(x, uint32(i))
+	}
+	return ks
 }
