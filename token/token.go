@@ -21,7 +21,6 @@ type LinedWords struct {
 func NewLinedString(r io.Reader) *LinedString {
 	return &LinedString{r: r}
 }
-
 func NewLinedBytes(r io.Reader) *LinedBytes {
 	return &LinedBytes{r: r}
 }

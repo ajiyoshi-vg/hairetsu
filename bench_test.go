@@ -2,14 +2,13 @@ package hairetsu
 
 import (
 	"bufio"
-	"io/ioutil"
 	"os"
 	"testing"
 	"time"
 
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/overhead"
-	"github.com/ajiyoshi-vg/hairetsu/runes"
+	"github.com/ajiyoshi-vg/hairetsu/token"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 	"github.com/ikawaha/dartsclone"
 	"github.com/stretchr/testify/assert"
@@ -22,17 +21,19 @@ var (
 )
 
 func init() {
-	var err error
-	bs, err = readByteLines("head.dat")
+	file, err := os.Open("head.dat")
 	if err != nil {
 		panic(err)
 	}
-
-	ss = make([]string, 0, len(bs))
-	ws = make([]word.Word, 0, len(bs))
-	for _, b := range bs {
-		ws = append(ws, word.FromBytes(b))
-		ss = append(ss, string(b))
+	defer file.Close()
+	err = token.NewLinedString(file).Walk(func(x string) error {
+		bs = append(bs, []byte(x))
+		ws = append(ws, word.FromBytes([]byte(x)))
+		ss = append(ss, x)
+		return nil
+	})
+	if err != nil {
+		panic(err)
 	}
 }
 
@@ -249,48 +250,4 @@ func readIndex(path string) (*doublearray.DoubleArray, error) {
 		return nil, err
 	}
 	return da, nil
-}
-func readDict(path string) (runes.Dict, error) {
-	buf, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	ret := runes.Dict{}
-	if err := ret.UnmarshalBinary(buf); err != nil {
-		return nil, err
-	}
-	return ret, nil
-}
-
-func readRuneLines(path string) ([]string, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	ret := make([]string, 0, 1000)
-	scan := bufio.NewScanner(file)
-	for i := 0; scan.Scan(); i++ {
-		line := scan.Text()
-		ret = append(ret, line)
-	}
-
-	return ret, nil
-}
-func readByteLines(path string) ([][]byte, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	ret := make([][]byte, 0, 1000)
-	scan := bufio.NewScanner(file)
-	for i := 0; scan.Scan(); i++ {
-		line := scan.Text()
-		ret = append(ret, []byte(line))
-	}
-
-	return ret, nil
 }
