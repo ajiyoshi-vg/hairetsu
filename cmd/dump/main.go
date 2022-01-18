@@ -46,26 +46,28 @@ func main() {
 
 func run() error {
 	defer fmt.Println("finish")
-	switch opt.kind {
-	case "byte":
-		return dumpByte()
-	case "rune":
-		return dumpRune()
-	case "dict":
-		return dumpDict()
-	case "darts":
-		return dumpDarts()
-	default:
-		return fmt.Errorf("unkown kind %s", opt.kind)
-	}
-}
 
-func dumpByte() error {
 	file, err := os.Open(opt.in)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
+
+	switch opt.kind {
+	case "byte":
+		return dumpByte(file)
+	case "rune":
+		return dumpRune(file)
+	case "dict":
+		return dumpDict(file)
+	case "darts":
+		return dumpDarts(file)
+	default:
+		return fmt.Errorf("unkown kind %s", opt.kind)
+	}
+}
+
+func dumpByte(file io.Reader) error {
 	ks, err := fromLines(file)
 	if err != nil {
 		return err
@@ -78,13 +80,7 @@ func dumpByte() error {
 	return writeTo(trie, opt.out)
 }
 
-func dumpRune() error {
-	file, err := os.Open(opt.in)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
+func dumpRune(file io.Reader) error {
 	p := doublearray.OptionProgress(progressbar.New(0))
 	trie, err := hairetsu.NewRuneTrieBuilder(p).BuildFromLines(file)
 	if err != nil {
@@ -93,13 +89,7 @@ func dumpRune() error {
 	return writeTo(trie, opt.out)
 }
 
-func dumpDict() error {
-	file, err := os.Open(opt.in)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
+func dumpDict(file io.Reader) error {
 	p := doublearray.OptionProgress(progressbar.New(0))
 	trie, err := hairetsu.NewDictTrieBuilder(p).BuildFromLines(file)
 	if err != nil {
@@ -108,13 +98,7 @@ func dumpDict() error {
 	return writeTo(trie, opt.out)
 }
 
-func dumpDarts() error {
-	file, err := os.Open(opt.in)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
+func dumpDarts(file io.Reader) error {
 	ss, err := asSlice(file)
 	if err != nil {
 		return err
