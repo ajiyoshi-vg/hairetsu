@@ -37,10 +37,13 @@ byte.dat: head.dat
 rune.dat: head.dat
 	go run cmd/dump/main.go -o $@ -in $< -kind rune
 
+dict.dat: head.dat
+	go run cmd/dump/main.go -o $@ -in $< -kind dict
+
 darts.dat : head.dat
 	go run cmd/dump/main.go -o $@ -in $< -kind darts
 
-bench: generate head.dat byte.dat rune.dat darts.dat
+bench: generate head.dat byte.dat rune.dat darts.dat dict.dat
 	go test -benchmem -bench .
 
 test_overhead: generate head.dat byte.dat

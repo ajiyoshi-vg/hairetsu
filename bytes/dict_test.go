@@ -34,7 +34,9 @@ func TestBuild(t *testing.T) {
 		t.Run("FromReader", func(t *testing.T) {
 			restored, err := FromReader(bytes.NewBuffer(c.input))
 			assert.NoError(t, err)
-			assert.Equal(t, original, restored)
+			for b, c := range c.expect {
+				assert.Equal(t, c, restored.Code(b))
+			}
 		})
 
 		t.Run("MarshalText/UnmarshalText", func(t *testing.T) {

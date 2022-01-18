@@ -30,7 +30,7 @@ var opt option
 func init() {
 	flag.StringVar(&opt.in, "in", "bench.dat", "line sep text default: bench.txt")
 	flag.StringVar(&opt.out, "o", "out.dat", "output")
-	flag.StringVar(&opt.kind, "kind", "byte", "[rune|byte|darts] default: byte")
+	flag.StringVar(&opt.kind, "kind", "byte", "[rune|byte|dict|darts] default: byte")
 	flag.Parse()
 }
 
@@ -51,6 +51,8 @@ func run() error {
 		return dumpByte()
 	case "rune":
 		return dumpRune()
+	case "dict":
+		return dumpDict()
 	case "darts":
 		return dumpDarts()
 	default:
@@ -91,13 +93,29 @@ func dumpRune() error {
 	return writeTo(trie, opt.out)
 }
 
+func dumpDict() error {
+	file, err := os.Open(opt.in)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	p := doublearray.OptionProgress(progressbar.New(0))
+	trie, err := hairetsu.NewDictTrieBuilder(p).BuildFromLines(file)
+	if err != nil {
+		return err
+	}
+	return writeTo(trie, opt.out)
+}
+
 func dumpDarts() error {
 	file, err := os.Open(opt.in)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
-	ss, err := token.NewLinedString(file).Slice()
+
+	ss, err := asSlice(file)
 	if err != nil {
 		return err
 	}
@@ -141,4 +159,16 @@ func fromLines(file io.Reader) (*keytree.Tree, error) {
 		return nil, err
 	}
 	return ks, nil
+}
+
+func asSlice(r io.Reader) ([]string, error) {
+	var ss []string
+	err := token.NewLinedString(r).Walk(func(s string) error {
+		ss = append(ss, s)
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return ss, nil
 }

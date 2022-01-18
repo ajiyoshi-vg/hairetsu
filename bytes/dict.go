@@ -78,8 +78,12 @@ func (d *Dict) ReadFrom(r io.Reader) (int64, error) {
 }
 
 func NewBuilder() *Builder {
+	bc := map[byte]uint32{}
+	for i := 0; i < math.MaxUint8; i++ {
+		bc[byte(i)] = 0
+	}
 	return &Builder{
-		byteCount: map[byte]uint32{},
+		byteCount: bc,
 	}
 }
 

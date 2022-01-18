@@ -135,6 +135,39 @@ func BenchmarkTrie(b *testing.B) {
 			}
 		})
 	})
+	b.Run("dict", func(b *testing.B) {
+		var trie DictTrie
+		{
+			file, err := os.Open("dict.dat")
+			assert.NoError(b, err)
+			defer file.Close()
+
+			_, err = trie.ReadFrom(bufio.NewReader(file))
+			if err != nil {
+				b.Fatal(err)
+				assert.NoError(b, err)
+			}
+			//b.Logf("dict.dat:%s", doublearray.GetStat(trie.data))
+		}
+		b.Run("exact", func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				for _, v := range bs {
+					if id, err := trie.ExactMatchSearch(v); err != nil {
+						b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", string(v), id, err)
+					}
+				}
+			}
+		})
+		b.Run("prefix", func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				for _, v := range bs {
+					if ret, err := trie.CommonPrefixSearch(v); len(ret) == 0 || err != nil {
+						b.Fatalf("unexpected error, missing a keyword %v, err=%v", v, err)
+					}
+				}
+			}
+		})
+	})
 }
 func BenchmarkOverhead(b *testing.B) {
 	trie, err := readIndex("byte.dat")
