@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/ajiyoshi-vg/hairetsu/keyset"
+	"github.com/ajiyoshi-vg/hairetsu/keytree"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 	"github.com/stretchr/testify/assert"
@@ -21,8 +21,8 @@ func TestDoubleArrayReadWrite(t *testing.T) {
 		num    int
 	}{
 		{
-			title: "keyset",
-			data: keyset.FromWord([]word.Word{
+			title: "keytree",
+			data: keytree.FromWord([]word.Word{
 				word.Word{5, 4, 3},
 				word.Word{5, 4, 3, 2, 1},
 			}),

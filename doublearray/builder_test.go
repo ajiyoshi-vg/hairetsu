@@ -19,20 +19,6 @@ func TestDoubleArray(t *testing.T) {
 		num    int
 	}{
 		{
-			title: "keyset",
-			data: fromWord([]word.Word{
-				word.Word{5, 4, 3},
-				word.Word{5, 4, 3, 2, 1},
-			}),
-			ng: []word.Word{
-				word.Word{5},
-				word.Word{5, 4},
-				word.Word{5, 4, 3, 2},
-			},
-			prefix: word.Word{5, 4, 3, 2, 1, 2, 3, 4, 5},
-			num:    2,
-		},
-		{
 			title: "keytree",
 			data: fromWord([]word.Word{
 				word.Word{5, 4, 3},

@@ -5,7 +5,6 @@ import (
 	"io"
 	"log"
 
-	"github.com/ajiyoshi-vg/hairetsu/keyset"
 	"github.com/ajiyoshi-vg/hairetsu/keytree"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/word"
@@ -60,7 +59,6 @@ type Walker interface {
 }
 
 var (
-	_ Walker = (*keyset.KeySet)(nil)
 	_ Walker = (*keytree.Tree)(nil)
 )
 

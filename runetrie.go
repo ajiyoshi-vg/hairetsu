@@ -8,7 +8,6 @@ import (
 
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	da "github.com/ajiyoshi-vg/hairetsu/doublearray"
-	"github.com/ajiyoshi-vg/hairetsu/keyset"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/runes"
 	"github.com/ajiyoshi-vg/hairetsu/token"
@@ -104,8 +103,7 @@ func (b *RuneTrieBuilder) Build(ks doublearray.Walker, dict runes.Dict) (*RuneTr
 }
 
 func (b *RuneTrieBuilder) BuildSlice(xs []string) (*RuneTrie, error) {
-	dict := runes.New(xs)
-	ks, err := b.keyset(xs, dict)
+	ks, dict, err := runes.FromSlice(xs)
 	if err != nil {
 		return nil, err
 	}
@@ -118,16 +116,4 @@ func (b *RuneTrieBuilder) BuildFromLines(r io.Reader) (*RuneTrie, error) {
 		return nil, err
 	}
 	return b.Build(ks, dict)
-}
-
-func (*RuneTrieBuilder) keyset(ss []string, d runes.Dict) (keyset.KeySet, error) {
-	ret := make(keyset.KeySet, 0, len(ss))
-	for i, s := range ss {
-		w, err := d.Word(s)
-		if err != nil {
-			return nil, err
-		}
-		ret = append(ret, keyset.Item{Key: w, Val: uint32(i)})
-	}
-	return ret, nil
 }

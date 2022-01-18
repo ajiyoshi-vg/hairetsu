@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ajiyoshi-vg/hairetsu/keyset"
+	"github.com/ajiyoshi-vg/hairetsu/keytree"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/runes"
 	"github.com/ajiyoshi-vg/hairetsu/token"
@@ -22,8 +22,8 @@ func TestDoubleArraySearch(t *testing.T) {
 		num    int
 	}{
 		{
-			title: "keyset",
-			data: keyset.FromWord([]word.Word{
+			title: "keytree",
+			data: keytree.FromWord([]word.Word{
 				word.Word{5, 4, 3},
 				word.Word{5, 4, 3, 2, 1},
 			}),
@@ -95,7 +95,7 @@ func TestRunesDictSearch(t *testing.T) {
 		num    int
 	}{
 		{
-			title: "keyset",
+			title: "rune dict",
 			data:  "aaa\nab\nabc",
 			ng: []string{
 				"abcc",
@@ -148,7 +148,7 @@ func TestBytesDictSearch(t *testing.T) {
 		num    int
 	}{
 		{
-			title: "keyset",
+			title: "bytes dict",
 			data:  "aaa\nab\nabc",
 			ng: []string{
 				"abcc",
