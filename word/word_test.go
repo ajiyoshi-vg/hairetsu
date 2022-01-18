@@ -1,109 +1,11 @@
 package word
 
 import (
-	"fmt"
 	"math"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
-
-type checker func(i int) error
-
-var positive = func(i int) error {
-	if i > 0 {
-		return nil
-	}
-	return fmt.Errorf("want positive got %d", i)
-}
-var negative = func(i int) error {
-	if i < 0 {
-		return nil
-	}
-	return fmt.Errorf("want negative got %d", i)
-}
-var equal = func(i int) error {
-	if i == 0 {
-		return nil
-	}
-	return fmt.Errorf("want zero got %d", i)
-}
-
-func TestCompare(t *testing.T) {
-	cases := []struct {
-		title   string
-		lhs     Word
-		rhs     Word
-		checker checker
-	}{
-		{
-			title:   "nil = nil",
-			lhs:     nil,
-			rhs:     nil,
-			checker: equal,
-		},
-		{
-			title:   "nil == {}",
-			lhs:     nil,
-			rhs:     Word{},
-			checker: equal,
-		},
-		{
-			title:   "{} = nil",
-			lhs:     Word{},
-			rhs:     nil,
-			checker: equal,
-		},
-		{
-			title:   "{} = {}",
-			lhs:     Word{},
-			rhs:     Word{},
-			checker: equal,
-		},
-		{
-			title:   "{1, 2} > {1, 1}",
-			lhs:     Word{1, 2},
-			rhs:     Word{1, 1},
-			checker: positive,
-		},
-		{
-			title:   "{1, 2, 3} > {1, 2}",
-			lhs:     Word{1, 2, 3},
-			rhs:     Word{1, 2},
-			checker: positive,
-		},
-		{
-			title:   "{1, 1} < {1, 2}",
-			lhs:     Word{1, 1},
-			rhs:     Word{1, 2},
-			checker: negative,
-		},
-		{
-			title:   "{1, 2} < {1, 2, 3}",
-			lhs:     Word{1, 2},
-			rhs:     Word{1, 2, 3},
-			checker: negative,
-		},
-		{
-			title:   "{1, 2} = {1, 2}",
-			lhs:     Word{1, 2},
-			rhs:     Word{1, 2},
-			checker: equal,
-		},
-		{
-			title:   "{1, 2} / {3, 4} > { 1, 2, 3 } / { 4 }",
-			lhs:     WithNameSpace([]byte{1, 2}, []byte{3, 4}),
-			rhs:     WithNameSpace([]byte{1, 2, 3}, []byte{4}),
-			checker: positive,
-		},
-	}
-	for _, c := range cases {
-		t.Run(c.title, func(t *testing.T) {
-			actual := Compare(c.lhs, c.rhs)
-			assert.NoError(t, c.checker(actual))
-		})
-	}
-}
 
 func TestFromByte(t *testing.T) {
 	cases := []struct {
@@ -133,6 +35,65 @@ func TestFromByte(t *testing.T) {
 			actual, err := FromBytes(c.source).Bytes()
 			assert.NoError(t, err)
 			assert.Equal(t, c.expect, actual)
+		})
+	}
+}
+
+func TestNameSpace(t *testing.T) {
+	cases := []struct {
+		title string
+		lhs   Word
+		rhs   Word
+		equal bool
+	}{
+		{
+			title: "ns/key == ns/key",
+			lhs:   WithNameSpace([]byte("ns"), []byte("key")),
+			rhs:   WithNameSpace([]byte("ns"), []byte("key")),
+			equal: true,
+		},
+		{
+			title: "ns/key != nsk/ey",
+			lhs:   WithNameSpace([]byte("ns"), []byte("key")),
+			rhs:   WithNameSpace([]byte("nsk"), []byte("ey")),
+			equal: false,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.title, func(t *testing.T) {
+			if c.equal {
+				assert.Equal(t, c.lhs, c.rhs)
+			} else {
+				assert.NotEqual(t, c.lhs, c.rhs)
+			}
+		})
+	}
+}
+
+func TestAt(t *testing.T) {
+	cases := []struct {
+		title  string
+		input  Word
+		expect []Code
+	}{
+		{
+			title:  "EOS",
+			input:  Word{0, 1, 2, math.MaxUint8, 4},
+			expect: []Code{0, 1, 2, math.MaxUint8, 4, EOS, EOS},
+		},
+		{
+			title:  "SEP",
+			input:  WithNameSpace([]byte{0, 1, 2}, []byte{3, 4}),
+			expect: []Code{0, 1, 2, Separator, 3, 4, EOS},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.title, func(t *testing.T) {
+			for i, expect := range c.expect {
+				assert.Equal(t, expect, c.input.At(i))
+			}
 		})
 	}
 }

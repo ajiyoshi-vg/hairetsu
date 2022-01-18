@@ -30,7 +30,7 @@ type DoubleArray struct {
 
 func New() *DoubleArray {
 	return &DoubleArray{
-		nodes: make([]node.Node, 10),
+		nodes: make([]node.Node, 8),
 	}
 }
 
