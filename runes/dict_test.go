@@ -30,7 +30,7 @@ func TestBuild(t *testing.T) {
 		actual := New(strings.Split(c.input, "\n"))
 		assert.Equal(t, c.expect, actual)
 
-		original, err := FromLines(bytes.NewBufferString(c.input))
+		original, err := fromLines(bytes.NewBufferString(c.input))
 		assert.NoError(t, err)
 		assert.Equal(t, c.expect, original)
 

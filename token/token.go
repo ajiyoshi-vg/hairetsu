@@ -30,6 +30,18 @@ func NewLinedWords(r io.Reader) *LinedWords {
 	return &LinedWords{r: r}
 }
 
+func (x *LinedString) Slice() ([]string, error) {
+	var ret []string
+	err := x.Walk(func(s string) error {
+		ret = append(ret, s)
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
 func (x *LinedString) Walk(yield func(s string) error) error {
 	tee := &bytes.Buffer{}
 	scan := bufio.NewScanner(io.TeeReader(x.r, tee))

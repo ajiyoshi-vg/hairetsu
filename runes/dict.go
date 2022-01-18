@@ -11,7 +11,7 @@ import (
 	"io/ioutil"
 	"sort"
 
-	"github.com/ajiyoshi-vg/hairetsu/lines"
+	"github.com/ajiyoshi-vg/hairetsu/token"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 )
 
@@ -194,9 +194,9 @@ func (b *Builder) Build() Dict {
 	return ret
 }
 
-func FromLines(r io.Reader) (Dict, error) {
+func fromLines(r io.Reader) (Dict, error) {
 	b := NewBuilder()
-	lines.AsString(r, func(s string) error {
+	token.NewLinedString(r).Walk(func(s string) error {
 		b.Add(s)
 		return nil
 	})

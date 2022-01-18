@@ -12,7 +12,6 @@ import (
 	"github.com/ajiyoshi-vg/hairetsu"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/keytree"
-	"github.com/ajiyoshi-vg/hairetsu/lines"
 	"github.com/ajiyoshi-vg/hairetsu/token"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 	"github.com/ikawaha/dartsclone"
@@ -98,7 +97,7 @@ func dumpDarts() error {
 		return err
 	}
 	defer file.Close()
-	ss, err := lines.StringSlice(file)
+	ss, err := token.NewLinedString(file).Slice()
 	if err != nil {
 		return err
 	}
