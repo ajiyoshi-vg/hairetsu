@@ -3,11 +3,11 @@ package doublearray
 
 import (
 	"github.com/ajiyoshi-vg/hairetsu/node"
-	"github.com/ajiyoshi-vg/hairetsu/runedict"
+	"github.com/ajiyoshi-vg/hairetsu/runes"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 )
 
-type Runes runedict.RuneDict
+type Runes runes.Dict
 
 func (s Runes) ExactMatchSearch(da Nodes, cs string) (node.Index, error) {
 	var index node.Index
@@ -16,7 +16,7 @@ func (s Runes) ExactMatchSearch(da Nodes, cs string) (node.Index, error) {
 		return 0, err
 	}
 	for _, c := range cs {
-		next := nod.GetOffset().Forward(runedict.RuneDict(s).Code(c))
+		next := nod.GetOffset().Forward(runes.Dict(s).Code(c))
 		nod, err = da.At(next)
 		if err != nil {
 			return 0, err
@@ -45,7 +45,7 @@ func (s Runes) CommonPrefixSearch(da Nodes, cs string) ([]node.Index, error) {
 	}
 
 	for _, c := range cs {
-		next := nod.GetOffset().Forward(runedict.RuneDict(s).Code(c))
+		next := nod.GetOffset().Forward(runes.Dict(s).Code(c))
 		nod, err = da.At(next)
 		if err != nil {
 			return ret, nil

@@ -1,4 +1,4 @@
-package runedict
+package runes
 
 import (
 	"bufio"
@@ -15,20 +15,20 @@ import (
 	"github.com/ajiyoshi-vg/hairetsu/word"
 )
 
-type RuneDict map[rune]word.Code
+type Dict map[rune]word.Code
 
 var (
-	_ encoding.BinaryMarshaler   = RuneDict(nil)
-	_ encoding.BinaryUnmarshaler = RuneDict(nil)
-	_ encoding.TextMarshaler     = RuneDict(nil)
-	_ encoding.TextUnmarshaler   = RuneDict(nil)
+	_ encoding.BinaryMarshaler   = Dict(nil)
+	_ encoding.BinaryUnmarshaler = Dict(nil)
+	_ encoding.TextMarshaler     = Dict(nil)
+	_ encoding.TextUnmarshaler   = Dict(nil)
 )
 
 type Builder struct {
 	runeCount map[rune]uint32
 }
 
-func New(ss []string) RuneDict {
+func New(ss []string) Dict {
 	b := NewBuilder()
 	for _, s := range ss {
 		b.Add(s)
@@ -36,7 +36,7 @@ func New(ss []string) RuneDict {
 	return b.Build()
 }
 
-func (d RuneDict) Code(r rune) word.Code {
+func (d Dict) Code(r rune) word.Code {
 	ret, ok := d[r]
 	if !ok {
 		return word.Unknown
@@ -44,7 +44,7 @@ func (d RuneDict) Code(r rune) word.Code {
 	return ret
 }
 
-func (d RuneDict) Word(s string) (word.Word, error) {
+func (d Dict) Word(s string) (word.Word, error) {
 	ret := make(word.Word, 0, len(s))
 	for _, r := range s {
 		c, ok := d[r]
@@ -63,7 +63,7 @@ type record struct {
 	Char string    `json:"char"`
 }
 
-func (d RuneDict) MarshalText() ([]byte, error) {
+func (d Dict) MarshalText() ([]byte, error) {
 	rs := make([]record, 0, len(d))
 	for r, c := range d {
 		r := record{Code: c, Rune: r, Char: fmt.Sprintf("%c", r)}
@@ -90,7 +90,7 @@ func (d RuneDict) MarshalText() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (d RuneDict) UnmarshalText(s []byte) error {
+func (d Dict) UnmarshalText(s []byte) error {
 	scan := bufio.NewScanner(bytes.NewBuffer(s))
 	tmp := &record{}
 
@@ -105,7 +105,7 @@ func (d RuneDict) UnmarshalText(s []byte) error {
 	return nil
 }
 
-func (d RuneDict) MarshalBinary() ([]byte, error) {
+func (d Dict) MarshalBinary() ([]byte, error) {
 	buf := &bytes.Buffer{}
 	for r, c := range d {
 		if err := binary.Write(buf, binary.BigEndian, uint32(r)); err != nil {
@@ -118,7 +118,7 @@ func (d RuneDict) MarshalBinary() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (d RuneDict) UnmarshalBinary(s []byte) error {
+func (d Dict) UnmarshalBinary(s []byte) error {
 	buf := bytes.NewReader(s)
 	for {
 		var r rune
@@ -136,7 +136,7 @@ func (d RuneDict) UnmarshalBinary(s []byte) error {
 	}
 }
 
-func (d RuneDict) WriteTo(w io.Writer) (int64, error) {
+func (d Dict) WriteTo(w io.Writer) (int64, error) {
 	out := bufio.NewWriter(w)
 	defer out.Flush()
 
@@ -148,7 +148,7 @@ func (d RuneDict) WriteTo(w io.Writer) (int64, error) {
 	return int64(n), err
 }
 
-func (d RuneDict) ReadFrom(r io.Reader) (int64, error) {
+func (d Dict) ReadFrom(r io.Reader) (int64, error) {
 	buf, err := ioutil.ReadAll(r)
 	ret := int64(len(buf))
 	if err != nil {
@@ -172,7 +172,7 @@ func (b *Builder) Add(s string) {
 	}
 }
 
-func (b *Builder) Build() RuneDict {
+func (b *Builder) Build() Dict {
 	type tmp struct {
 		r rune
 		n uint32
@@ -187,14 +187,14 @@ func (b *Builder) Build() RuneDict {
 		return buf[i].n > buf[j].n
 	})
 
-	ret := make(RuneDict, len(buf))
+	ret := make(Dict, len(buf))
 	for i, x := range buf {
 		ret[x.r] = word.Code(i)
 	}
 	return ret
 }
 
-func FromLines(r io.Reader) (RuneDict, error) {
+func FromLines(r io.Reader) (Dict, error) {
 	b := NewBuilder()
 	lines.AsString(r, func(s string) error {
 		b.Add(s)

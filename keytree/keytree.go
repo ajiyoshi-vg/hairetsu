@@ -6,7 +6,7 @@ import (
 	"io"
 
 	"github.com/ajiyoshi-vg/hairetsu/lines"
-	"github.com/ajiyoshi-vg/hairetsu/runedict"
+	"github.com/ajiyoshi-vg/hairetsu/runes"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 )
 
@@ -49,9 +49,9 @@ func FromLines(file io.Reader) (*Tree, error) {
 	return ks, nil
 }
 
-func FromStringLines(r io.Reader) (*Tree, runedict.RuneDict, error) {
+func FromStringLines(r io.Reader) (*Tree, runes.Dict, error) {
 	tee := &bytes.Buffer{}
-	dict, err := runedict.FromLines(io.TeeReader(r, tee))
+	dict, err := runes.FromLines(io.TeeReader(r, tee))
 	if err != nil {
 		return nil, nil, err
 	}

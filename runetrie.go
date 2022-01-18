@@ -11,7 +11,7 @@ import (
 	"github.com/ajiyoshi-vg/hairetsu/keyset"
 	"github.com/ajiyoshi-vg/hairetsu/keytree"
 	"github.com/ajiyoshi-vg/hairetsu/node"
-	"github.com/ajiyoshi-vg/hairetsu/runedict"
+	"github.com/ajiyoshi-vg/hairetsu/runes"
 )
 
 type RuneTrie struct {
@@ -23,7 +23,7 @@ type RuneTrieBuilder struct {
 	builder *da.Builder
 }
 
-func NewRuneTrie(data da.Nodes, dict runedict.RuneDict) *RuneTrie {
+func NewRuneTrie(data da.Nodes, dict runes.Dict) *RuneTrie {
 	return &RuneTrie{
 		data: data,
 		dict: da.Runes(dict),
@@ -68,7 +68,7 @@ func (t *RuneTrie) ReadFrom(r io.Reader) (int64, error) {
 	}
 	size := binary.BigEndian.Uint32(buf[0:runeTrieHeader])
 
-	dict := runedict.RuneDict{}
+	dict := runes.Dict{}
 	rDict := bytes.NewReader(buf[runeTrieHeader : runeTrieHeader+size])
 	if _, err := dict.ReadFrom(rDict); err != nil {
 		return ret, err
@@ -85,8 +85,8 @@ func (t *RuneTrie) ReadFrom(r io.Reader) (int64, error) {
 	return ret, nil
 }
 
-func (t *RuneTrie) GetDict() runedict.RuneDict {
-	return runedict.RuneDict(t.dict)
+func (t *RuneTrie) GetDict() runes.Dict {
+	return runes.Dict(t.dict)
 }
 
 func NewRuneTrieBuilder(opt ...da.Option) *RuneTrieBuilder {
@@ -95,7 +95,7 @@ func NewRuneTrieBuilder(opt ...da.Option) *RuneTrieBuilder {
 	}
 }
 
-func (b *RuneTrieBuilder) Build(ks doublearray.Walker, dict runedict.RuneDict) (*RuneTrie, error) {
+func (b *RuneTrieBuilder) Build(ks doublearray.Walker, dict runes.Dict) (*RuneTrie, error) {
 	data := da.New()
 	if err := b.builder.Build(data, ks); err != nil {
 		return nil, err
@@ -104,7 +104,7 @@ func (b *RuneTrieBuilder) Build(ks doublearray.Walker, dict runedict.RuneDict) (
 }
 
 func (b *RuneTrieBuilder) BuildSlice(xs []string) (*RuneTrie, error) {
-	dict := runedict.New(xs)
+	dict := runes.New(xs)
 	ks, err := b.keyset(xs, dict)
 	if err != nil {
 		return nil, err
@@ -120,7 +120,7 @@ func (b *RuneTrieBuilder) BuildFromLines(r io.Reader) (*RuneTrie, error) {
 	return b.Build(ks, dict)
 }
 
-func (*RuneTrieBuilder) keyset(ss []string, d runedict.RuneDict) (keyset.KeySet, error) {
+func (*RuneTrieBuilder) keyset(ss []string, d runes.Dict) (keyset.KeySet, error) {
 	ret := make(keyset.KeySet, 0, len(ss))
 	for i, s := range ss {
 		w, err := d.Word(s)

@@ -9,7 +9,7 @@ import (
 
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/overhead"
-	"github.com/ajiyoshi-vg/hairetsu/runedict"
+	"github.com/ajiyoshi-vg/hairetsu/runes"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 	"github.com/ikawaha/dartsclone"
 	"github.com/stretchr/testify/assert"
@@ -216,12 +216,12 @@ func readIndex(path string) (*doublearray.DoubleArray, error) {
 	}
 	return da, nil
 }
-func readDict(path string) (runedict.RuneDict, error) {
+func readDict(path string) (runes.Dict, error) {
 	buf, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
-	ret := runedict.RuneDict{}
+	ret := runes.Dict{}
 	if err := ret.UnmarshalBinary(buf); err != nil {
 		return nil, err
 	}
