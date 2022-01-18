@@ -18,14 +18,14 @@ var (
 	_ Nodes = (*doublearray.Mmap)(nil)
 )
 
-func ExactMatchSearchPointer(da *doublearray.DoubleArray, cs word.Word) (node.Index, error) {
+func ExactMatchSearchPointer(da *doublearray.DoubleArray, cs []byte) (node.Index, error) {
 	var index node.Index
 	nod, err := da.At(index)
 	if err != nil {
 		return 0, err
 	}
 	for _, c := range cs {
-		next := nod.GetOffset().Forward(c)
+		next := nod.GetOffset().Forward(word.Code(c))
 		nod, err = da.At(next)
 		if err != nil {
 			return 0, err
@@ -45,14 +45,14 @@ func ExactMatchSearchPointer(da *doublearray.DoubleArray, cs word.Word) (node.In
 	return data.GetOffset(), nil
 }
 
-func ExactMatchSearchInterface(da Nodes, cs word.Word) (node.Index, error) {
+func ExactMatchSearchInterface(da Nodes, cs []byte) (node.Index, error) {
 	var index node.Index
 	nod, err := da.At(index)
 	if err != nil {
 		return 0, err
 	}
 	for _, c := range cs {
-		next := nod.GetOffset().Forward(c)
+		next := nod.GetOffset().Forward(word.Code(c))
 		nod, err = da.At(next)
 		if err != nil {
 			return 0, err
@@ -72,14 +72,14 @@ func ExactMatchSearchInterface(da Nodes, cs word.Word) (node.Index, error) {
 	return data.GetOffset(), nil
 }
 
-func ExactMatchSearchPointerMmap(da *doublearray.Mmap, cs word.Word) (node.Index, error) {
+func ExactMatchSearchPointerMmap(da *doublearray.Mmap, cs []byte) (node.Index, error) {
 	var index node.Index
 	nod, err := da.At(index)
 	if err != nil {
 		return 0, err
 	}
 	for _, c := range cs {
-		next := nod.GetOffset().Forward(c)
+		next := nod.GetOffset().Forward(word.Code(c))
 		nod, err = da.At(next)
 		if err != nil {
 			return 0, err

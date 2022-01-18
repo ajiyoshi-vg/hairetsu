@@ -83,6 +83,7 @@ func BenchmarkTrie(b *testing.B) {
 	})
 	b.Run("byte", func(b *testing.B) {
 		da, err := readIndex("byte.dat")
+		b.Logf("byte.dat:%s", doublearray.GetStat(da))
 		assert.NoError(b, err)
 		trie := NewByteTrie(da)
 		b.Run("exact", func(b *testing.B) {
@@ -113,6 +114,7 @@ func BenchmarkTrie(b *testing.B) {
 
 			_, err = trie.ReadFrom(bufio.NewReader(file))
 			assert.NoError(b, err)
+			b.Logf("rune.dat:%s", doublearray.GetStat(trie.data))
 		}
 		b.Run("exact", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
@@ -154,7 +156,7 @@ func BenchmarkOverhead(b *testing.B) {
 	})
 	b.Run("pointer", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			for _, v := range ws {
+			for _, v := range bs {
 				if id, err := overhead.ExactMatchSearchPointer(trie, v); err != nil {
 					b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
 				}
@@ -163,7 +165,7 @@ func BenchmarkOverhead(b *testing.B) {
 	})
 	b.Run("interface", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			for _, v := range ws {
+			for _, v := range bs {
 				if id, err := overhead.ExactMatchSearchInterface(trie, v); err != nil {
 					b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
 				}
@@ -181,7 +183,7 @@ func BenchmarkOverhead(b *testing.B) {
 	})
 	b.Run("mmap-p", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			for _, v := range ws {
+			for _, v := range bs {
 				if id, err := overhead.ExactMatchSearchPointerMmap(mmap, v); err != nil {
 					b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
 				}
@@ -190,7 +192,7 @@ func BenchmarkOverhead(b *testing.B) {
 	})
 	b.Run("mmap-i", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			for _, v := range ws {
+			for _, v := range bs {
 				if id, err := overhead.ExactMatchSearchInterface(mmap, v); err != nil {
 					b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
 				}
