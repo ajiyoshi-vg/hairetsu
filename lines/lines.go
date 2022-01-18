@@ -33,11 +33,25 @@ func AsString(r io.Reader, yield func(string) error) error {
 	return nil
 }
 
+func AsBytes(r io.Reader, yield func([]byte) error) error {
+	scan := bufio.NewScanner(r)
+	for i := 0; scan.Scan(); i++ {
+		line := scan.Bytes()
+		if err := yield(line); err != nil {
+			return err
+		}
+		if err := scan.Err(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func AsWords(r io.Reader, yield func(word.Word) error) error {
 	scan := bufio.NewScanner(r)
 	for i := 0; scan.Scan(); i++ {
-		line := scan.Text()
-		if err := yield(word.FromBytes([]byte(line))); err != nil {
+		line := scan.Bytes()
+		if err := yield(word.FromBytes(line)); err != nil {
 			return err
 		}
 		if err := scan.Err(); err != nil {
