@@ -1,3 +1,4 @@
+//go:build !verbose
 // +build !verbose
 
 package node
@@ -9,6 +10,7 @@ import (
 	"math/rand"
 	"reflect"
 
+	"github.com/ajiyoshi-vg/hairetsu/word"
 	"github.com/pkg/errors"
 )
 
@@ -44,6 +46,8 @@ type Interface interface {
 
 	SetParent(Index)
 	IsChildOf(Index) bool
+
+	GetChild(word.Code) Index
 
 	IsUsed() bool
 
@@ -113,6 +117,9 @@ func (x Node) IsChildOf(parent Index) bool {
 		return false
 	}
 	return x.GetParent() == parent
+}
+func (x Node) GetChild(label word.Code) Index {
+	return x.GetOffset().Forward(label)
 }
 func (x Node) IsUsed() bool {
 	return x.HasOffset() || x.HasParent()

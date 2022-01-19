@@ -10,26 +10,26 @@ import (
 type BytesDict bytes.Dict
 
 func (s BytesDict) ExactMatchSearch(da Nodes, cs []byte) (node.Index, error) {
-	var index node.Index
-	nod, err := da.At(index)
+	var parent node.Index
+	target, err := da.At(parent)
 	if err != nil {
 		return 0, err
 	}
 	for _, c := range cs {
-		next := nod.GetOffset().Forward(bytes.Dict(s).Code(c))
-		nod, err = da.At(next)
+		child := target.GetChild(bytes.Dict(s).Code(c))
+		target, err = da.At(child)
 		if err != nil {
 			return 0, err
 		}
-		if !nod.IsChildOf(index) {
+		if !target.IsChildOf(parent) {
 			return 0, ErrNotAChild
 		}
-		index = next
+		parent = child
 	}
-	if !nod.IsTerminal() {
+	if !target.IsTerminal() {
 		return 0, ErrNotATerminal
 	}
-	data, err := da.At(nod.GetOffset().Forward(word.EOS))
+	data, err := da.At(target.GetChild(word.EOS))
 	if err != nil {
 		return 0, err
 	}
@@ -38,24 +38,24 @@ func (s BytesDict) ExactMatchSearch(da Nodes, cs []byte) (node.Index, error) {
 
 func (s BytesDict) CommonPrefixSearch(da Nodes, cs []byte) ([]node.Index, error) {
 	var ret []node.Index
-	var index node.Index
-	nod, err := da.At(index)
+	var parent node.Index
+	target, err := da.At(parent)
 	if err != nil {
 		return ret, nil
 	}
 
 	for _, c := range cs {
-		next := nod.GetOffset().Forward(bytes.Dict(s).Code(c))
-		nod, err = da.At(next)
+		child := target.GetChild(bytes.Dict(s).Code(c))
+		target, err = da.At(child)
 		if err != nil {
 			return ret, nil
 		}
-		if !nod.IsChildOf(index) {
+		if !target.IsChildOf(parent) {
 			return ret, nil
 		}
-		index = next
-		if nod.IsTerminal() {
-			data, err := da.At(nod.GetOffset().Forward(word.EOS))
+		parent = child
+		if target.IsTerminal() {
+			data, err := da.At(target.GetChild(word.EOS))
 			if err != nil {
 				return ret, nil
 			}

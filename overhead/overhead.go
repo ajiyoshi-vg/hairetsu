@@ -1,8 +1,6 @@
 package overhead
 
 import (
-	"io"
-
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/word"
@@ -10,7 +8,6 @@ import (
 
 type Nodes interface {
 	At(node.Index) (node.Node, error)
-	io.WriterTo
 }
 
 var (
@@ -19,26 +16,26 @@ var (
 )
 
 func ExactMatchSearchPointer(da *doublearray.DoubleArray, cs []byte) (node.Index, error) {
-	var index node.Index
-	nod, err := da.At(index)
+	var parent node.Index
+	target, err := da.At(parent)
 	if err != nil {
 		return 0, err
 	}
 	for _, c := range cs {
-		next := nod.GetOffset().Forward(word.Code(c))
-		nod, err = da.At(next)
+		child := target.GetChild(word.Code(c))
+		target, err = da.At(child)
 		if err != nil {
 			return 0, err
 		}
-		if !nod.IsChildOf(index) {
+		if !target.IsChildOf(parent) {
 			return 0, doublearray.ErrNotAChild
 		}
-		index = next
+		parent = child
 	}
-	if !nod.IsTerminal() {
+	if !target.IsTerminal() {
 		return 0, doublearray.ErrNotATerminal
 	}
-	data, err := da.At(nod.GetOffset().Forward(word.EOS))
+	data, err := da.At(target.GetChild(word.EOS))
 	if err != nil {
 		return 0, err
 	}
@@ -46,26 +43,26 @@ func ExactMatchSearchPointer(da *doublearray.DoubleArray, cs []byte) (node.Index
 }
 
 func ExactMatchSearchInterface(da Nodes, cs []byte) (node.Index, error) {
-	var index node.Index
-	nod, err := da.At(index)
+	var parent node.Index
+	target, err := da.At(parent)
 	if err != nil {
 		return 0, err
 	}
 	for _, c := range cs {
-		next := nod.GetOffset().Forward(word.Code(c))
-		nod, err = da.At(next)
+		child := target.GetChild(word.Code(c))
+		target, err = da.At(child)
 		if err != nil {
 			return 0, err
 		}
-		if !nod.IsChildOf(index) {
+		if !target.IsChildOf(parent) {
 			return 0, doublearray.ErrNotAChild
 		}
-		index = next
+		parent = child
 	}
-	if !nod.IsTerminal() {
+	if !target.IsTerminal() {
 		return 0, doublearray.ErrNotATerminal
 	}
-	data, err := da.At(nod.GetOffset().Forward(word.EOS))
+	data, err := da.At(target.GetChild(word.EOS))
 	if err != nil {
 		return 0, err
 	}
@@ -73,26 +70,26 @@ func ExactMatchSearchInterface(da Nodes, cs []byte) (node.Index, error) {
 }
 
 func ExactMatchSearchPointerMmap(da *doublearray.Mmap, cs []byte) (node.Index, error) {
-	var index node.Index
-	nod, err := da.At(index)
+	var parent node.Index
+	target, err := da.At(parent)
 	if err != nil {
 		return 0, err
 	}
 	for _, c := range cs {
-		next := nod.GetOffset().Forward(word.Code(c))
-		nod, err = da.At(next)
+		child := target.GetChild(word.Code(c))
+		target, err = da.At(child)
 		if err != nil {
 			return 0, err
 		}
-		if !nod.IsChildOf(index) {
+		if !target.IsChildOf(parent) {
 			return 0, doublearray.ErrNotAChild
 		}
-		index = next
+		parent = child
 	}
-	if !nod.IsTerminal() {
+	if !target.IsTerminal() {
 		return 0, doublearray.ErrNotATerminal
 	}
-	data, err := da.At(nod.GetOffset().Forward(word.EOS))
+	data, err := da.At(target.GetChild(word.EOS))
 	if err != nil {
 		return 0, err
 	}

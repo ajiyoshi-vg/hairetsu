@@ -22,7 +22,7 @@ func (x Index) Forward(c word.Code) Index {
 	}
 }
 
-// Backword - return x such that x == offset.Forward(c)
+// Backword : returns x such that x == offset.Forward(c)
 func (x Index) Backward(c word.Code) Index {
 	switch c {
 	case word.EOS:
@@ -31,6 +31,19 @@ func (x Index) Backward(c word.Code) Index {
 		return x ^ 1
 	default:
 		return x ^ Index(c+word.ReservedCodes)
+	}
+}
+
+// Label : returns c such that offset.Forward(c) == child
+func Label(offset, child Index) word.Code {
+	c := word.Code(offset ^ child)
+	switch c {
+	case 0:
+		return word.EOS
+	case 1:
+		return word.Separator
+	default:
+		return c - word.ReservedCodes
 	}
 }
 

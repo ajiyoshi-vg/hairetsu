@@ -17,7 +17,7 @@ clear_generated:
 	cat $< >> $@
 	$(SED) "s/Words/Bytes/" $@
 	$(SED) "s/cs word.Word/cs []byte/" $@
-	$(SED) "s/Forward(c)/Forward(word.Code(c))/" $@
+	$(SED) "s/GetChild(c)/GetChild(word.Code(c))/" $@
 	goimports -w $@
 
 %.runesdict.go: %.words.go
@@ -27,7 +27,7 @@ clear_generated:
 	$(SED) "s/(Words)/(s RunesDict)/" $@
 	$(SED) "s/Words/RunesDict/" $@
 	$(SED) "s/cs word.Word/cs string/" $@
-	$(SED) "s/Forward(c)/Forward(runes.Dict(s).Code(c))/" $@
+	$(SED) "s/GetChild(c)/GetChild(runes.Dict(s).Code(c))/" $@
 	goimports -w $@
 
 %.bytesdict.go: %.words.go
@@ -37,5 +37,5 @@ clear_generated:
 	$(SED) "s/(Words)/(s BytesDict)/" $@
 	$(SED) "s/Words/BytesDict/" $@
 	$(SED) "s/cs word.Word/cs []byte/" $@
-	$(SED) "s/Forward(c)/Forward(bytes.Dict(s).Code(c))/" $@
+	$(SED) "s/GetChild(c)/GetChild(bytes.Dict(s).Code(c))/" $@
 	goimports -w $@
