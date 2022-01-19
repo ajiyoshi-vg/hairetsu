@@ -2,11 +2,27 @@ package bytes
 
 import (
 	"bytes"
+	"fmt"
+	"math"
 	"testing"
 
 	"github.com/ajiyoshi-vg/hairetsu/word"
 	"github.com/stretchr/testify/assert"
 )
+
+func checkAllCodeDiffers(d Dict) error {
+	used := map[word.Code]struct{}{}
+	for i := 0; i <= math.MaxUint8; i++ {
+		code := d.Code(byte(i))
+		_, ok := used[code]
+		if ok {
+			return fmt.Errorf("at d[%d]: code(%d)  was detected twice", i, code)
+
+		}
+		used[code] = struct{}{}
+	}
+	return nil
+}
 
 func TestBuild(t *testing.T) {
 	cases := []struct {
@@ -27,12 +43,14 @@ func TestBuild(t *testing.T) {
 
 	for _, c := range cases {
 		original := New(c.input)
+		assert.NoError(t, checkAllCodeDiffers(original))
 		for b, c := range c.expect {
 			assert.Equal(t, c, original.Code(b))
 		}
 
 		t.Run("FromReader", func(t *testing.T) {
 			restored, err := FromReader(bytes.NewBuffer(c.input))
+			assert.NoError(t, checkAllCodeDiffers(restored))
 			assert.NoError(t, err)
 			for b, c := range c.expect {
 				assert.Equal(t, c, restored.Code(b))
@@ -45,6 +63,7 @@ func TestBuild(t *testing.T) {
 
 			restored := Dict{}
 			assert.NoError(t, restored.UnmarshalBinary(tmp))
+			assert.NoError(t, checkAllCodeDiffers(restored))
 			assert.Equal(t, original, restored)
 		})
 
@@ -57,6 +76,7 @@ func TestBuild(t *testing.T) {
 			restored := Dict{}
 			m, err := restored.ReadFrom(bytes.NewReader(buf.Bytes()))
 			assert.NoError(t, err)
+			assert.NoError(t, checkAllCodeDiffers(restored))
 			assert.Equal(t, m, n)
 
 			assert.Equal(t, original, restored)
@@ -79,6 +99,7 @@ func TestWord(t *testing.T) {
 
 	for _, c := range cases {
 		dict := New(c.input)
+		assert.NoError(t, checkAllCodeDiffers(dict))
 		assert.Equal(t, c.expect, dict.Word(c.input))
 	}
 }

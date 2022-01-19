@@ -4,7 +4,6 @@ import (
 	bt "bytes"
 	"io"
 	"io/ioutil"
-	"math"
 
 	"github.com/ajiyoshi-vg/hairetsu/bytes"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
@@ -55,12 +54,12 @@ func (t *DictTrie) ReadFrom(r io.Reader) (int64, error) {
 	}
 
 	dict := bytes.Dict{}
-	if err := dict.UnmarshalBinary(buf[0:math.MaxUint8]); err != nil {
+	if err := dict.UnmarshalBinary(buf[0:bytes.Size]); err != nil {
 		return ret, err
 	}
 
 	data := doublearray.New()
-	rData := bt.NewReader(buf[math.MaxUint8:])
+	rData := bt.NewReader(buf[bytes.Size:])
 
 	if _, err := data.ReadFrom(rData); err != nil {
 		return ret, err

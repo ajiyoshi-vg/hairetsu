@@ -17,6 +17,8 @@ var (
 	_ encoding.BinaryUnmarshaler = (*Dict)(nil)
 )
 
+const Size = math.MaxUint8 + 1
+
 type Builder struct {
 	byteCount map[byte]uint32
 }
@@ -58,10 +60,10 @@ func (d Dict) MarshalBinary() ([]byte, error) {
 }
 
 func (d *Dict) UnmarshalBinary(bs []byte) error {
-	if len(bs) != math.MaxUint8 {
-		return fmt.Errorf("want %d bytes got %d", math.MaxUint8, len(bs))
+	if len(bs) != Size {
+		return fmt.Errorf("want %d bytes got %d", Size, len(bs))
 	}
-	*d = make([]byte, math.MaxUint8)
+	*d = make([]byte, Size)
 	copy(*d, bs)
 	return nil
 }
@@ -72,14 +74,14 @@ func (d Dict) WriteTo(w io.Writer) (int64, error) {
 }
 
 func (d *Dict) ReadFrom(r io.Reader) (int64, error) {
-	*d = make([]byte, math.MaxUint8)
+	*d = make([]byte, Size)
 	n, err := r.Read(*d)
 	return int64(n), err
 }
 
 func NewBuilder() *Builder {
 	bc := map[byte]uint32{}
-	for i := 0; i < math.MaxUint8; i++ {
+	for i := 0; i < Size; i++ {
 		bc[byte(i)] = 0
 	}
 	return &Builder{
@@ -108,7 +110,7 @@ func (x *Builder) Build() Dict {
 		return buf[i].n > buf[j].n
 	})
 
-	var ret [math.MaxUint8]byte
+	var ret [Size]byte
 	for i, x := range buf {
 		ret[x.b] = byte(i)
 	}
@@ -117,7 +119,7 @@ func (x *Builder) Build() Dict {
 
 func FromReader(r io.Reader) (Dict, error) {
 	b := NewBuilder()
-	buf := make([]byte, math.MaxUint8)
+	buf := make([]byte, Size)
 	for {
 		n, err := r.Read(buf)
 		if n > 0 {
