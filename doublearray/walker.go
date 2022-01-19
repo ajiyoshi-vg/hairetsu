@@ -59,15 +59,6 @@ func getKey(da Nodes, parent, child node.Index) (word.Word, error) {
 		}
 		parent, child = next, parent
 	}
-	reverse(buf)
+	word.Reverse(buf)
 	return buf, nil
-}
-
-func reverse(w []word.Code) {
-	i, j := 0, len(w)-1
-	for i < j {
-		w[i], w[j] = w[j], w[i]
-		i++
-		j--
-	}
 }

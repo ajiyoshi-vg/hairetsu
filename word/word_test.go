@@ -97,3 +97,29 @@ func TestAt(t *testing.T) {
 		})
 	}
 }
+
+func TestReverse(t *testing.T) {
+	cases := []struct {
+		title  string
+		input  Word
+		expect Word
+	}{
+		{
+			title:  "EOS",
+			input:  Word{0, 1, 2, math.MaxUint8, 4},
+			expect: Word{4, math.MaxUint8, 2, 1, 0},
+		},
+		{
+			title:  "SEP",
+			input:  WithNameSpace([]byte{0, 1, 2}, []byte{3, 4}),
+			expect: Word{4, 3, Separator, 2, 1, 0},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.title, func(t *testing.T) {
+			Reverse(c.input)
+			assert.Equal(t, c.expect, c.input)
+		})
+	}
+}

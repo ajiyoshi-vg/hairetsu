@@ -72,3 +72,12 @@ func (x Code) Generate(r *rand.Rand, size int) reflect.Value {
 	ret := Code(rand.Uint32())
 	return reflect.ValueOf(ret)
 }
+
+func Reverse(w Word) {
+	i, j := 0, len(w)-1
+	for i < j {
+		w[i], w[j] = w[j], w[i]
+		i++
+		j--
+	}
+}
