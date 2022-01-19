@@ -1,6 +1,9 @@
 package doublearray
 
 import (
+	"fmt"
+	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/ajiyoshi-vg/hairetsu/keytree"
@@ -29,19 +32,37 @@ func TestForeach(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		t.Run(c.title, func(t *testing.T) {
-			da := New()
-			ks := keytree.FromWord(c.content)
-			assert.NoError(t, NewBuilder().Build(da, ks))
+		origin := New()
+		ks := keytree.FromWord(c.content)
+		assert.NoError(t, NewBuilder().Build(origin, ks))
 
-			num := 0
-			err := ForEach(da, func(actual word.Word, val uint32) error {
-				assert.Equal(t, c.content[val], actual)
-				num++
-				return nil
+		tmp, err := ioutil.TempFile("", "test")
+		assert.NoError(t, err)
+		defer os.Remove(tmp.Name())
+
+		_, err = origin.WriteTo(tmp)
+		assert.NoError(t, err)
+		assert.NoError(t, tmp.Close())
+
+		mmaped, err := OpenMmap(tmp.Name())
+		assert.NoError(t, err)
+
+		das := map[string]Nodes{
+			"DoubleArray": origin,
+			"Mmap":        mmaped,
+		}
+
+		for name, da := range das {
+			t.Run(fmt.Sprintf("%s:%s", c.title, name), func(t *testing.T) {
+				num := 0
+				err := WalkLeaf(da, func(actual word.Word, val uint32) error {
+					assert.Equal(t, c.content[val], actual)
+					num++
+					return nil
+				})
+				assert.NoError(t, err)
+				assert.Equal(t, len(c.content), num)
 			})
-			assert.NoError(t, err)
-			assert.Equal(t, len(c.content), num)
-		})
+		}
 	}
 }

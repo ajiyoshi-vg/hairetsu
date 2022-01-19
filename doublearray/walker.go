@@ -7,7 +7,7 @@ import (
 	"github.com/ajiyoshi-vg/hairetsu/word"
 )
 
-func ForEach(da Nodes, yield func(word.Word, uint32) error) error {
+func WalkLeaf(da Nodes, yield func(word.Word, uint32) error) error {
 	for i := node.Index(0); ; i++ {
 		target, err := da.At(i)
 		if err != nil {
