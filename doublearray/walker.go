@@ -7,6 +7,8 @@ import (
 	"github.com/ajiyoshi-vg/hairetsu/word"
 )
 
+// WalkLeaf : Enumerate the leaf nodes.
+// This is for testing purposes, so it does not work efficiently.
 func WalkLeaf(da Nodes, yield func(word.Word, uint32) error) error {
 	for i := node.Index(0); ; i++ {
 		target, err := da.At(i)
