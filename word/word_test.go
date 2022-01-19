@@ -71,6 +71,33 @@ func TestNameSpace(t *testing.T) {
 	}
 }
 
+func TestUnNameSpace(t *testing.T) {
+	cases := []struct {
+		title string
+		ns    []byte
+		key   []byte
+		input Word
+	}{
+		{
+			title: "UnNameSpace",
+			input: WithNameSpace([]byte("ns"), []byte("key")),
+			ns:    []byte("ns"),
+			key:   []byte("key"),
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.title, func(t *testing.T) {
+			actual := WithNameSpace(c.ns, c.key)
+			assert.Equal(t, c.input, actual)
+			ns, key, err := actual.UnNameSpace()
+			assert.NoError(t, err)
+			assert.Equal(t, c.ns, ns)
+			assert.Equal(t, c.key, key)
+		})
+	}
+}
+
 func TestAt(t *testing.T) {
 	cases := []struct {
 		title  string

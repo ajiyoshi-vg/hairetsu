@@ -9,18 +9,18 @@ import (
 
 func ForEach(da Nodes, yield func(word.Word, uint32) error) error {
 	for i := node.Index(0); ; i++ {
-		nod, err := da.At(i)
+		target, err := da.At(i)
 		if err != nil {
 			return nil
 		}
-		if !nod.IsTerminal() {
+		if !target.IsTerminal() {
 			continue
 		}
-		key, err := getKey(da, nod.GetParent(), i)
+		key, err := getKey(da, target.GetParent(), i)
 		if err != nil {
 			return err
 		}
-		dat, err := da.At(nod.GetChild(word.EOS))
+		dat, err := da.At(target.GetChild(word.EOS))
 		if err != nil {
 			return err
 		}
@@ -33,27 +33,27 @@ func ForEach(da Nodes, yield func(word.Word, uint32) error) error {
 }
 func getKey(da Nodes, parent, child node.Index) (word.Word, error) {
 	buf := make(word.Word, 0, 8)
-	nod, err := da.At(parent)
+	target, err := da.At(parent)
 	if err != nil {
 		return nil, err
 	}
 	for {
-		label := node.Label(nod.GetOffset(), child)
-		if nod.GetChild(label) != child {
+		label := node.Label(target.GetOffset(), child)
+		if target.GetChild(label) != child {
 			return nil, fmt.Errorf("bad label(%d) want %d got %d",
 				label,
 				child,
-				nod.GetChild(label),
+				target.GetChild(label),
 			)
 		}
 		buf = append(buf, label)
 
-		if !nod.HasParent() {
+		if !target.HasParent() {
 			break
 		}
 
-		next := nod.GetParent()
-		nod, err = da.At(next)
+		next := target.GetParent()
+		target, err = da.At(next)
 		if err != nil {
 			return nil, err
 		}

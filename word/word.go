@@ -68,6 +68,30 @@ func WithNameSpace(ns, key []byte) Word {
 	return ret
 }
 
+// UnNameSpace : inverse of WithNameSpace(). it's for test purpose
+func (x Word) UnNameSpace() ([]byte, []byte, error) {
+	var head, tail []byte
+	separated := false
+	for _, c := range x {
+		if c == Separator {
+			separated = true
+			continue
+		}
+		if c > math.MaxUint8 {
+			return nil, nil, fmt.Errorf("bad %v code(%d) %d", x, c, Separator)
+		}
+		if separated {
+			tail = append(tail, byte(c))
+		} else {
+			head = append(head, byte(c))
+		}
+	}
+	if separated {
+		return head, tail, nil
+	}
+	return nil, head, nil
+}
+
 func (x Code) Generate(r *rand.Rand, size int) reflect.Value {
 	ret := Code(rand.Uint32())
 	return reflect.ValueOf(ret)
