@@ -12,12 +12,17 @@ import (
 type Mmap struct {
 	r      *mmap.ReaderAt
 	offset int64
+	length int64
 }
 
 const nodeSize = 8
 
-func NewMmap(r *mmap.ReaderAt, offset int64) *Mmap {
-	return &Mmap{r: r, offset: offset}
+func NewMmap(r *mmap.ReaderAt, offset, length int64) *Mmap {
+	return &Mmap{
+		r:      r,
+		offset: offset,
+		length: length,
+	}
 }
 
 func OpenMmap(path string) (*Mmap, error) {
@@ -26,14 +31,23 @@ func OpenMmap(path string) (*Mmap, error) {
 	if err != nil {
 		return nil, err
 	}
-	return NewMmap(r, 0), nil
+	return NewMmap(r, 0, int64(r.Len())), nil
 }
 
+var (
+	ErrOutofRange = errors.New("index out of range")
+	ErrBadAlign   = errors.New("bad align")
+)
+
 func (da *Mmap) At(i node.Index) (node.Node, error) {
+	pos := int64(i) * nodeSize
+	if pos+nodeSize > da.length {
+		return 0, ErrOutofRange
+	}
 	s := make([]byte, nodeSize)
-	n, err := da.r.ReadAt(s, int64(i)*nodeSize+da.offset)
+	n, err := da.r.ReadAt(s, da.offset+pos)
 	if n != nodeSize {
-		return 0, errors.New("bad size")
+		return 0, ErrBadAlign
 	}
 	if err != nil {
 		return 0, err
