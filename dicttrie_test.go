@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	bd "github.com/ajiyoshi-vg/hairetsu/bytes"
+	dict "github.com/ajiyoshi-vg/hairetsu/bytes"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/stretchr/testify/assert"
@@ -45,7 +45,7 @@ func TestDictTrieSearch(t *testing.T) {
 		t.Run(c.title, func(t *testing.T) {
 			data := c.data
 
-			ks, dict, err := bd.FromSlice(data)
+			ks, dict, err := dict.FromSlice(data)
 			assert.NoError(t, err)
 
 			da, err := NewDictTrieBuilder().Build(ks, dict)
