@@ -6,7 +6,6 @@ import (
 	"io"
 	"io/ioutil"
 
-	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	da "github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/runes"
@@ -72,7 +71,7 @@ func (t *RuneTrie) ReadFrom(r io.Reader) (int64, error) {
 	if _, err := dict.ReadFrom(rDict); err != nil {
 		return ret, err
 	}
-	data := doublearray.New()
+	data := da.New()
 	rData := bytes.NewReader(buf[runeTrieHeader+size:])
 
 	if _, err := data.ReadFrom(rData); err != nil {
@@ -94,7 +93,7 @@ func NewRuneTrieBuilder(opt ...da.Option) *RuneTrieBuilder {
 	}
 }
 
-func (b *RuneTrieBuilder) Build(ks doublearray.Walker, dict runes.Dict) (*RuneTrie, error) {
+func (b *RuneTrieBuilder) Build(ks da.Walker, dict runes.Dict) (*RuneTrie, error) {
 	data := da.New()
 	if err := b.builder.Build(data, ks); err != nil {
 		return nil, err
