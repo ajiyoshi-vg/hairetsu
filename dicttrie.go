@@ -1,11 +1,11 @@
 package hairetsu
 
 import (
-	bt "bytes"
+	"bytes"
 	"io"
 	"io/ioutil"
 
-	"github.com/ajiyoshi-vg/hairetsu/bytes"
+	dict "github.com/ajiyoshi-vg/hairetsu/bytes"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	da "github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/node"
@@ -21,7 +21,7 @@ type DictTrieBuilder struct {
 	builder *da.Builder
 }
 
-func NewDictTrie(data da.Nodes, dict bytes.Dict) *DictTrie {
+func NewDictTrie(data da.Nodes, dict dict.Dict) *DictTrie {
 	return &DictTrie{
 		data: data,
 		dict: da.BytesDict(dict),
@@ -53,26 +53,26 @@ func (t *DictTrie) ReadFrom(r io.Reader) (int64, error) {
 		return ret, err
 	}
 
-	dict := bytes.Dict{}
-	if err := dict.UnmarshalBinary(buf[0:bytes.Size]); err != nil {
+	d := dict.Dict{}
+	if err := d.UnmarshalBinary(buf[0:dict.Size]); err != nil {
 		return ret, err
 	}
 
 	data := doublearray.New()
-	rData := bt.NewReader(buf[bytes.Size:])
+	rData := bytes.NewReader(buf[dict.Size:])
 
 	if _, err := data.ReadFrom(rData); err != nil {
 		return ret, err
 	}
 
-	t.dict = doublearray.BytesDict(dict)
+	t.dict = doublearray.BytesDict(d)
 	t.data = data
 
 	return ret, nil
 }
 
-func (t *DictTrie) GetDict() bytes.Dict {
-	return bytes.Dict(t.dict)
+func (t *DictTrie) GetDict() dict.Dict {
+	return dict.Dict(t.dict)
 }
 
 func NewDictTrieBuilder(opt ...da.Option) *DictTrieBuilder {
@@ -81,7 +81,7 @@ func NewDictTrieBuilder(opt ...da.Option) *DictTrieBuilder {
 	}
 }
 
-func (b *DictTrieBuilder) Build(ks doublearray.Walker, dict bytes.Dict) (*DictTrie, error) {
+func (b *DictTrieBuilder) Build(ks doublearray.Walker, dict dict.Dict) (*DictTrie, error) {
 	data := da.New()
 	if err := b.builder.Build(data, ks); err != nil {
 		return nil, err
@@ -90,7 +90,7 @@ func (b *DictTrieBuilder) Build(ks doublearray.Walker, dict bytes.Dict) (*DictTr
 }
 
 func (b *DictTrieBuilder) BuildFromLines(r io.Reader) (*DictTrie, error) {
-	ks, dict, err := bytes.FromWalker(token.NewLinedBytes(r))
+	ks, dict, err := dict.FromWalker(token.NewLinedBytes(r))
 	if err != nil {
 		return nil, err
 	}
