@@ -27,7 +27,7 @@ func NewBuilder(opt ...Option) *Builder {
 	return ret
 }
 
-func (b *Builder) ReadFrom(da *DoubleArray, r io.Reader) (int64, error) {
+func (b *Builder) readFrom(da *DoubleArray, r io.Reader) (int64, error) {
 	var ret int64
 	length := 8
 	buf := make([]byte, length)

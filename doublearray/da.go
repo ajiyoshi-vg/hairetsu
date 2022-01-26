@@ -68,7 +68,7 @@ func (da *DoubleArray) WriteTo(w io.Writer) (int64, error) {
 	return ret, nil
 }
 func (da *DoubleArray) ReadFrom(r io.Reader) (int64, error) {
-	return NewBuilder().ReadFrom(da, r)
+	return NewBuilder().readFrom(da, r)
 }
 
 func (da *DoubleArray) ExactMatchSearch(cs word.Word) (node.Index, error) {

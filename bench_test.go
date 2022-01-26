@@ -245,7 +245,7 @@ func readIndex(path string) (*doublearray.DoubleArray, error) {
 
 	r := bufio.NewReader(file)
 	da := doublearray.New()
-	_, err = doublearray.NewBuilder().ReadFrom(da, r)
+	_, err = da.ReadFrom(r)
 	if err != nil {
 		return nil, err
 	}
