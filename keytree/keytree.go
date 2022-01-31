@@ -1,6 +1,7 @@
 package keytree
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/ajiyoshi-vg/hairetsu/word"
@@ -41,6 +42,8 @@ func (x *Tree) Get(key word.Word) (*uint32, error) {
 	return node.value, nil
 }
 
+var ErrDuplicated = errors.New("key already exists")
+
 func (x *Tree) Put(key word.Word, val uint32) error {
 	node := x
 	for _, b := range key {
@@ -52,7 +55,7 @@ func (x *Tree) Put(key word.Word, val uint32) error {
 		node = child
 	}
 	if node.value != nil {
-		return fmt.Errorf("%v was inserted twice. old:%d new:%d", key, *node.value, val)
+		return ErrDuplicated
 	}
 	node.value = &val
 	x.leafNum++
