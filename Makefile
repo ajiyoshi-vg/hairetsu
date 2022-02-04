@@ -28,6 +28,9 @@ jawiki-latest-all-titles.gz:
 bench.dat: jawiki-latest-all-titles.gz
 	gunzip -c $< | cut -f 2 | sort | uniq > $@
 
+tiny_data:
+	cat LICENSE| tr ' ' '\n' | grep -v "^$$" | sort -u | uniq > head.dat
+
 head.dat: bench.dat Makefile
 	tail -n 100000 $< > $@
 
