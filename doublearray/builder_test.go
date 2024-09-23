@@ -1,6 +1,7 @@
 package doublearray
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/ajiyoshi-vg/hairetsu/keytree"
@@ -67,4 +68,64 @@ func fromWord(data []word.Word) *keytree.Tree {
 		ks.Put(x, uint32(i))
 	}
 	return ks
+}
+
+func TestStreamBuild(t *testing.T) {
+	cases := map[string]struct {
+		input  []Item
+		ng     []word.Word
+		prefix word.Word
+		num    int
+	}{
+		"normal": {
+			input: []Item{
+				{word.Word{5, 4, 3}, 1},
+				{word.Word{5, 4, 3, 2, 1}, 2},
+			},
+			ng: []word.Word{
+				{5},
+				{5, 4},
+				{5, 4, 3, 2},
+			},
+			prefix: word.Word{5, 4, 3, 2, 1, 2, 3, 4, 5},
+			num:    2,
+		},
+		"no val": {
+			input: []Item{
+				{Word: word.Word{5, 4, 3}},
+				{Word: word.Word{5, 4, 3, 2, 1}},
+			},
+			ng: []word.Word{
+				{5},
+				{5, 4},
+				{5, 4, 3, 2},
+			},
+			prefix: word.Word{5, 4, 3, 2, 1, 2, 3, 4, 5},
+			num:    2,
+		},
+	}
+
+	for title, c := range cases {
+		t.Run(title, func(t *testing.T) {
+			da := New()
+			b := NewBuilder()
+			err := b.StreamBuild(da, slices.Values(c.input))
+			assert.NoError(t, err)
+
+			for _, x := range c.input {
+				actual, err := da.ExactMatchSearch(x.Word)
+				assert.NoError(t, err)
+				assert.Equal(t, node.Index(x.Val), actual)
+			}
+
+			for _, x := range c.ng {
+				_, err := da.ExactMatchSearch(x)
+				assert.Error(t, err)
+			}
+
+			actual, err := da.CommonPrefixSearch(c.prefix)
+			assert.NoError(t, err)
+			assert.Equal(t, c.num, len(actual))
+		})
+	}
 }
