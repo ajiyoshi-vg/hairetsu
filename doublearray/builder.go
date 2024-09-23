@@ -3,10 +3,12 @@ package doublearray
 import (
 	"fmt"
 	"io"
+	"iter"
 	"log"
 
 	"github.com/ajiyoshi-vg/hairetsu/keytree"
 	"github.com/ajiyoshi-vg/hairetsu/node"
+	"github.com/ajiyoshi-vg/hairetsu/stream"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 )
 
@@ -63,6 +65,20 @@ type NodeWalker interface {
 type LeafWalker interface {
 	WalkLeaf(func(word.Word, uint32) error) error
 }
+type Item struct {
+	Word word.Word
+	Val  uint32
+}
+type nodeItem struct {
+	Prefix word.Word
+	Branch []word.Code
+	Val    *uint32
+}
+type nodeUnit struct {
+	Prefix word.Word
+	Branch *word.Code `json:",omitempty"`
+	Val    *uint32    `json:",omitempty"`
+}
 
 var (
 	_ walker = (*keytree.Tree)(nil)
@@ -77,6 +93,75 @@ func (b *Builder) Build(da *DoubleArray, ks NodeWalker) error {
 		}
 		return b.insert(da, prefix, branch, val)
 	})
+}
+
+func (b *Builder) StreamBuild(da *DoubleArray, seq iter.Seq[Item]) error {
+	sorted, n, err := stream.Sort(unitFromItem(seq), compareNodeUnit)
+	if err != nil {
+		return err
+	}
+	b.init(da, 0)
+	b.SetMax(n)
+	for x := range nodeFromUnit(sorted) {
+		if x.Val != nil {
+			x.Branch = append(x.Branch, word.EOS)
+		}
+		if err := b.insert(da, x.Prefix, x.Branch, x.Val); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func unitFromItem(seq iter.Seq[Item]) iter.Seq[nodeUnit] {
+	return func(yield func(nodeUnit) bool) {
+		for x := range seq {
+			prefix := word.Word{}
+			for _, b := range x.Word {
+				if !yield(nodeUnit{Prefix: prefix, Branch: &b}) {
+					return
+				}
+				prefix = append(prefix, b)
+			}
+			yield(nodeUnit{Prefix: prefix, Val: &x.Val})
+		}
+	}
+}
+func nodeFromUnit(seq iter.Seq[nodeUnit]) iter.Seq[nodeItem] {
+	return func(yield func(nodeItem) bool) {
+		var node nodeItem
+		for x := range seq {
+			if word.Compare(node.Prefix, x.Prefix) != 0 {
+				if !yield(node) {
+					return
+				}
+				node = newNodeItem(x)
+				continue
+			}
+			if x.Branch != nil {
+				node.Branch = append(node.Branch, *x.Branch)
+			} else {
+				node.Val = x.Val
+			}
+		}
+		if len(node.Branch) > 0 || node.Val != nil {
+			yield(node)
+		}
+	}
+}
+func newNodeItem(x nodeUnit) nodeItem {
+	ret := nodeItem{
+		Prefix: x.Prefix,
+		Val:    x.Val,
+	}
+	if x.Branch != nil {
+		ret.Branch = []word.Code{*x.Branch}
+	}
+	return ret
+}
+
+func compareNodeUnit(a, b nodeUnit) int {
+	return word.Compare(a.Prefix, b.Prefix)
 }
 
 func (b *Builder) SetMax(n int) {
