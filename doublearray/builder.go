@@ -52,27 +52,37 @@ func (b *Builder) readFrom(da *DoubleArray, r io.Reader) (int64, error) {
 	}
 }
 
-type Walker interface {
+type walker interface {
+	NodeWalker
+	LeafWalker
+}
+type NodeWalker interface {
 	WalkNode(func(word.Word, []word.Code, *uint32) error) error
-	WalkLeaf(func(word.Word, uint32) error) error
 	LeafNum() int
+}
+type LeafWalker interface {
+	WalkLeaf(func(word.Word, uint32) error) error
 }
 
 var (
-	_ Walker = (*keytree.Tree)(nil)
+	_ walker = (*keytree.Tree)(nil)
 )
 
-func (b *Builder) Build(da *DoubleArray, ks Walker) error {
+func (b *Builder) Build(da *DoubleArray, ks NodeWalker) error {
 	b.init(da, 0)
-	if b.progress != nil {
-		b.progress.SetMax(ks.LeafNum())
-	}
+	b.SetMax(ks.LeafNum())
 	return ks.WalkNode(func(prefix word.Word, branch []word.Code, val *uint32) error {
 		if val != nil {
 			branch = append(branch, word.EOS)
 		}
 		return b.insert(da, prefix, branch, val)
 	})
+}
+
+func (b *Builder) SetMax(n int) {
+	if b.progress != nil {
+		b.progress.SetMax(n)
+	}
 }
 
 func (b *Builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code, val *uint32) error {

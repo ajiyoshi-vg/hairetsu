@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"io"
-	"io/ioutil"
 
 	da "github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/node"
@@ -56,7 +55,7 @@ func (t *RuneTrie) WriteTo(w io.Writer) (int64, error) {
 }
 
 func (t *RuneTrie) ReadFrom(r io.Reader) (int64, error) {
-	buf, err := ioutil.ReadAll(r)
+	buf, err := io.ReadAll(r)
 	ret := int64(len(buf))
 	if err != nil {
 		return ret, err
@@ -93,7 +92,7 @@ func NewRuneTrieBuilder(opt ...da.Option) *RuneTrieBuilder {
 	}
 }
 
-func (b *RuneTrieBuilder) Build(ks da.Walker, dict runes.Dict) (*RuneTrie, error) {
+func (b *RuneTrieBuilder) Build(ks da.NodeWalker, dict runes.Dict) (*RuneTrie, error) {
 	data := da.New()
 	if err := b.builder.Build(data, ks); err != nil {
 		return nil, err

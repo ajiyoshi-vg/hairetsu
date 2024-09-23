@@ -51,7 +51,7 @@ func (b *ByteTrieBuilder) BuildSlice(xs [][]byte) (*ByteTrie, error) {
 	return b.Build(ks)
 }
 
-func (b *ByteTrieBuilder) Build(ks da.Walker) (*ByteTrie, error) {
+func (b *ByteTrieBuilder) Build(ks da.NodeWalker) (*ByteTrie, error) {
 	x := da.New()
 	if err := b.builder.Build(x, ks); err != nil {
 		return nil, err

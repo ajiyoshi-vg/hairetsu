@@ -16,7 +16,7 @@ import (
 func TestDoubleArraySearch(t *testing.T) {
 	cases := []struct {
 		title  string
-		data   Walker
+		data   walker
 		ng     []word.Word
 		prefix word.Word
 		num    int
@@ -24,13 +24,13 @@ func TestDoubleArraySearch(t *testing.T) {
 		{
 			title: "keytree",
 			data: keytree.FromWord([]word.Word{
-				word.Word{5, 4, 3},
-				word.Word{5, 4, 3, 2, 1},
+				{5, 4, 3},
+				{5, 4, 3, 2, 1},
 			}),
 			ng: []word.Word{
-				word.Word{5},
-				word.Word{5, 4},
-				word.Word{5, 4, 3, 2},
+				{5},
+				{5, 4},
+				{5, 4, 3, 2},
 			},
 			prefix: word.Word{5, 4, 3, 2, 1},
 			num:    2,

@@ -3,7 +3,6 @@ package hairetsu
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 
 	dict "github.com/ajiyoshi-vg/hairetsu/bytes"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
@@ -47,7 +46,7 @@ func (t *DictTrie) WriteTo(w io.Writer) (int64, error) {
 }
 
 func (t *DictTrie) ReadFrom(r io.Reader) (int64, error) {
-	buf, err := ioutil.ReadAll(r)
+	buf, err := io.ReadAll(r)
 	ret := int64(len(buf))
 	if err != nil {
 		return ret, err
@@ -81,7 +80,7 @@ func NewDictTrieBuilder(opt ...da.Option) *DictTrieBuilder {
 	}
 }
 
-func (b *DictTrieBuilder) Build(ks doublearray.Walker, dict dict.Dict) (*DictTrie, error) {
+func (b *DictTrieBuilder) Build(ks doublearray.NodeWalker, dict dict.Dict) (*DictTrie, error) {
 	data := da.New()
 	if err := b.builder.Build(data, ks); err != nil {
 		return nil, err

@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"sort"
 
 	"github.com/ajiyoshi-vg/hairetsu/token"
@@ -149,7 +148,7 @@ func (d Dict) WriteTo(w io.Writer) (int64, error) {
 }
 
 func (d Dict) ReadFrom(r io.Reader) (int64, error) {
-	buf, err := ioutil.ReadAll(r)
+	buf, err := io.ReadAll(r)
 	ret := int64(len(buf))
 	if err != nil {
 		return ret, err
