@@ -10,7 +10,7 @@ import (
 	"io"
 	"sort"
 
-	"github.com/ajiyoshi-vg/hairetsu/token"
+	"github.com/ajiyoshi-vg/external/scan"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 )
 
@@ -195,9 +195,8 @@ func (b *Builder) Build() Dict {
 
 func fromLines(r io.Reader) (Dict, error) {
 	b := NewBuilder()
-	_ = token.NewLinedString(r).Walk(func(s string) error {
-		b.Add(s)
-		return nil
-	})
+	for line := range scan.Lines(r) {
+		b.Add(line)
+	}
 	return b.Build(), nil
 }
