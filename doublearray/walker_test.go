@@ -2,7 +2,6 @@ package doublearray
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -18,9 +17,9 @@ func TestForeach(t *testing.T) {
 	}{
 		{
 			content: []word.Word{
-				word.Word{1, 2, 3, 4},
-				word.Word{0, 1, 2},
-				word.Word{0, 1, 2, 3, 4, 5},
+				{1, 2, 3, 4},
+				{0, 1, 2},
+				{0, 1, 2, 3, 4, 5},
 			},
 		},
 		{
@@ -36,7 +35,7 @@ func TestForeach(t *testing.T) {
 		ks := keytree.FromWord(c.content)
 		assert.NoError(t, NewBuilder().Build(origin, ks))
 
-		tmp, err := ioutil.TempFile("", "test")
+		tmp, err := os.CreateTemp("", "test")
 		assert.NoError(t, err)
 		defer os.Remove(tmp.Name())
 

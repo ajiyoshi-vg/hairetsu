@@ -2,10 +2,11 @@ package doublearray
 
 import (
 	"bytes"
+	"slices"
 	"strings"
 	"testing"
 
-	"github.com/ajiyoshi-vg/hairetsu/keytree"
+	"github.com/ajiyoshi-vg/hairetsu/doublearray/item"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/runes"
 	"github.com/ajiyoshi-vg/hairetsu/token"
@@ -16,17 +17,17 @@ import (
 func TestDoubleArraySearch(t *testing.T) {
 	cases := []struct {
 		title  string
-		data   walker
+		data   []item.Item
 		ng     []word.Word
 		prefix word.Word
 		num    int
 	}{
 		{
 			title: "keytree",
-			data: keytree.FromWord([]word.Word{
-				{5, 4, 3},
-				{5, 4, 3, 2, 1},
-			}),
+			data: item.FromWords(
+				word.Word{5, 4, 3},
+				word.Word{5, 4, 3, 2, 1},
+			),
 			ng: []word.Word{
 				{5},
 				{5, 4},
@@ -38,30 +39,26 @@ func TestDoubleArraySearch(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		origin := New()
-
-		err := NewBuilder().Build(origin, c.data)
+		origin, err := NewBuilder().StreamBuild(slices.Values(c.data))
 		assert.NoError(t, err)
 
 		das := []Nodes{origin}
 
 		for _, da := range das {
 			s := GetStat(da)
-			assert.Equal(t, c.data.LeafNum(), s.Leaf)
+			assert.Equal(t, len(c.data), s.Leaf)
 
-			c.data.WalkLeaf(func(wd word.Word, val uint32) error {
-				actual, err := Words{}.ExactMatchSearch(da, wd)
+			for _, x := range c.data {
+				actual, err := Words{}.ExactMatchSearch(da, x.Word)
 				assert.NoError(t, err)
-				assert.Equal(t, node.Index(val), actual)
+				assert.Equal(t, node.Index(x.Val), actual)
 
-				bs, err := wd.Bytes()
+				bs, err := x.Word.Bytes()
 				assert.NoError(t, err)
 				actual, err = Bytes{}.ExactMatchSearch(da, bs)
 				assert.NoError(t, err)
-				assert.Equal(t, node.Index(val), actual)
-
-				return nil
-			})
+				assert.Equal(t, node.Index(x.Val), actual)
+			}
 
 			for _, x := range c.ng {
 				_, err = Words{}.ExactMatchSearch(da, x)

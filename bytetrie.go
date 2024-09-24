@@ -2,11 +2,12 @@ package hairetsu
 
 import (
 	"io"
+	"iter"
+	"slices"
 
 	da "github.com/ajiyoshi-vg/hairetsu/doublearray"
-	"github.com/ajiyoshi-vg/hairetsu/keytree"
+	"github.com/ajiyoshi-vg/hairetsu/doublearray/item"
 	"github.com/ajiyoshi-vg/hairetsu/node"
-	"github.com/ajiyoshi-vg/hairetsu/word"
 )
 
 type ByteTrie struct {
@@ -41,19 +42,12 @@ func NewByteTrieBuilder(opt ...da.Option) *ByteTrieBuilder {
 }
 
 func (b *ByteTrieBuilder) BuildSlice(xs [][]byte) (*ByteTrie, error) {
-	ks := keytree.New()
-	for i, x := range xs {
-		err := ks.Put(word.FromBytes(x), uint32(i))
-		if err != nil {
-			return nil, err
-		}
-	}
-	return b.Build(ks)
+	return b.StreamBuild(slices.Values(xs))
 }
 
-func (b *ByteTrieBuilder) Build(ks da.NodeWalker) (*ByteTrie, error) {
-	x := da.New()
-	if err := b.builder.Build(x, ks); err != nil {
+func (b *ByteTrieBuilder) StreamBuild(seq iter.Seq[[]byte]) (*ByteTrie, error) {
+	x, err := da.StreamBuild(item.FromByteSeq(seq))
+	if err != nil {
 		return nil, err
 	}
 	return NewByteTrie(x), nil

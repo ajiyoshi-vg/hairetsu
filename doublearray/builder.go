@@ -7,7 +7,7 @@ import (
 	"log"
 
 	"github.com/ajiyoshi-vg/external"
-	"github.com/ajiyoshi-vg/hairetsu/keytree"
+	"github.com/ajiyoshi-vg/hairetsu/doublearray/item"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/stream"
 	"github.com/ajiyoshi-vg/hairetsu/word"
@@ -56,20 +56,10 @@ func (b *Builder) readFrom(da *DoubleArray, r io.Reader) (int64, error) {
 	}
 }
 
-type walker interface {
-	NodeWalker
-	LeafWalker
-}
+// Deprecated: should use StreamBuild
 type NodeWalker interface {
 	WalkNode(func(word.Word, []word.Code, *uint32) error) error
 	LeafNum() int
-}
-type LeafWalker interface {
-	WalkLeaf(func(word.Word, uint32) error) error
-}
-type Item struct {
-	Word word.Word
-	Val  uint32
 }
 type nodeItem struct {
 	prefix word.Word
@@ -82,10 +72,7 @@ type nodeUnit struct {
 	Val    *uint32    `json:",omitempty"`
 }
 
-var (
-	_ walker = (*keytree.Tree)(nil)
-)
-
+// Deprecated: should use StreamBuild
 func (b *Builder) Build(da *DoubleArray, ks NodeWalker) error {
 	b.init(da, 0)
 	b.SetMax(ks.LeafNum())
@@ -97,10 +84,15 @@ func (b *Builder) Build(da *DoubleArray, ks NodeWalker) error {
 	})
 }
 
-func (b *Builder) StreamBuild(da *DoubleArray, seq iter.Seq[Item]) error {
+func StreamBuild(seq iter.Seq[item.Item]) (*DoubleArray, error) {
+	return NewBuilder().StreamBuild(seq)
+}
+
+func (b *Builder) StreamBuild(seq iter.Seq[item.Item]) (*DoubleArray, error) {
+	da := New()
 	sorted, n, err := stream.Sort(unitFromItem(seq), compareNodeUnit, b.sortOption...)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	b.init(da, 0)
 	b.SetMax(n)
@@ -109,13 +101,13 @@ func (b *Builder) StreamBuild(da *DoubleArray, seq iter.Seq[Item]) error {
 			x.branch = append(x.branch, word.EOS)
 		}
 		if err := b.insert(da, x.prefix, x.branch, x.val); err != nil {
-			return err
+			return nil, err
 		}
 	}
-	return nil
+	return da, nil
 }
 
-func unitFromItem(seq iter.Seq[Item]) iter.Seq[nodeUnit] {
+func unitFromItem(seq iter.Seq[item.Item]) iter.Seq[nodeUnit] {
 	return func(yield func(nodeUnit) bool) {
 		for x := range seq {
 			prefix := word.Word{}

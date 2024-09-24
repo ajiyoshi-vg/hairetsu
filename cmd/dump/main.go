@@ -7,13 +7,12 @@ import (
 	"io"
 	"log"
 	"os"
+	"slices"
 	"time"
 
+	"github.com/ajiyoshi-vg/external/scan"
 	"github.com/ajiyoshi-vg/hairetsu"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
-	"github.com/ajiyoshi-vg/hairetsu/keytree"
-	"github.com/ajiyoshi-vg/hairetsu/token"
-	"github.com/ajiyoshi-vg/hairetsu/word"
 	"github.com/ikawaha/dartsclone"
 	dartsprog "github.com/ikawaha/dartsclone/progressbar"
 	"github.com/schollz/progressbar"
@@ -68,12 +67,9 @@ func run() error {
 }
 
 func dumpByte(file io.Reader) error {
-	ks, err := fromLines(file)
-	if err != nil {
-		return err
-	}
 	p := doublearray.OptionProgress(progressbar.New(0))
-	trie, err := hairetsu.NewByteTrieBuilder(p).Build(ks)
+	seq := scan.ByteLines(file)
+	trie, err := hairetsu.NewByteTrieBuilder(p).StreamBuild(seq)
 	if err != nil {
 		return err
 	}
@@ -99,10 +95,7 @@ func dumpDict(file io.Reader) error {
 }
 
 func dumpDarts(file io.Reader) error {
-	ss, err := asSlice(file)
-	if err != nil {
-		return err
-	}
+	ss := slices.Collect(scan.Lines(file))
 
 	p := dartsprog.New()
 	p.SetMaximum(len(ss))
@@ -126,33 +119,4 @@ func writeTo(data io.WriterTo, path string) error {
 		return err
 	}
 	return nil
-}
-
-func fromLines(file io.Reader) (*keytree.Tree, error) {
-	ks := keytree.New()
-	var i uint32
-	t := token.NewLinedWords(file)
-	err := t.Walk(func(w word.Word) error {
-		defer func() { i++ }()
-		if err := ks.Put(w, i); err != nil {
-			return err
-		}
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	return ks, nil
-}
-
-func asSlice(r io.Reader) ([]string, error) {
-	var ss []string
-	err := token.NewLinedString(r).Walk(func(s string) error {
-		ss = append(ss, s)
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	return ss, nil
 }
