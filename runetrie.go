@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"encoding/binary"
 	"io"
+	"slices"
 
+	"github.com/ajiyoshi-vg/external/scan"
 	da "github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/runes"
-	"github.com/ajiyoshi-vg/hairetsu/token"
 )
 
 type RuneTrie struct {
@@ -50,6 +51,9 @@ func (t *RuneTrie) WriteTo(w io.Writer) (int64, error) {
 
 	data := &bytes.Buffer{}
 	_, err = t.data.WriteTo(data)
+	if err != nil {
+		return 0, err
+	}
 
 	return io.Copy(w, io.MultiReader(size, dict, data))
 }
@@ -92,26 +96,19 @@ func NewRuneTrieBuilder(opt ...da.Option) *RuneTrieBuilder {
 	}
 }
 
-func (b *RuneTrieBuilder) Build(ks da.NodeWalker, dict runes.Dict) (*RuneTrie, error) {
-	data := da.New()
-	if err := b.builder.Build(data, ks); err != nil {
-		return nil, err
-	}
-	return NewRuneTrie(data, dict), nil
-}
-
-func (b *RuneTrieBuilder) BuildSlice(xs []string) (*RuneTrie, error) {
-	ks, dict, err := runes.FromSlice(xs)
+func (b *RuneTrieBuilder) BuildFromSlice(xs []string) (*RuneTrie, error) {
+	f := b.builder.Factory()
+	dict, err := runes.FromSlice(xs, f)
 	if err != nil {
 		return nil, err
 	}
-	return b.Build(ks, dict)
+	trie, err := f.Done()
+	if err != nil {
+		return nil, err
+	}
+	return NewRuneTrie(trie, dict), nil
 }
 
 func (b *RuneTrieBuilder) BuildFromLines(r io.Reader) (*RuneTrie, error) {
-	ks, dict, err := runes.FromWalker(token.NewLinedString(r))
-	if err != nil {
-		return nil, err
-	}
-	return b.Build(ks, dict)
+	return b.BuildFromSlice(slices.Collect(scan.Lines(r)))
 }

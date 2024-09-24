@@ -1,44 +1,30 @@
 package bytes
 
 import (
-	"bytes"
+	"fmt"
 	"math"
 	"testing"
 
-	"github.com/ajiyoshi-vg/hairetsu/token"
+	"github.com/ajiyoshi-vg/hairetsu/doublearray/item"
+	"github.com/ajiyoshi-vg/hairetsu/word"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestWalker(t *testing.T) {
-	cases := []struct {
-		title string
-		input string
-		num   int
-	}{
-		{
-			title: "normal",
-			input: "aaa\nbcc\naba",
-			num:   3,
-		},
-	}
+type mock struct {
+	data []item.Item
+}
 
-	for _, c := range cases {
-		t.Run(c.title, func(t *testing.T) {
-			w := token.NewLinedBytes(bytes.NewBufferString(c.input))
-			ks, dict, err := FromWalker(w)
-			assert.NoError(t, err)
-			assert.NoError(t, checkAllCodeDiffers(dict))
-			i := 0
-			err = w.Walk(func(x []byte) error {
-				_, err := ks.Get(dict.Word(x))
-				assert.NoError(t, err)
-				i++
-				return nil
-			})
-			assert.NoError(t, err)
-			assert.Equal(t, c.num, i)
-		})
+func (m *mock) Put(x item.Item) {
+	m.data = append(m.data, x)
+}
+
+func (m *mock) Get(w word.Word) error {
+	for _, x := range m.data {
+		if word.Compare(x.Word, w) == 0 {
+			return nil
+		}
 	}
+	return fmt.Errorf("not found")
 }
 
 func TestFromSlice(t *testing.T) {
@@ -50,10 +36,10 @@ func TestFromSlice(t *testing.T) {
 		{
 			title: "normal",
 			input: [][]byte{
-				[]byte{0, 1, 2},
-				[]byte{0, math.MaxUint8, 4},
-				[]byte{5, 7, 3},
-				[]byte{5, 7, 3, 1},
+				{0, 1, 2},
+				{0, math.MaxUint8, 4},
+				{5, 7, 3},
+				{5, 7, 3, 1},
 			},
 			num: 4,
 		},
@@ -61,13 +47,13 @@ func TestFromSlice(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
-			ks, dict, err := FromSlice(c.input)
+			mock := &mock{}
+			dict, err := FromSlice(c.input, mock)
 			assert.NoError(t, err)
 
 			i := 0
 			for _, x := range c.input {
-				_, err := ks.Get(dict.Word(x))
-				assert.NoError(t, err)
+				assert.NoError(t, mock.Get(dict.Word(x)))
 				i++
 			}
 			assert.Equal(t, c.num, i)

@@ -29,7 +29,7 @@ func TestByteTrie(t *testing.T) {
 		[]byte("ddd"),
 		[]byte("eab"),
 		[]byte("日本語"),
-		[]byte{math.MaxUint8, 0, math.MaxInt8},
+		{math.MaxUint8, 0, math.MaxInt8},
 	}
 
 	trie, err := hairetsu.NewByteTrieBuilder().BuildSlice(data)
@@ -85,7 +85,7 @@ func TestRuneTrie(t *testing.T) {
 		"日本語",
 	}
 
-	trie, err := hairetsu.NewRuneTrieBuilder().BuildSlice(data)
+	trie, err := hairetsu.NewRuneTrieBuilder().BuildFromSlice(data)
 	assert.NoError(t, err)
 
 	for i, x := range data {

@@ -3,9 +3,10 @@ package doublearray
 import (
 	"fmt"
 	"os"
+	"slices"
 	"testing"
 
-	"github.com/ajiyoshi-vg/hairetsu/keytree"
+	"github.com/ajiyoshi-vg/hairetsu/doublearray/item"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 	"github.com/stretchr/testify/assert"
 )
@@ -31,9 +32,8 @@ func TestForeach(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		origin := New()
-		ks := keytree.FromWord(c.content)
-		assert.NoError(t, NewBuilder().Build(origin, ks))
+		origin, err := StreamBuild(slices.Values(item.FromWordSlice(c.content)))
+		assert.NoError(t, err)
 
 		tmp, err := os.CreateTemp("", "test")
 		assert.NoError(t, err)

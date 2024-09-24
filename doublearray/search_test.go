@@ -6,10 +6,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ajiyoshi-vg/external/scan"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray/item"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/runes"
-	"github.com/ajiyoshi-vg/hairetsu/token"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 	"github.com/stretchr/testify/assert"
 )
@@ -105,18 +105,19 @@ func TestRunesDictSearch(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		origin := New()
-		r := bytes.NewBufferString(c.data)
-		ks, dict, err := runes.FromWalker(token.NewLinedString(r))
+		xs := slices.Collect(scan.Lines(bytes.NewBufferString(c.data)))
+
+		f := NewBuilder().Factory()
+		dict, err := runes.FromSlice(xs, f)
 		assert.NoError(t, err)
 
-		err = NewBuilder().Build(origin, ks)
+		origin, err := f.Done()
 		assert.NoError(t, err)
 
 		das := []Nodes{origin}
 
 		for _, da := range das {
-			assert.Equal(t, ks.LeafNum(), GetStat(da).Leaf)
+			assert.Equal(t, len(xs), GetStat(da).Leaf)
 
 			ss := strings.Split(c.data, "\n")
 			for _, s := range ss {
@@ -158,18 +159,19 @@ func TestBytesDictSearch(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		origin := New()
-		r := bytes.NewBufferString(c.data)
-		ks, dict, err := runes.FromWalker(token.NewLinedString(r))
+		xs := slices.Collect(scan.Lines(bytes.NewBufferString(c.data)))
+		f := NewBuilder().Factory()
+
+		dict, err := runes.FromSlice(xs, f)
 		assert.NoError(t, err)
 
-		err = NewBuilder().Build(origin, ks)
+		origin, err := f.Done()
 		assert.NoError(t, err)
 
 		das := []Nodes{origin}
 
 		for _, da := range das {
-			assert.Equal(t, ks.LeafNum(), GetStat(da).Leaf)
+			assert.Equal(t, len(xs), GetStat(da).Leaf)
 
 			ss := strings.Split(c.data, "\n")
 			for _, s := range ss {

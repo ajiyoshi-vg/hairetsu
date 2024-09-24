@@ -7,18 +7,21 @@ import (
 	"github.com/ajiyoshi-vg/hairetsu/word"
 )
 
+// Deprecated: use factory.Factory instead
 type Tree struct {
 	value    *uint32
 	children map[word.Code]*Tree
 	leafNum  int
 }
 
+// Deprecated: use factory.New instead
 func New() *Tree {
 	return &Tree{
 		children: map[word.Code]*Tree{},
 	}
 }
 
+// Deprecated: use factory.CreateFromWord instead
 func FromWord(data []word.Word) *Tree {
 	root := New()
 	for i, x := range data {

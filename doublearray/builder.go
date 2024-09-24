@@ -56,7 +56,7 @@ func (b *Builder) readFrom(da *DoubleArray, r io.Reader) (int64, error) {
 	}
 }
 
-// Deprecated: should use StreamBuild
+// Deprecated: should use StreamBuild or Factory
 type NodeWalker interface {
 	WalkNode(func(word.Word, []word.Code, *uint32) error) error
 	LeafNum() int
@@ -72,7 +72,7 @@ type nodeUnit struct {
 	Val    *uint32    `json:",omitempty"`
 }
 
-// Deprecated: should use StreamBuild
+// Deprecated: should use StreamBuild or Factory
 func (b *Builder) Build(da *DoubleArray, ks NodeWalker) error {
 	b.init(da, 0)
 	b.SetMax(ks.LeafNum())
@@ -86,6 +86,10 @@ func (b *Builder) Build(da *DoubleArray, ks NodeWalker) error {
 
 func StreamBuild(seq iter.Seq[item.Item]) (*DoubleArray, error) {
 	return NewBuilder().StreamBuild(seq)
+}
+
+func (b *Builder) Factory() *Factory {
+	return NewFactory(b)
 }
 
 func (b *Builder) StreamBuild(seq iter.Seq[item.Item]) (*DoubleArray, error) {

@@ -195,7 +195,7 @@ func (b *Builder) Build() Dict {
 
 func fromLines(r io.Reader) (Dict, error) {
 	b := NewBuilder()
-	token.NewLinedString(r).Walk(func(s string) error {
+	_ = token.NewLinedString(r).Walk(func(s string) error {
 		b.Add(s)
 		return nil
 	})
