@@ -76,6 +76,7 @@ func TestStreamBuild(t *testing.T) {
 		ng     []word.Word
 		prefix word.Word
 		num    int
+		option []Option
 	}{
 		"normal": {
 			input: []Item{
@@ -103,12 +104,28 @@ func TestStreamBuild(t *testing.T) {
 			prefix: word.Word{5, 4, 3, 2, 1, 2, 3, 4, 5},
 			num:    2,
 		},
+		"chunked": {
+			input: []Item{
+				{word.Word{5, 4, 3}, 1},
+				{word.Word{5, 4, 3, 2, 1}, 2},
+			},
+			ng: []word.Word{
+				{5},
+				{5, 4},
+				{5, 4, 3, 2},
+			},
+			prefix: word.Word{5, 4, 3, 2, 1, 2, 3, 4, 5},
+			num:    2,
+			option: []Option{
+				StreamChunkSize(1),
+			},
+		},
 	}
 
 	for title, c := range cases {
 		t.Run(title, func(t *testing.T) {
 			da := New()
-			b := NewBuilder()
+			b := NewBuilder(c.option...)
 			err := b.StreamBuild(da, slices.Values(c.input))
 			assert.NoError(t, err)
 

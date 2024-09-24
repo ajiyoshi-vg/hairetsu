@@ -8,8 +8,8 @@ import (
 	"github.com/ajiyoshi-vg/external/emit"
 )
 
-func Sort[T any](seq iter.Seq[T], cmp func(T, T) int) (iter.Seq[T], int, error) {
-	s := external.NewSplitter(cmp)
+func Sort[T any](seq iter.Seq[T], cmp func(T, T) int, opt ...external.Option) (iter.Seq[T], int, error) {
+	s := external.NewSplitter(cmp, opt...)
 	chunk, err := s.Split(seq)
 	if err != nil {
 		return nil, 0, err

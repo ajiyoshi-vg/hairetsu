@@ -6,6 +6,7 @@ import (
 	"iter"
 	"log"
 
+	"github.com/ajiyoshi-vg/external"
 	"github.com/ajiyoshi-vg/hairetsu/keytree"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/stream"
@@ -13,7 +14,8 @@ import (
 )
 
 type Builder struct {
-	progress Progress
+	progress   Progress
+	sortOption []external.Option
 }
 
 type Progress interface {
@@ -70,9 +72,9 @@ type Item struct {
 	Val  uint32
 }
 type nodeItem struct {
-	Prefix word.Word
-	Branch []word.Code
-	Val    *uint32
+	prefix word.Word
+	branch []word.Code
+	val    *uint32
 }
 type nodeUnit struct {
 	Prefix word.Word
@@ -96,17 +98,17 @@ func (b *Builder) Build(da *DoubleArray, ks NodeWalker) error {
 }
 
 func (b *Builder) StreamBuild(da *DoubleArray, seq iter.Seq[Item]) error {
-	sorted, n, err := stream.Sort(unitFromItem(seq), compareNodeUnit)
+	sorted, n, err := stream.Sort(unitFromItem(seq), compareNodeUnit, b.sortOption...)
 	if err != nil {
 		return err
 	}
 	b.init(da, 0)
 	b.SetMax(n)
 	for x := range nodeFromUnit(sorted) {
-		if x.Val != nil {
-			x.Branch = append(x.Branch, word.EOS)
+		if x.val != nil {
+			x.branch = append(x.branch, word.EOS)
 		}
-		if err := b.insert(da, x.Prefix, x.Branch, x.Val); err != nil {
+		if err := b.insert(da, x.prefix, x.branch, x.val); err != nil {
 			return err
 		}
 	}
@@ -131,7 +133,7 @@ func nodeFromUnit(seq iter.Seq[nodeUnit]) iter.Seq[nodeItem] {
 	return func(yield func(nodeItem) bool) {
 		var node nodeItem
 		for x := range seq {
-			if word.Compare(node.Prefix, x.Prefix) != 0 {
+			if word.Compare(node.prefix, x.Prefix) != 0 {
 				if !yield(node) {
 					return
 				}
@@ -139,23 +141,23 @@ func nodeFromUnit(seq iter.Seq[nodeUnit]) iter.Seq[nodeItem] {
 				continue
 			}
 			if x.Branch != nil {
-				node.Branch = append(node.Branch, *x.Branch)
+				node.branch = append(node.branch, *x.Branch)
 			} else {
-				node.Val = x.Val
+				node.val = x.Val
 			}
 		}
-		if len(node.Branch) > 0 || node.Val != nil {
+		if len(node.branch) > 0 || node.val != nil {
 			yield(node)
 		}
 	}
 }
 func newNodeItem(x nodeUnit) nodeItem {
 	ret := nodeItem{
-		Prefix: x.Prefix,
-		Val:    x.Val,
+		prefix: x.Prefix,
+		val:    x.Val,
 	}
 	if x.Branch != nil {
-		ret.Branch = []word.Code{*x.Branch}
+		ret.branch = []word.Code{*x.Branch}
 	}
 	return ret
 }

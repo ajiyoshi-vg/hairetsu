@@ -207,6 +207,15 @@ func BenchmarkOverhead(b *testing.B) {
 			}
 		}
 	})
+	b.Run("generics", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			for _, v := range bs {
+				if id, err := overhead.ExactMatchSearchGenerics(trie, v); err != nil {
+					b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
+				}
+			}
+		}
+	})
 	b.Run("mmap-m", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			for _, v := range ws {
@@ -229,6 +238,15 @@ func BenchmarkOverhead(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			for _, v := range bs {
 				if id, err := overhead.ExactMatchSearchInterface(mmap, v); err != nil {
+					b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
+				}
+			}
+		}
+	})
+	b.Run("mmap-g", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			for _, v := range bs {
+				if id, err := overhead.ExactMatchSearchGenerics(mmap, v); err != nil {
 					b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
 				}
 			}
