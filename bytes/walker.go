@@ -4,10 +4,6 @@ import (
 	"github.com/ajiyoshi-vg/hairetsu/doublearray/item"
 )
 
-type Walker interface {
-	Walk(func([]byte) error) error
-}
-
 type Factory interface {
 	Put(item.Item)
 }
