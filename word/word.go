@@ -74,6 +74,10 @@ func Compare(a, b Word) int {
 	return 0
 }
 
+func Equal(a, b Word) bool {
+	return Compare(a, b) == 0
+}
+
 func WithNameSpace(ns, key []byte) Word {
 	ret := make(Word, 0, len(ns)+len(key)+1)
 	for _, b := range ns {

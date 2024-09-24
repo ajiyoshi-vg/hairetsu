@@ -23,7 +23,7 @@ func (m *mock) Put(i item.Item) {
 
 func (m *mock) Get(w word.Word) error {
 	for _, i := range m.item {
-		if word.Compare(i.Word, w) == 0 {
+		if word.Equal(i.Word, w) {
 			return nil
 		}
 	}

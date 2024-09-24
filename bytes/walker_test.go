@@ -20,7 +20,7 @@ func (m *mock) Put(x item.Item) {
 
 func (m *mock) Get(w word.Word) error {
 	for _, x := range m.data {
-		if word.Compare(x.Word, w) == 0 {
+		if word.Equal(x.Word, w) {
 			return nil
 		}
 	}
