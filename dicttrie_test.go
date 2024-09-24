@@ -5,7 +5,6 @@ import (
 	"strings"
 	"testing"
 
-	dict "github.com/ajiyoshi-vg/hairetsu/bytes"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/stretchr/testify/assert"
@@ -43,15 +42,10 @@ func TestDictTrieSearch(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
-			data := c.data
-
-			ks, dict, err := dict.FromSlice(data)
+			da, err := NewDictTrieBuilder().BuildFromSlice(c.data)
 			assert.NoError(t, err)
 
-			da, err := NewDictTrieBuilder().Build(ks, dict)
-			assert.NoError(t, err)
-
-			for i, x := range data {
+			for i, x := range c.data {
 				actual, err := da.ExactMatchSearch(x)
 				assert.NoError(t, err, x)
 				assert.Equal(t, node.Index(i), actual)

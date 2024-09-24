@@ -150,3 +150,44 @@ func TestReverse(t *testing.T) {
 		})
 	}
 }
+
+func TestCompare(t *testing.T) {
+	cases := map[string]struct {
+		lhs    Word
+		rhs    Word
+		expect int
+	}{
+		"lhs < rhs": {
+			lhs:    Word{0, 1, 2},
+			rhs:    Word{0, 1, 3},
+			expect: -1,
+		},
+		"lhs == rhs": {
+			lhs:    Word{0, 1, 2},
+			rhs:    Word{0, 1, 2},
+			expect: 0,
+		},
+		"lhs > rhs": {
+			lhs:    Word{0, 1, 3},
+			rhs:    Word{0, 1, 2},
+			expect: 1,
+		},
+		"lhs < rhs (lhs is shorter)": {
+			lhs:    Word{0, 1},
+			rhs:    Word{0, 1, 2},
+			expect: -1,
+		},
+		"lhs > rhs (lhs is longer)": {
+			lhs:    Word{0, 1, 2},
+			rhs:    Word{0, 1},
+			expect: 1,
+		},
+	}
+
+	for title, c := range cases {
+		t.Run(title, func(t *testing.T) {
+			actual := Compare(c.lhs, c.rhs)
+			assert.Equal(t, c.expect, actual)
+		})
+	}
+}

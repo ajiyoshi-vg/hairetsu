@@ -3,15 +3,19 @@ package doublearray
 import (
 	"fmt"
 	"io"
+	"iter"
 	"log"
 
-	"github.com/ajiyoshi-vg/hairetsu/keytree"
+	"github.com/ajiyoshi-vg/external"
+	"github.com/ajiyoshi-vg/hairetsu/doublearray/item"
 	"github.com/ajiyoshi-vg/hairetsu/node"
+	"github.com/ajiyoshi-vg/hairetsu/stream"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 )
 
 type Builder struct {
-	progress Progress
+	progress   Progress
+	sortOption []external.Option
 }
 
 type Progress interface {
@@ -52,27 +56,116 @@ func (b *Builder) readFrom(da *DoubleArray, r io.Reader) (int64, error) {
 	}
 }
 
-type Walker interface {
+// Deprecated: should use StreamBuild or Factory
+type NodeWalker interface {
 	WalkNode(func(word.Word, []word.Code, *uint32) error) error
-	WalkLeaf(func(word.Word, uint32) error) error
 	LeafNum() int
 }
+type nodeItem struct {
+	prefix word.Word
+	branch []word.Code
+	val    *uint32
+}
+type nodeUnit struct {
+	Prefix word.Word
+	Branch *word.Code `json:",omitempty"`
+	Val    *uint32    `json:",omitempty"`
+}
 
-var (
-	_ Walker = (*keytree.Tree)(nil)
-)
-
-func (b *Builder) Build(da *DoubleArray, ks Walker) error {
+// Deprecated: should use StreamBuild or Factory
+func (b *Builder) Build(da *DoubleArray, ks NodeWalker) error {
 	b.init(da, 0)
-	if b.progress != nil {
-		b.progress.SetMax(ks.LeafNum())
-	}
+	b.SetMax(ks.LeafNum())
 	return ks.WalkNode(func(prefix word.Word, branch []word.Code, val *uint32) error {
 		if val != nil {
 			branch = append(branch, word.EOS)
 		}
 		return b.insert(da, prefix, branch, val)
 	})
+}
+
+func StreamBuild(seq iter.Seq[item.Item]) (*DoubleArray, error) {
+	return NewBuilder().StreamBuild(seq)
+}
+
+func (b *Builder) Factory() *Factory {
+	return NewFactory(b)
+}
+
+func (b *Builder) StreamBuild(seq iter.Seq[item.Item]) (*DoubleArray, error) {
+	da := New()
+	sorted, n, err := stream.Sort(unitFromItem(seq), compareNodeUnit, b.sortOption...)
+	if err != nil {
+		return nil, err
+	}
+	b.init(da, 0)
+	b.SetMax(n)
+	for x := range nodeFromUnit(sorted) {
+		if x.val != nil {
+			x.branch = append(x.branch, word.EOS)
+		}
+		if err := b.insert(da, x.prefix, x.branch, x.val); err != nil {
+			return nil, err
+		}
+	}
+	return da, nil
+}
+
+func unitFromItem(seq iter.Seq[item.Item]) iter.Seq[nodeUnit] {
+	return func(yield func(nodeUnit) bool) {
+		for x := range seq {
+			prefix := word.Word{}
+			for _, b := range x.Word {
+				if !yield(nodeUnit{Prefix: prefix, Branch: &b}) {
+					return
+				}
+				prefix = append(prefix, b)
+			}
+			yield(nodeUnit{Prefix: prefix, Val: &x.Val})
+		}
+	}
+}
+func nodeFromUnit(seq iter.Seq[nodeUnit]) iter.Seq[nodeItem] {
+	return func(yield func(nodeItem) bool) {
+		var node nodeItem
+		for x := range seq {
+			if word.Compare(node.prefix, x.Prefix) != 0 {
+				if !yield(node) {
+					return
+				}
+				node = newNodeItem(x)
+				continue
+			}
+			if x.Branch != nil {
+				node.branch = append(node.branch, *x.Branch)
+			} else {
+				node.val = x.Val
+			}
+		}
+		if len(node.branch) > 0 || node.val != nil {
+			yield(node)
+		}
+	}
+}
+func newNodeItem(x nodeUnit) nodeItem {
+	ret := nodeItem{
+		prefix: x.Prefix,
+		val:    x.Val,
+	}
+	if x.Branch != nil {
+		ret.branch = []word.Code{*x.Branch}
+	}
+	return ret
+}
+
+func compareNodeUnit(a, b nodeUnit) int {
+	return word.Compare(a.Prefix, b.Prefix)
+}
+
+func (b *Builder) SetMax(n int) {
+	if b.progress != nil {
+		b.progress.SetMax(n)
+	}
 }
 
 func (b *Builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code, val *uint32) error {

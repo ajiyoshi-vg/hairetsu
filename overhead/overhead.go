@@ -95,3 +95,30 @@ func ExactMatchSearchPointerMmap(da *doublearray.Mmap, cs []byte) (node.Index, e
 	}
 	return data.GetOffset(), nil
 }
+
+func ExactMatchSearchGenerics[T doublearray.Nodes](da T, cs []byte) (node.Index, error) {
+	var parent node.Index
+	target, err := da.At(parent)
+	if err != nil {
+		return 0, err
+	}
+	for _, c := range cs {
+		child := target.GetChild(word.Code(c))
+		target, err = da.At(child)
+		if err != nil {
+			return 0, err
+		}
+		if !target.IsChildOf(parent) {
+			return 0, doublearray.ErrNotAChild
+		}
+		parent = child
+	}
+	if !target.IsTerminal() {
+		return 0, doublearray.ErrNotATerminal
+	}
+	data, err := da.At(target.GetChild(word.EOS))
+	if err != nil {
+		return 0, err
+	}
+	return data.GetOffset(), nil
+}

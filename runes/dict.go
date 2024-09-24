@@ -8,10 +8,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"sort"
 
-	"github.com/ajiyoshi-vg/hairetsu/token"
+	"github.com/ajiyoshi-vg/external/scan"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 )
 
@@ -149,7 +148,7 @@ func (d Dict) WriteTo(w io.Writer) (int64, error) {
 }
 
 func (d Dict) ReadFrom(r io.Reader) (int64, error) {
-	buf, err := ioutil.ReadAll(r)
+	buf, err := io.ReadAll(r)
 	ret := int64(len(buf))
 	if err != nil {
 		return ret, err
@@ -196,9 +195,8 @@ func (b *Builder) Build() Dict {
 
 func fromLines(r io.Reader) (Dict, error) {
 	b := NewBuilder()
-	token.NewLinedString(r).Walk(func(s string) error {
-		b.Add(s)
-		return nil
-	})
+	for line := range scan.Lines(r) {
+		b.Add(line)
+	}
 	return b.Build(), nil
 }

@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ajiyoshi-vg/external/scan"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/overhead"
-	"github.com/ajiyoshi-vg/hairetsu/token"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 	"github.com/ikawaha/dartsclone"
 	"github.com/stretchr/testify/assert"
@@ -26,14 +26,10 @@ func init() {
 		panic(err)
 	}
 	defer file.Close()
-	err = token.NewLinedString(file).Walk(func(x string) error {
-		bs = append(bs, []byte(x))
-		ws = append(ws, word.FromBytes([]byte(x)))
-		ss = append(ss, x)
-		return nil
-	})
-	if err != nil {
-		panic(err)
+	for x := range scan.ByteLines(file) {
+		bs = append(bs, x)
+		ws = append(ws, word.FromBytes(x))
+		ss = append(ss, string(x))
 	}
 }
 
@@ -207,6 +203,15 @@ func BenchmarkOverhead(b *testing.B) {
 			}
 		}
 	})
+	b.Run("generics", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			for _, v := range bs {
+				if id, err := overhead.ExactMatchSearchGenerics(trie, v); err != nil {
+					b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
+				}
+			}
+		}
+	})
 	b.Run("mmap-m", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			for _, v := range ws {
@@ -229,6 +234,15 @@ func BenchmarkOverhead(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			for _, v := range bs {
 				if id, err := overhead.ExactMatchSearchInterface(mmap, v); err != nil {
+					b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
+				}
+			}
+		}
+	})
+	b.Run("mmap-g", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			for _, v := range bs {
+				if id, err := overhead.ExactMatchSearchGenerics(mmap, v); err != nil {
 					b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
 				}
 			}

@@ -2,7 +2,6 @@ package hairetsu
 
 import (
 	"encoding/binary"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -56,7 +55,7 @@ func TestSearch(t *testing.T) {
 			origin, err := NewByteTrieBuilder().BuildSlice(data)
 			assert.NoError(t, err)
 
-			f, err := ioutil.TempFile("", "bytes")
+			f, err := os.CreateTemp("", "bytes")
 			assert.NoError(t, err)
 			defer os.Remove(f.Name())
 

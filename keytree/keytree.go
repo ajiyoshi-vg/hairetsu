@@ -7,22 +7,25 @@ import (
 	"github.com/ajiyoshi-vg/hairetsu/word"
 )
 
+// Deprecated: use doublearray.Builder.Factory() instead
 type Tree struct {
 	value    *uint32
 	children map[word.Code]*Tree
 	leafNum  int
 }
 
+// Deprecated: use doublearray.Builder.Factory() instead
 func New() *Tree {
 	return &Tree{
 		children: map[word.Code]*Tree{},
 	}
 }
 
+// Deprecated: use doublearray.Builder.Factory() instead
 func FromWord(data []word.Word) *Tree {
 	root := New()
 	for i, x := range data {
-		root.Put(x, uint32(i))
+		_ = root.Put(x, uint32(i))
 	}
 	return root
 }

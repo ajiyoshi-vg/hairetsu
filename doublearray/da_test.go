@@ -2,11 +2,11 @@ package doublearray
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
+	"slices"
 	"testing"
 
-	"github.com/ajiyoshi-vg/hairetsu/keytree"
+	"github.com/ajiyoshi-vg/hairetsu/doublearray/item"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 	"github.com/stretchr/testify/assert"
@@ -15,21 +15,21 @@ import (
 func TestDoubleArrayReadWrite(t *testing.T) {
 	cases := []struct {
 		title  string
-		data   Walker
+		data   []item.Item
 		ng     []word.Word
 		prefix word.Word
 		num    int
 	}{
 		{
 			title: "keytree",
-			data: keytree.FromWord([]word.Word{
+			data: item.FromWords(
 				word.Word{5, 4, 3},
 				word.Word{5, 4, 3, 2, 1},
-			}),
+			),
 			ng: []word.Word{
-				word.Word{5},
-				word.Word{5, 4},
-				word.Word{5, 4, 3, 2},
+				{5},
+				{5, 4},
+				{5, 4, 3, 2},
 			},
 			prefix: word.Word{5, 4, 3, 2, 1},
 			num:    2,
@@ -37,12 +37,10 @@ func TestDoubleArrayReadWrite(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		origin := New()
-
-		err := NewBuilder().Build(origin, c.data)
+		origin, err := NewBuilder().StreamBuild(slices.Values(c.data))
 		assert.NoError(t, err)
 
-		tmp, err := ioutil.TempFile("", "test")
+		tmp, err := os.CreateTemp("", "test")
 		assert.NoError(t, err)
 		defer os.Remove(tmp.Name())
 
@@ -80,14 +78,13 @@ func TestDoubleArrayReadWrite(t *testing.T) {
 
 		for _, da := range das {
 			s := GetStat(da)
-			assert.Equal(t, c.data.LeafNum(), s.Leaf)
+			assert.Equal(t, len(c.data), s.Leaf)
 
-			c.data.WalkLeaf(func(key word.Word, val uint32) error {
-				actual, err := da.ExactMatchSearch(key)
+			for _, x := range c.data {
+				actual, err := da.ExactMatchSearch(x.Word)
 				assert.NoError(t, err)
-				assert.Equal(t, node.Index(val), actual)
-				return nil
-			})
+				assert.Equal(t, node.Index(x.Val), actual)
+			}
 
 			for _, x := range c.ng {
 				_, err := da.ExactMatchSearch(x)
@@ -98,6 +95,5 @@ func TestDoubleArrayReadWrite(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, c.num, len(actual))
 		}
-
 	}
 }

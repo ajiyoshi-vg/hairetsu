@@ -2,13 +2,14 @@ package doublearray
 
 import (
 	"bytes"
+	"slices"
 	"strings"
 	"testing"
 
-	"github.com/ajiyoshi-vg/hairetsu/keytree"
+	"github.com/ajiyoshi-vg/external/scan"
+	"github.com/ajiyoshi-vg/hairetsu/doublearray/item"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/runes"
-	"github.com/ajiyoshi-vg/hairetsu/token"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 	"github.com/stretchr/testify/assert"
 )
@@ -16,21 +17,21 @@ import (
 func TestDoubleArraySearch(t *testing.T) {
 	cases := []struct {
 		title  string
-		data   Walker
+		data   []item.Item
 		ng     []word.Word
 		prefix word.Word
 		num    int
 	}{
 		{
 			title: "keytree",
-			data: keytree.FromWord([]word.Word{
+			data: item.FromWords(
 				word.Word{5, 4, 3},
 				word.Word{5, 4, 3, 2, 1},
-			}),
+			),
 			ng: []word.Word{
-				word.Word{5},
-				word.Word{5, 4},
-				word.Word{5, 4, 3, 2},
+				{5},
+				{5, 4},
+				{5, 4, 3, 2},
 			},
 			prefix: word.Word{5, 4, 3, 2, 1},
 			num:    2,
@@ -38,30 +39,26 @@ func TestDoubleArraySearch(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		origin := New()
-
-		err := NewBuilder().Build(origin, c.data)
+		origin, err := NewBuilder().StreamBuild(slices.Values(c.data))
 		assert.NoError(t, err)
 
 		das := []Nodes{origin}
 
 		for _, da := range das {
 			s := GetStat(da)
-			assert.Equal(t, c.data.LeafNum(), s.Leaf)
+			assert.Equal(t, len(c.data), s.Leaf)
 
-			c.data.WalkLeaf(func(wd word.Word, val uint32) error {
-				actual, err := Words{}.ExactMatchSearch(da, wd)
+			for _, x := range c.data {
+				actual, err := Words{}.ExactMatchSearch(da, x.Word)
 				assert.NoError(t, err)
-				assert.Equal(t, node.Index(val), actual)
+				assert.Equal(t, node.Index(x.Val), actual)
 
-				bs, err := wd.Bytes()
+				bs, err := x.Word.Bytes()
 				assert.NoError(t, err)
 				actual, err = Bytes{}.ExactMatchSearch(da, bs)
 				assert.NoError(t, err)
-				assert.Equal(t, node.Index(val), actual)
-
-				return nil
-			})
+				assert.Equal(t, node.Index(x.Val), actual)
+			}
 
 			for _, x := range c.ng {
 				_, err = Words{}.ExactMatchSearch(da, x)
@@ -108,18 +105,19 @@ func TestRunesDictSearch(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		origin := New()
-		r := bytes.NewBufferString(c.data)
-		ks, dict, err := runes.FromWalker(token.NewLinedString(r))
+		xs := slices.Collect(scan.Lines(bytes.NewBufferString(c.data)))
+
+		f := NewBuilder().Factory()
+		dict, err := runes.FromSlice(xs, f)
 		assert.NoError(t, err)
 
-		err = NewBuilder().Build(origin, ks)
+		origin, err := f.Done()
 		assert.NoError(t, err)
 
 		das := []Nodes{origin}
 
 		for _, da := range das {
-			assert.Equal(t, ks.LeafNum(), GetStat(da).Leaf)
+			assert.Equal(t, len(xs), GetStat(da).Leaf)
 
 			ss := strings.Split(c.data, "\n")
 			for _, s := range ss {
@@ -161,18 +159,19 @@ func TestBytesDictSearch(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		origin := New()
-		r := bytes.NewBufferString(c.data)
-		ks, dict, err := runes.FromWalker(token.NewLinedString(r))
+		xs := slices.Collect(scan.Lines(bytes.NewBufferString(c.data)))
+		f := NewBuilder().Factory()
+
+		dict, err := runes.FromSlice(xs, f)
 		assert.NoError(t, err)
 
-		err = NewBuilder().Build(origin, ks)
+		origin, err := f.Done()
 		assert.NoError(t, err)
 
 		das := []Nodes{origin}
 
 		for _, da := range das {
-			assert.Equal(t, ks.LeafNum(), GetStat(da).Leaf)
+			assert.Equal(t, len(xs), GetStat(da).Leaf)
 
 			ss := strings.Split(c.data, "\n")
 			for _, s := range ss {

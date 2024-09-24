@@ -3,13 +3,13 @@ package hairetsu
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
+	"slices"
 
+	"github.com/ajiyoshi-vg/external/scan"
 	dict "github.com/ajiyoshi-vg/hairetsu/bytes"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	da "github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/node"
-	"github.com/ajiyoshi-vg/hairetsu/token"
 )
 
 type DictTrie struct {
@@ -43,11 +43,11 @@ func (t *DictTrie) WriteTo(w io.Writer) (int64, error) {
 	}
 	n, err := t.data.WriteTo(w)
 	ret += n
-	return ret, nil
+	return ret, err
 }
 
 func (t *DictTrie) ReadFrom(r io.Reader) (int64, error) {
-	buf, err := ioutil.ReadAll(r)
+	buf, err := io.ReadAll(r)
 	ret := int64(len(buf))
 	if err != nil {
 		return ret, err
@@ -81,18 +81,19 @@ func NewDictTrieBuilder(opt ...da.Option) *DictTrieBuilder {
 	}
 }
 
-func (b *DictTrieBuilder) Build(ks doublearray.Walker, dict dict.Dict) (*DictTrie, error) {
-	data := da.New()
-	if err := b.builder.Build(data, ks); err != nil {
-		return nil, err
-	}
-	return NewDictTrie(data, dict), nil
-}
-
-func (b *DictTrieBuilder) BuildFromLines(r io.Reader) (*DictTrie, error) {
-	ks, dict, err := dict.FromWalker(token.NewLinedBytes(r))
+func (b *DictTrieBuilder) BuildFromSlice(xs [][]byte) (*DictTrie, error) {
+	f := b.builder.Factory()
+	dict, err := dict.FromSlice(xs, f)
 	if err != nil {
 		return nil, err
 	}
-	return b.Build(ks, dict)
+	trie, err := f.Done()
+	if err != nil {
+		return nil, err
+	}
+	return NewDictTrie(trie, dict), nil
+}
+
+func (b *DictTrieBuilder) BuildFromLines(r io.Reader) (*DictTrie, error) {
+	return b.BuildFromSlice(slices.Collect(scan.ByteLines(r)))
 }
