@@ -56,6 +56,14 @@ func FromBytes(data []byte) Word {
 	return ret
 }
 
+func FromString(s string) Word {
+	ret := make(Word, 0, len(s))
+	for _, b := range s {
+		ret = append(ret, Code(b))
+	}
+	return ret
+}
+
 func Compare(a, b Word) int {
 	for i, x := range a {
 		if i >= len(b) {

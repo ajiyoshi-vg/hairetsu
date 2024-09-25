@@ -1,9 +1,13 @@
-github.com/ajiyoshi-vg/external v0.0.0-20240924083901-9c8008c32e13 h1:iuKmH/T845R40bnUFYRl1U3CHsCe3iT1vrT8w7+bcdM=
-github.com/ajiyoshi-vg/external v0.0.0-20240924083901-9c8008c32e13/go.mod h1:0ppn3RCs9DN6Lkt+pWmE2TZQa6l87kRAaAMzXZk1efo=
+github.com/ajiyoshi-vg/external v0.0.0-20240925044203-7f6ccf58d02e h1:hKrcVN5c5mYbmGcjgMQIwOfURSIaO048ViU3emUWaUA=
+github.com/ajiyoshi-vg/external v0.0.0-20240925044203-7f6ccf58d02e/go.mod h1:Sm/g0L0F1NiwClqtFT/A+kGJQrCFGp36Q6eBR4fZvWs=
+github.com/ajiyoshi-vg/external v0.0.0-20240925080105-8951936a439c h1:Qc0Qe1Pe1Eumah1KpgDIg98zaSs9WeJeny8NkbepGLM=
+github.com/ajiyoshi-vg/external v0.0.0-20240925080105-8951936a439c/go.mod h1:Sm/g0L0F1NiwClqtFT/A+kGJQrCFGp36Q6eBR4fZvWs=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/euclidr/darts v0.0.0-20180401113647-e0859b23b68e h1:SJ6NVXT96EzZgSX2V5NBVYGsHyxHXrDhhtrWOKe4n/k=
 github.com/euclidr/darts v0.0.0-20180401113647-e0859b23b68e/go.mod h1:uZOcB9m9tCkJHZFC3diz9McvyuzFL3wWG+Wn1IiNXjI=
+github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
+github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/ikawaha/da v0.0.0-20141126165404-5556b9e515ca h1:Ye8wDuFVpINaiKj26eAOwmqBAWDEEVdhgEtyUCfUMw8=
 github.com/ikawaha/da v0.0.0-20141126165404-5556b9e515ca/go.mod h1:JZfcL9+WaPkxDS7OBk09o8VkkV7YYI9yLQG610HxZds=
 github.com/ikawaha/dartsclone v1.0.0 h1:Z6R0BASHSNSxlcIY6UE1+aR6azYW6j3ge6dbmT+JWA0=

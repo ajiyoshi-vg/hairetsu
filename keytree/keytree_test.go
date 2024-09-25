@@ -19,9 +19,9 @@ func str(x *uint32) string {
 
 func TestWalkNode(t *testing.T) {
 	words := []word.Word{
-		word.Word{1, 2, 3},
-		word.Word{1, 2, 3, 4, 5},
-		word.Word{1, 2, 4},
+		{1, 2, 3},
+		{1, 2, 3, 4, 5},
+		{1, 2, 4},
 	}
 	x := FromWord(words)
 
@@ -57,9 +57,9 @@ func TestWalkNode(t *testing.T) {
 
 func TestWalkLeaf(t *testing.T) {
 	words := []word.Word{
-		word.Word{1, 2, 3},
-		word.Word{1, 2, 3, 4, 5},
-		word.Word{1, 2, 4},
+		{1, 2, 3},
+		{1, 2, 3, 4, 5},
+		{1, 2, 4},
 	}
 	x := FromWord(words)
 	assert.Equal(t, len(words), x.LeafNum())
