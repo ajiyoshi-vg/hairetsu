@@ -15,3 +15,7 @@ func StreamChunkSize(n int) Option {
 		b.sortOption = append(b.sortOption, external.ChunkSize(n))
 	}
 }
+
+func Verbose(b *Builder) {
+	b.verbose = true
+}

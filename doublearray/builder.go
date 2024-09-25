@@ -17,6 +17,7 @@ import (
 type Builder struct {
 	progress   Progress
 	sortOption []external.Option
+	verbose    bool
 }
 
 type Progress interface {
@@ -114,17 +115,25 @@ func (b *Builder) StreamBuild(seq iter.Seq[item.Item]) (*DoubleArray, error) {
 }
 
 func (b *Builder) SortedNode(seq iter.Seq[item.Item]) (iter.Seq[*nodeItem], error) {
-	item := scan.Prove("item", seq)
-	unit := scan.Prove("unit", unitFromItem(item))
-	sorted, n, err := stream.Sort(unit, compareNodeUnit, b.sortOption...)
+	item := prove("item", seq, b)
+	unit := prove("unit", unitFromItem(item), b)
+	sortedUnit, n, err := stream.Sort(unit, compareNodeUnit, b.sortOption...)
 	if err != nil {
 		return nil, err
 	}
 	b.SetMax(n)
-	b.progressLogf("split %d units", n)
+	b.progressLogf("split into %d units", n)
 
-	node := scan.Prove("node", nodeFromUnit(scan.Prove("sort", sorted)))
+	sorted := prove("sorted", sortedUnit, b)
+	node := prove("node", nodeFromUnit(sorted), b)
 	return node, nil
+}
+
+func prove[T any](name string, seq iter.Seq[T], b *Builder) iter.Seq[T] {
+	if !b.verbose {
+		return seq
+	}
+	return scan.Prove(name, seq)
 }
 
 func unitFromItem(seq iter.Seq[item.Item]) iter.Seq[*nodeUnit] {
