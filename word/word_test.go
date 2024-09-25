@@ -191,3 +191,22 @@ func TestCompare(t *testing.T) {
 		})
 	}
 }
+
+func TestString(t *testing.T) {
+	cases := map[string]struct {
+		input  string
+		expect Word
+	}{
+		"simple": {
+			input:  "日本語",
+			expect: Word{26085, 26412, 35486},
+		},
+	}
+
+	for title, c := range cases {
+		t.Run(title, func(t *testing.T) {
+			actual := FromString(c.input)
+			assert.Equal(t, c.expect, actual)
+		})
+	}
+}

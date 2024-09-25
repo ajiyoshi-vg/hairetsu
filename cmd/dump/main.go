@@ -19,9 +19,10 @@ import (
 )
 
 type option struct {
-	in   string
-	out  string
-	kind string
+	in      string
+	out     string
+	kind    string
+	verbose bool
 }
 
 var opt option
@@ -30,6 +31,7 @@ func init() {
 	flag.StringVar(&opt.in, "in", "bench.dat", "line sep text default: bench.txt")
 	flag.StringVar(&opt.out, "o", "out.dat", "output")
 	flag.StringVar(&opt.kind, "kind", "byte", "[rune|byte|dict|darts] default: byte")
+	flag.BoolVar(&opt.verbose, "v", false, "verbose")
 	flag.Parse()
 }
 
@@ -66,10 +68,19 @@ func run() error {
 	}
 }
 
+func options() []doublearray.Option {
+	ret := []doublearray.Option{
+		doublearray.OptionProgress(progressbar.New(0)),
+	}
+	if opt.verbose {
+		return append(ret, doublearray.Verbose)
+	}
+	return ret
+}
+
 func dumpByte(file io.Reader) error {
-	p := doublearray.OptionProgress(progressbar.New(0))
 	seq := scan.ByteLines(file)
-	trie, err := hairetsu.NewByteTrieBuilder(p).StreamBuild(seq)
+	trie, err := hairetsu.NewByteTrieBuilder(options()...).StreamBuild(seq)
 	if err != nil {
 		return err
 	}
@@ -77,8 +88,7 @@ func dumpByte(file io.Reader) error {
 }
 
 func dumpRune(file io.Reader) error {
-	p := doublearray.OptionProgress(progressbar.New(0))
-	trie, err := hairetsu.NewRuneTrieBuilder(p).BuildFromLines(file)
+	trie, err := hairetsu.NewRuneTrieBuilder(options()...).BuildFromLines(file)
 	if err != nil {
 		return err
 	}
@@ -86,8 +96,7 @@ func dumpRune(file io.Reader) error {
 }
 
 func dumpDict(file io.Reader) error {
-	p := doublearray.OptionProgress(progressbar.New(0))
-	trie, err := hairetsu.NewDictTrieBuilder(p).BuildFromLines(file)
+	trie, err := hairetsu.NewDictTrieBuilder(options()...).BuildFromLines(file)
 	if err != nil {
 		return err
 	}

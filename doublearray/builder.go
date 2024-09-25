@@ -7,6 +7,7 @@ import (
 	"log"
 
 	"github.com/ajiyoshi-vg/external"
+	"github.com/ajiyoshi-vg/external/scan"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray/item"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/stream"
@@ -16,6 +17,7 @@ import (
 type Builder struct {
 	progress   Progress
 	sortOption []external.Option
+	verbose    bool
 }
 
 type Progress interface {
@@ -94,13 +96,14 @@ func (b *Builder) Factory() *Factory {
 
 func (b *Builder) StreamBuild(seq iter.Seq[item.Item]) (*DoubleArray, error) {
 	da := New()
-	sorted, n, err := stream.Sort(unitFromItem(seq), compareNodeUnit, b.sortOption...)
+	node, err := b.SortedNode(seq)
 	if err != nil {
 		return nil, err
 	}
+
 	b.init(da, 0)
-	b.SetMax(n)
-	for x := range nodeFromUnit(sorted) {
+
+	for x := range node {
 		if x.val != nil {
 			x.branch = append(x.branch, word.EOS)
 		}
@@ -111,23 +114,45 @@ func (b *Builder) StreamBuild(seq iter.Seq[item.Item]) (*DoubleArray, error) {
 	return da, nil
 }
 
-func unitFromItem(seq iter.Seq[item.Item]) iter.Seq[nodeUnit] {
-	return func(yield func(nodeUnit) bool) {
+func (b *Builder) SortedNode(seq iter.Seq[item.Item]) (iter.Seq[*nodeItem], error) {
+	item := prove("item", seq, b)
+	unit := prove("unit", unitFromItem(item), b)
+	sortedUnit, n, err := stream.Sort(unit, compareNodeUnit, b.sortOption...)
+	if err != nil {
+		return nil, err
+	}
+	b.SetMax(n)
+	b.progressLogf("split into %d units", n)
+
+	sorted := prove("sorted", sortedUnit, b)
+	node := prove("node", nodeFromUnit(sorted), b)
+	return node, nil
+}
+
+func prove[T any](name string, seq iter.Seq[T], b *Builder) iter.Seq[T] {
+	if !b.verbose {
+		return seq
+	}
+	return scan.Prove(name, seq)
+}
+
+func unitFromItem(seq iter.Seq[item.Item]) iter.Seq[*nodeUnit] {
+	return func(yield func(*nodeUnit) bool) {
 		for x := range seq {
 			prefix := word.Word{}
 			for _, b := range x.Word {
-				if !yield(nodeUnit{Prefix: prefix, Branch: &b}) {
+				if !yield(&nodeUnit{Prefix: prefix, Branch: &b}) {
 					return
 				}
 				prefix = append(prefix, b)
 			}
-			yield(nodeUnit{Prefix: prefix, Val: &x.Val})
+			yield(&nodeUnit{Prefix: prefix, Val: &x.Val})
 		}
 	}
 }
-func nodeFromUnit(seq iter.Seq[nodeUnit]) iter.Seq[nodeItem] {
-	return func(yield func(nodeItem) bool) {
-		var node nodeItem
+func nodeFromUnit(seq iter.Seq[*nodeUnit]) iter.Seq[*nodeItem] {
+	return func(yield func(*nodeItem) bool) {
+		node := &nodeItem{}
 		for x := range seq {
 			if word.Compare(node.prefix, x.Prefix) != 0 {
 				if !yield(node) {
@@ -147,18 +172,18 @@ func nodeFromUnit(seq iter.Seq[nodeUnit]) iter.Seq[nodeItem] {
 		}
 	}
 }
-func newNodeItem(x nodeUnit) nodeItem {
+func newNodeItem(x *nodeUnit) *nodeItem {
 	ret := nodeItem{
 		prefix: x.Prefix,
 		val:    x.Val,
 	}
 	if x.Branch != nil {
-		ret.branch = []word.Code{*x.Branch}
+		ret.branch = append(make(word.Word, 0, 32), *x.Branch)
 	}
-	return ret
+	return &ret
 }
 
-func compareNodeUnit(a, b nodeUnit) int {
+func compareNodeUnit(a, b *nodeUnit) int {
 	return word.Compare(a.Prefix, b.Prefix)
 }
 
@@ -187,6 +212,7 @@ func (b *Builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code, 
 	da.nodes[index].SetOffset(offset)
 
 	for _, c := range branch {
+		b.addProgress(1)
 		next := offset.Forward(c)
 		b.ensure(da, next)
 		if da.nodes[next].IsUsed() {
@@ -203,13 +229,21 @@ func (b *Builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code, 
 			//terminated
 			da.nodes[index].Terminate()
 			da.nodes[next].SetOffset(node.Index(*val))
-			if b.progress != nil {
-				b.progress.Add(1)
-			}
+			b.addProgress(1)
 		}
 	}
 
 	return nil
+}
+func (b *Builder) addProgress(n int) {
+	if b.progress != nil {
+		_ = b.progress.Add(n)
+	}
+}
+func (b *Builder) progressLogf(format string, args ...interface{}) {
+	if b.progress != nil {
+		log.Printf(format, args...)
+	}
 }
 
 func (*Builder) searchIndex(da *DoubleArray, cs word.Word) (node.Index, error) {
@@ -313,14 +347,4 @@ func (b *Builder) setNextEmptyNode(da *DoubleArray, i, next node.Index) error {
 func (b *Builder) setPrevEmptyNode(da *DoubleArray, i, prev node.Index) error {
 	b.ensure(da, i)
 	return da.nodes[i].SetPrevEmptyNode(prev)
-}
-
-func logInsert(prefix word.Word, branch []word.Code, val *uint32) {
-	str := func(x *uint32) string {
-		if x == nil {
-			return "nil"
-		}
-		return fmt.Sprintf("%d", *x)
-	}
-	log.Printf("insert(prefix, branch)=(%v, %v, %s)", prefix, branch, str(val))
 }

@@ -46,7 +46,7 @@ func (b *ByteTrieBuilder) BuildSlice(xs [][]byte) (*ByteTrie, error) {
 }
 
 func (b *ByteTrieBuilder) StreamBuild(seq iter.Seq[[]byte]) (*ByteTrie, error) {
-	x, err := da.StreamBuild(item.FromByteSeq(seq))
+	x, err := b.builder.StreamBuild(item.FromByteSeq(seq))
 	if err != nil {
 		return nil, err
 	}
