@@ -94,13 +94,14 @@ func (b *Builder) Factory() *Factory {
 
 func (b *Builder) StreamBuild(seq iter.Seq[item.Item]) (*DoubleArray, error) {
 	da := New()
-	sorted, n, err := stream.Sort(unitFromItem(seq), compareNodeUnit, b.sortOption...)
+	sorted, n, err := stream.Sort(unitFromItem(seq, b), compareNodeUnit, b.sortOption...)
 	if err != nil {
 		return nil, err
 	}
 	b.init(da, 0)
 	b.SetMax(n)
-	for x := range nodeFromUnit(sorted) {
+	b.progressLogf("sorted %d units", n)
+	for x := range nodeFromUnit(sorted, b) {
 		if x.val != nil {
 			x.branch = append(x.branch, word.EOS)
 		}
@@ -111,11 +112,15 @@ func (b *Builder) StreamBuild(seq iter.Seq[item.Item]) (*DoubleArray, error) {
 	return da, nil
 }
 
-func unitFromItem(seq iter.Seq[item.Item]) iter.Seq[nodeUnit] {
+func unitFromItem(seq iter.Seq[item.Item], b *Builder) iter.Seq[nodeUnit] {
+	i := 0
+	u := 0
 	return func(yield func(nodeUnit) bool) {
 		for x := range seq {
+			i++
 			prefix := word.Word{}
 			for _, b := range x.Word {
+				u++
 				if !yield(nodeUnit{Prefix: prefix, Branch: &b}) {
 					return
 				}
@@ -123,13 +128,18 @@ func unitFromItem(seq iter.Seq[item.Item]) iter.Seq[nodeUnit] {
 			}
 			yield(nodeUnit{Prefix: prefix, Val: &x.Val})
 		}
+		b.progressLogf("%d units from %d items", u, i)
 	}
 }
-func nodeFromUnit(seq iter.Seq[nodeUnit]) iter.Seq[nodeItem] {
+func nodeFromUnit(seq iter.Seq[nodeUnit], b *Builder) iter.Seq[nodeItem] {
+	u := 0
+	n := 0
 	return func(yield func(nodeItem) bool) {
 		var node nodeItem
 		for x := range seq {
+			u++
 			if word.Compare(node.prefix, x.Prefix) != 0 {
+				n++
 				if !yield(node) {
 					return
 				}
@@ -145,6 +155,7 @@ func nodeFromUnit(seq iter.Seq[nodeUnit]) iter.Seq[nodeItem] {
 		if len(node.branch) > 0 || node.val != nil {
 			yield(node)
 		}
+		b.progressLogf("%d nodes from %d units", n, u)
 	}
 }
 func newNodeItem(x nodeUnit) nodeItem {
@@ -187,6 +198,7 @@ func (b *Builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code, 
 	da.nodes[index].SetOffset(offset)
 
 	for _, c := range branch {
+		b.addProgress(1)
 		next := offset.Forward(c)
 		b.ensure(da, next)
 		if da.nodes[next].IsUsed() {
@@ -203,13 +215,21 @@ func (b *Builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code, 
 			//terminated
 			da.nodes[index].Terminate()
 			da.nodes[next].SetOffset(node.Index(*val))
-			if b.progress != nil {
-				b.progress.Add(1)
-			}
+			b.addProgress(1)
 		}
 	}
 
 	return nil
+}
+func (b *Builder) addProgress(n int) {
+	if b.progress != nil {
+		_ = b.progress.Add(n)
+	}
+}
+func (b *Builder) progressLogf(format string, args ...interface{}) {
+	if b.progress != nil {
+		log.Printf(format, args...)
+	}
 }
 
 func (*Builder) searchIndex(da *DoubleArray, cs word.Word) (node.Index, error) {
