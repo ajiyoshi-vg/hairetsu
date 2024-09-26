@@ -5,9 +5,11 @@ import (
 	"iter"
 	"slices"
 
+	"github.com/ajiyoshi-vg/external/scan"
 	da "github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray/item"
 	"github.com/ajiyoshi-vg/hairetsu/node"
+	"github.com/ajiyoshi-vg/hairetsu/word"
 )
 
 type ByteTrie struct {
@@ -51,4 +53,18 @@ func (b *ByteTrieBuilder) StreamBuild(seq iter.Seq[[]byte]) (*ByteTrie, error) {
 		return nil, err
 	}
 	return NewByteTrie(x), nil
+}
+
+func (b *ByteTrieBuilder) BuildFromLines(r io.Reader) (*ByteTrie, error) {
+	f := b.builder.Factory()
+	var i uint32
+	for x := range scan.ByteLines(r) {
+		f.Put(item.New(word.FromBytes(x), i))
+		i++
+	}
+	ret, err := f.Done()
+	if err != nil {
+		return nil, err
+	}
+	return NewByteTrie(ret), nil
 }

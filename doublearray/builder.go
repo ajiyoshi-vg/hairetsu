@@ -22,7 +22,7 @@ type Builder struct {
 
 type Progress interface {
 	SetMax(int)
-	Add(int) error
+	Add(int)
 }
 
 func NewBuilder(opt ...Option) *Builder {
@@ -237,7 +237,7 @@ func (b *Builder) insert(da *DoubleArray, prefix word.Word, branch []word.Code, 
 }
 func (b *Builder) addProgress(n int) {
 	if b.progress != nil {
-		_ = b.progress.Add(n)
+		b.progress.Add(n)
 	}
 }
 func (b *Builder) progressLogf(format string, args ...interface{}) {

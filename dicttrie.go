@@ -3,9 +3,7 @@ package hairetsu
 import (
 	"bytes"
 	"io"
-	"slices"
 
-	"github.com/ajiyoshi-vg/external/scan"
 	dict "github.com/ajiyoshi-vg/hairetsu/bytes"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	da "github.com/ajiyoshi-vg/hairetsu/doublearray"
@@ -87,13 +85,22 @@ func (b *DictTrieBuilder) BuildFromSlice(xs [][]byte) (*DictTrie, error) {
 	if err != nil {
 		return nil, err
 	}
+	return buildDictTrie(f, dict)
+}
+
+func (b *DictTrieBuilder) BuildFromLines(r io.ReadSeeker) (*DictTrie, error) {
+	f := b.builder.Factory()
+	dict, err := dict.FromReadSeeker(r, f)
+	if err != nil {
+		return nil, err
+	}
+	return buildDictTrie(f, dict)
+}
+
+func buildDictTrie(f *da.Factory, dict dict.Dict) (*DictTrie, error) {
 	trie, err := f.Done()
 	if err != nil {
 		return nil, err
 	}
 	return NewDictTrie(trie, dict), nil
-}
-
-func (b *DictTrieBuilder) BuildFromLines(r io.Reader) (*DictTrie, error) {
-	return b.BuildFromSlice(slices.Collect(scan.ByteLines(r)))
 }

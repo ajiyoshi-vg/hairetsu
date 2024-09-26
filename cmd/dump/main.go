@@ -13,9 +13,9 @@ import (
 	"github.com/ajiyoshi-vg/external/scan"
 	"github.com/ajiyoshi-vg/hairetsu"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
+	"github.com/ajiyoshi-vg/hairetsu/progress"
 	"github.com/ikawaha/dartsclone"
 	dartsprog "github.com/ikawaha/dartsclone/progressbar"
-	"github.com/schollz/progressbar"
 )
 
 type option struct {
@@ -70,7 +70,7 @@ func run() error {
 
 func options() []doublearray.Option {
 	ret := []doublearray.Option{
-		doublearray.OptionProgress(progressbar.New(0)),
+		doublearray.OptionProgress(&progress.ProgressBar{}),
 	}
 	if opt.verbose {
 		return append(ret, doublearray.Verbose)
@@ -79,15 +79,14 @@ func options() []doublearray.Option {
 }
 
 func dumpByte(file io.Reader) error {
-	seq := scan.ByteLines(file)
-	trie, err := hairetsu.NewByteTrieBuilder(options()...).StreamBuild(seq)
+	trie, err := hairetsu.NewByteTrieBuilder(options()...).BuildFromLines(file)
 	if err != nil {
 		return err
 	}
 	return writeTo(trie, opt.out)
 }
 
-func dumpRune(file io.Reader) error {
+func dumpRune(file io.ReadSeeker) error {
 	trie, err := hairetsu.NewRuneTrieBuilder(options()...).BuildFromLines(file)
 	if err != nil {
 		return err
@@ -95,7 +94,7 @@ func dumpRune(file io.Reader) error {
 	return writeTo(trie, opt.out)
 }
 
-func dumpDict(file io.Reader) error {
+func dumpDict(file io.ReadSeeker) error {
 	trie, err := hairetsu.NewDictTrieBuilder(options()...).BuildFromLines(file)
 	if err != nil {
 		return err
