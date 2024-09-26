@@ -8,16 +8,16 @@ import (
 )
 
 var (
-	_ codec.Encoder[[]byte] = (*Encoder)(nil)
+	_ codec.Encoder[[]byte] = (*Encoder[MapDict])(nil)
 	_ codec.Decoder[[]byte] = (*Decoder)(nil)
 )
 
-type Encoder struct {
-	dict Dict
+type Encoder[D Dict] struct {
+	dict D
 }
 
-func NewEncoder(dict Dict) Encoder {
-	ret := Encoder{
+func NewEncoder[D Dict](dict D) Encoder[D] {
+	ret := Encoder[D]{
 		dict: dict,
 	}
 	return ret
@@ -39,7 +39,7 @@ func DoubleBytes(x []byte) iter.Seq[uint16] {
 	}
 }
 
-func (enc Encoder) Iter(x []byte) iter.Seq[word.Code] {
+func (enc Encoder[D]) Iter(x []byte) iter.Seq[word.Code] {
 	return func(yield func(word.Code) bool) {
 		for i := range DoubleBytes(x) {
 			if !yield(enc.dict.Code(i)) {
@@ -53,7 +53,7 @@ func (enc Encoder) Iter(x []byte) iter.Seq[word.Code] {
 	}
 }
 
-func (enc Encoder) Encode(x []byte) word.Word {
+func (enc Encoder[D]) Encode(x []byte) word.Word {
 	ret := make(word.Word, 0, 1+len(x)/2)
 	for c := range enc.Iter(x) {
 		ret = append(ret, c)
@@ -61,7 +61,7 @@ func (enc Encoder) Encode(x []byte) word.Word {
 	return ret
 }
 
-func (enc Encoder) Decoder() *Decoder {
+func (enc Encoder[D]) Decoder() *Decoder {
 	return &Decoder{
 		dict: enc.dict.Inverse(),
 	}

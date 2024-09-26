@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/ajiyoshi-vg/external/scan"
+	"github.com/ajiyoshi-vg/hairetsu/codec/doublebyte"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/overhead"
 	"github.com/ajiyoshi-vg/hairetsu/word"
@@ -166,10 +167,10 @@ func BenchmarkTrie(b *testing.B) {
 			}
 		})
 	})
-	b.Run("double byte", func(b *testing.B) {
-		var trie DoubleByteTrie
+	b.Run("codec-map", func(b *testing.B) {
+		trie := NewDoubleByteTrie(nil, doublebyte.MapDict{})
 		{
-			file, err := os.Open("double.trie")
+			file, err := os.Open("double-map.trie")
 			assert.NoError(b, err)
 			defer file.Close()
 
@@ -178,10 +179,70 @@ func BenchmarkTrie(b *testing.B) {
 				b.Fatal(err)
 				assert.NoError(b, err)
 			}
-			b.Logf("double.trie:%s", doublearray.GetStat(trie.data))
+			b.Logf("double-map.trie:%s", doublearray.GetStat(trie.data))
 		}
-		s := trie.Searcher()
+		is := trie.InlineSearcher()
 		b.Run("exact", func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				for _, v := range bs {
+					if id, err := is.ExactMatchSearch(v); err != nil {
+						b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", string(v), id, err)
+					}
+				}
+			}
+		})
+	})
+	b.Run("codec-a", func(b *testing.B) {
+		trie := NewDoubleByteTrie(nil, doublebyte.NewArrayDict(doublebyte.MapDict{}))
+		{
+			file, err := os.Open("double-a.trie")
+			assert.NoError(b, err)
+			defer file.Close()
+
+			_, err = trie.ReadFrom(bufio.NewReader(file))
+			if err != nil {
+				b.Fatal(err)
+				assert.NoError(b, err)
+			}
+			b.Logf("double-a.trie:%s", doublearray.GetStat(trie.data))
+		}
+		is := trie.InlineSearcher()
+		b.Run("exact", func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				for _, v := range bs {
+					if id, err := is.ExactMatchSearch(v); err != nil {
+						b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", string(v), id, err)
+					}
+				}
+			}
+		})
+	})
+	b.Run("codec-id", func(b *testing.B) {
+		trie := NewDoubleByteTrie(nil, doublebyte.Identity)
+		{
+			file, err := os.Open("double-id.trie")
+			assert.NoError(b, err)
+			defer file.Close()
+
+			_, err = trie.ReadFrom(bufio.NewReader(file))
+			if err != nil {
+				b.Fatal(err)
+				assert.NoError(b, err)
+			}
+			b.Logf("double-id.trie:%s", doublearray.GetStat(trie.data))
+		}
+		is := trie.InlineSearcher()
+		b.Run("exact", func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				for _, v := range bs {
+					if id, err := is.ExactMatchSearch(v); err != nil {
+						b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", string(v), id, err)
+					}
+				}
+			}
+		})
+		s := trie.Searcher()
+		b.Run("exact-s", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				for _, v := range bs {
 					if id, err := s.ExactMatchSearch(v); err != nil {

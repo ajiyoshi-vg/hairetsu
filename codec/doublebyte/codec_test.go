@@ -3,14 +3,12 @@ package doublebyte
 import (
 	"testing"
 
-	"github.com/ajiyoshi-vg/hairetsu/codec"
-	"github.com/ajiyoshi-vg/hairetsu/word"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestDoubleByte(t *testing.T) {
 	cases := map[string]struct {
-		dict   codec.Dict[uint16, word.Code]
+		dict   Dict
 		input  []byte
 		expect []byte
 	}{
@@ -30,17 +28,17 @@ func TestDoubleByte(t *testing.T) {
 			expect: []byte{0, 1, 2},
 		},
 		"map:1,2": {
-			dict:   mapDict{0x0201: 1},
+			dict:   MapDict{0x0201: 1},
 			input:  []byte{1, 2},
 			expect: []byte{1, 2},
 		},
 		"map:1,2,3": {
-			dict:   mapDict{0x0201: 1, 0x03: 2},
+			dict:   MapDict{0x0201: 1, 0x03: 2},
 			input:  []byte{1, 2, 3},
 			expect: []byte{1, 2, 3},
 		},
 		"array:1,2,3": {
-			dict:   NewArrayDict(mapDict{0x0201: 1, 0x03: 2}),
+			dict:   NewArrayDict(MapDict{0x0201: 1, 0x03: 2}),
 			input:  []byte{1, 2, 3},
 			expect: []byte{1, 2, 3},
 		},

@@ -12,6 +12,7 @@ import (
 
 	"github.com/ajiyoshi-vg/external/scan"
 	"github.com/ajiyoshi-vg/hairetsu"
+	"github.com/ajiyoshi-vg/hairetsu/codec/doublebyte"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/progress"
 	"github.com/ikawaha/dartsclone"
@@ -63,8 +64,12 @@ func run() error {
 		return dumpDict(file)
 	case "darts":
 		return dumpDarts(file)
-	case "double":
+	case "double-map":
 		return dumpDouble(file)
+	case "double-id":
+		return dumpDoubleID(file)
+	case "double-a":
+		return dumpDoubleArray(file)
 	default:
 		return fmt.Errorf("unkown kind %s", opt.kind)
 	}
@@ -105,7 +110,24 @@ func dumpDict(file io.ReadSeeker) error {
 }
 
 func dumpDouble(file io.ReadSeeker) error {
-	trie, err := hairetsu.NewDoubleByteTrieBuilder(options()...).BuildFromLines(file)
+	b := hairetsu.NewDoubleByteTrieBuilder(doublebyte.MapDict{}, options()...)
+	trie, err := b.BuildFromLines(file)
+	if err != nil {
+		return err
+	}
+	return writeTo(trie, opt.out)
+}
+func dumpDoubleID(file io.ReadSeeker) error {
+	b := hairetsu.NewDoubleByteTrieBuilder(doublebyte.Identity, options()...)
+	trie, err := b.BuildFromLines(file)
+	if err != nil {
+		return err
+	}
+	return writeTo(trie, opt.out)
+}
+func dumpDoubleArray(file io.ReadSeeker) error {
+	b := hairetsu.NewDoubleByteTrieBuilder(doublebyte.NewArrayDict(doublebyte.MapDict{}), options()...)
+	trie, err := b.BuildFromLines(file)
 	if err != nil {
 		return err
 	}
