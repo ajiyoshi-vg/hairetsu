@@ -83,12 +83,13 @@ func TestRuneTrieBuild(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
-			data := bytes.NewBufferString(c.data)
+			data := bytes.NewReader([]byte(c.data))
 			origin, err := NewRuneTrieBuilder().BuildFromLines(data)
 			assert.NoError(t, err)
 
 			buf := &bytes.Buffer{}
-			origin.WriteTo(buf)
+			_, err = origin.WriteTo(buf)
+			assert.NoError(t, err)
 
 			restored := &RuneTrie{}
 			_, err = restored.ReadFrom(buf)

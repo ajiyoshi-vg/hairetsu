@@ -4,9 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"io"
-	"slices"
 
-	"github.com/ajiyoshi-vg/external/scan"
 	da "github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/runes"
@@ -102,13 +100,22 @@ func (b *RuneTrieBuilder) BuildFromSlice(xs []string) (*RuneTrie, error) {
 	if err != nil {
 		return nil, err
 	}
+	return buildRuneTrie(f, dict)
+}
+
+func (b *RuneTrieBuilder) BuildFromLines(r io.ReadSeeker) (*RuneTrie, error) {
+	f := b.builder.Factory()
+	dict, err := runes.FromReader(r, f)
+	if err != nil {
+		return nil, err
+	}
+	return buildRuneTrie(f, dict)
+}
+
+func buildRuneTrie(f *da.Factory, dict runes.Dict) (*RuneTrie, error) {
 	trie, err := f.Done()
 	if err != nil {
 		return nil, err
 	}
 	return NewRuneTrie(trie, dict), nil
-}
-
-func (b *RuneTrieBuilder) BuildFromLines(r io.Reader) (*RuneTrie, error) {
-	return b.BuildFromSlice(slices.Collect(scan.Lines(r)))
 }
