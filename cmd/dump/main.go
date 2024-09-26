@@ -63,6 +63,8 @@ func run() error {
 		return dumpDict(file)
 	case "darts":
 		return dumpDarts(file)
+	case "double":
+		return dumpDouble(file)
 	default:
 		return fmt.Errorf("unkown kind %s", opt.kind)
 	}
@@ -96,6 +98,14 @@ func dumpRune(file io.ReadSeeker) error {
 
 func dumpDict(file io.ReadSeeker) error {
 	trie, err := hairetsu.NewDictTrieBuilder(options()...).BuildFromLines(file)
+	if err != nil {
+		return err
+	}
+	return writeTo(trie, opt.out)
+}
+
+func dumpDouble(file io.ReadSeeker) error {
+	trie, err := hairetsu.NewDoubleByteTrieBuilder(options()...).BuildFromLines(file)
 	if err != nil {
 		return err
 	}

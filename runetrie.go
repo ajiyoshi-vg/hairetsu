@@ -4,8 +4,11 @@ import (
 	"bytes"
 	"encoding/binary"
 	"io"
+	"iter"
 
+	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	da "github.com/ajiyoshi-vg/hairetsu/doublearray"
+	"github.com/ajiyoshi-vg/hairetsu/doublearray/item"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/runes"
 )
@@ -32,6 +35,10 @@ func (t *RuneTrie) ExactMatchSearch(key string) (node.Index, error) {
 
 func (t *RuneTrie) CommonPrefixSearch(key string) ([]node.Index, error) {
 	return t.dict.CommonPrefixSearch(t.data, key)
+}
+
+func (t *RuneTrie) Leafs() iter.Seq[item.Item] {
+	return doublearray.Leafs(t.data)
 }
 
 const runeTrieHeader = 4
