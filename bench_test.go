@@ -166,6 +166,31 @@ func BenchmarkTrie(b *testing.B) {
 			}
 		})
 	})
+	b.Run("double byte", func(b *testing.B) {
+		var trie DoubleByteTrie
+		{
+			file, err := os.Open("double.trie")
+			assert.NoError(b, err)
+			defer file.Close()
+
+			_, err = trie.ReadFrom(bufio.NewReader(file))
+			if err != nil {
+				b.Fatal(err)
+				assert.NoError(b, err)
+			}
+			b.Logf("double.trie:%s", doublearray.GetStat(trie.data))
+		}
+		s := trie.Searcher()
+		b.Run("exact", func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				for _, v := range bs {
+					if id, err := s.ExactMatchSearch(v); err != nil {
+						b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", string(v), id, err)
+					}
+				}
+			}
+		})
+	})
 }
 func BenchmarkOverhead(b *testing.B) {
 	trie, err := readIndex("byte.trie")

@@ -37,8 +37,10 @@ head.dat: bench.dat Makefile
 %.trie: head.dat
 	go run cmd/dump/main.go -o $@ -in $< -kind $* -v
 
-bench: generate byte.trie rune.trie darts.trie dict.trie
+bench: generate data
 	go test -benchmem -bench .
+
+data: byte.trie rune.trie darts.trie dict.trie double.trie
 
 test_overhead: generate byte.trie
 	go test -bench Overhead
