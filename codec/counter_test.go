@@ -27,7 +27,7 @@ func TestCount(t *testing.T) {
 			}
 			for kind, d := range kinds {
 				t.Run(kind, func(t *testing.T) {
-					dict := instantCount(d, slices.Values(c.input))
+					dict := InstantCount(d, slices.Values(c.input))
 
 					for _, b := range c.input {
 						code := dict.Code(b)
@@ -41,7 +41,7 @@ func TestCount(t *testing.T) {
 				})
 			}
 			t.Run("identity", func(t *testing.T) {
-				dict := instantCount(&Identity[uint16]{}, slices.Values(c.input))
+				dict := InstantCount(&Identity[uint16]{}, slices.Values(c.input))
 
 				xs := append(c.input, c.unknown...)
 				for _, b := range xs {

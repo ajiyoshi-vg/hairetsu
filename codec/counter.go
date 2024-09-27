@@ -27,7 +27,7 @@ func (b *Counter[T, S]) Build() S {
 	return b.dest
 }
 
-func instantCount[T comparable, S Fillable[T]](dest S, seq iter.Seq[T]) S {
+func InstantCount[T comparable, S Fillable[T]](dest S, seq iter.Seq[T]) S {
 	b := NewCounter(dest)
 	b.Add(seq)
 	return b.Build()

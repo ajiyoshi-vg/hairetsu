@@ -32,7 +32,7 @@ func TestReaderWriter(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			for kind, d := range kinds {
 				t.Run(kind, func(t *testing.T) {
-					dict := instantCount(d, slices.Values(c.input))
+					dict := InstantCount(d, slices.Values(c.input))
 
 					for _, b := range c.input {
 						code := dict.Code(b)
