@@ -26,12 +26,11 @@ func NewEncoder[T Dict](d T) *Encoder[T] {
 func DoubleBytes(x []byte) iter.Seq[uint16] {
 	return func(yield func(uint16) bool) {
 		for i := 0; i < len(x); i += 2 {
-			var val uint16
-			for j := 0; j < 2; j++ {
-				if i+j < len(x) {
-					val |= uint16(x[i+j]) << (8 * uint(j))
-				}
+			val := uint16(x[i])
+			if i+1 < len(x) {
+				val |= uint16(x[i+1]) << 8
 			}
+
 			if !yield(val) {
 				return
 			}

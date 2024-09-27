@@ -8,12 +8,8 @@ import (
 )
 
 var (
-	_ Dict[int, word.Code] = (*Identity[int])(nil)
+	_ WordDict[int]        = (*Identity[int])(nil)
 	_ Dict[word.Code, int] = (*InverseIdentity[int])(nil)
-
-	_ io.WriterTo   = (*Identity[int])(nil)
-	_ io.ReaderFrom = (*Identity[int])(nil)
-	_ Fillable[int] = (*Identity[int])(nil)
 )
 
 type Identity[T constraints.Integer] struct{}

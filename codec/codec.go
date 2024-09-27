@@ -22,6 +22,10 @@ type Dict[T, Val any] interface {
 type Fillable[Unit comparable] interface {
 	Fill(map[Unit]int)
 }
+type FillableDict[T comparable] interface {
+	Dict[T, word.Code]
+	Fillable[T]
+}
 type WordDict[T comparable] interface {
 	Dict[T, word.Code]
 	Fillable[T]

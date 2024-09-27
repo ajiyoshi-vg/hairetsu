@@ -167,6 +167,8 @@ func BenchmarkTrie(b *testing.B) {
 			}
 		})
 	})
+}
+func BenchmarkCodec(b *testing.B) {
 	b.Run("codec-map", func(b *testing.B) {
 		trie := NewDoubleByteTrie(nil, doublebyte.MapDict{})
 		{
@@ -181,11 +183,11 @@ func BenchmarkTrie(b *testing.B) {
 			}
 			b.Logf("double-map.trie:%s", doublearray.GetStat(trie.data))
 		}
-		is := trie.InlineSearcher()
+		s := trie.Searcher()
 		b.Run("exact", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				for _, v := range bs {
-					if id, err := is.ExactMatchSearch(v); err != nil {
+					if id, err := s.ExactMatchSearch(v); err != nil {
 						b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", string(v), id, err)
 					}
 				}
@@ -206,11 +208,11 @@ func BenchmarkTrie(b *testing.B) {
 			}
 			b.Logf("double-a.trie:%s", doublearray.GetStat(trie.data))
 		}
-		is := trie.InlineSearcher()
+		s := trie.Searcher()
 		b.Run("exact", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				for _, v := range bs {
-					if id, err := is.ExactMatchSearch(v); err != nil {
+					if id, err := s.ExactMatchSearch(v); err != nil {
 						b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", string(v), id, err)
 					}
 				}
@@ -231,16 +233,6 @@ func BenchmarkTrie(b *testing.B) {
 			}
 			b.Logf("double-id.trie:%s", doublearray.GetStat(trie.data))
 		}
-		is := trie.InlineSearcher()
-		b.Run("exact", func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				for _, v := range bs {
-					if id, err := is.ExactMatchSearch(v); err != nil {
-						b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", string(v), id, err)
-					}
-				}
-			}
-		})
 		s := trie.Searcher()
 		b.Run("exact-s", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
