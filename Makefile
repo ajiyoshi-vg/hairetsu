@@ -34,7 +34,7 @@ tiny_data:
 SOURCE := uuid.dat
 
 head.dat: $(SOURCE) Makefile
-	tail -n 200000 $< > $@
+	tail -n 100000 $< > $@
 
 uuid.dat:
 	go run cmd/gen/main.go > $@

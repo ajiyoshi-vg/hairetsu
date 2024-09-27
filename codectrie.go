@@ -5,7 +5,7 @@ import (
 	"iter"
 
 	"github.com/ajiyoshi-vg/hairetsu/codec"
-	"github.com/ajiyoshi-vg/hairetsu/codec/doublebyte"
+	"github.com/ajiyoshi-vg/hairetsu/codec/u16s"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray/item"
 )
@@ -18,8 +18,8 @@ type doubleByteEncoder interface {
 }
 
 var (
-	_ doubleByteDict    = (doublebyte.WordDict)(nil)
-	_ doubleByteEncoder = (*doublebyte.Encoder[doublebyte.Dict])(nil)
+	_ doubleByteDict    = (u16s.WordDict)(nil)
+	_ doubleByteEncoder = (*u16s.Encoder[u16s.Dict])(nil)
 )
 
 type DoubleByteTrie[T doubleByteDict] struct {
@@ -42,11 +42,11 @@ func NewDoubleByteTrie[T doubleByteDict](
 	}
 }
 
-func (t *DoubleByteTrie[T]) InlineSearcher() *doublebyte.InlineSearcher[T, doublearray.Nodes] {
-	return doublebyte.NewInlineSearcher(t.data, t.dict)
+func (t *DoubleByteTrie[T]) InlineSearcher() *u16s.InlineSearcher[T, doublearray.Nodes] {
+	return u16s.NewInlineSearcher(t.data, t.dict)
 }
 func (t *DoubleByteTrie[T]) Searcher() *codec.Searcher[[]byte, doublearray.Nodes] {
-	return codec.NewSearcher(doublebyte.NewEncoder(t.dict), t.data)
+	return codec.NewSearcher(u16s.NewEncoder(t.dict), t.data)
 }
 
 func (t *DoubleByteTrie[T]) Leafs() iter.Seq[item.Item] {
@@ -86,7 +86,7 @@ func NewDoubleByteTrieBuilder[T doubleByteDict](dict T, opt ...doublearray.Optio
 
 func (b *DoubleByteTrieBuilder[T]) BuildFromLines(r io.ReadSeeker) (*DoubleByteTrie[T], error) {
 	f := b.builder.Factory()
-	err := doublebyte.FromReadSeeker(r, f, b.dict)
+	err := u16s.FromReadSeeker(r, f, b.dict)
 	if err != nil {
 		return nil, err
 	}

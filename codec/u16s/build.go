@@ -1,4 +1,4 @@
-package doublebyte
+package u16s
 
 import (
 	"io"
