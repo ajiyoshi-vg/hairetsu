@@ -1,6 +1,7 @@
 package codec
 
 import (
+	"io"
 	"iter"
 
 	"github.com/ajiyoshi-vg/hairetsu/word"
@@ -14,10 +15,16 @@ type Decoder[Item any] interface {
 	Decode(word.Word) (Item, error)
 }
 
-type Dict[Key, Val any] interface {
-	Code(Key) Val
-	Inverse() Dict[Val, Key]
+type Dict[T, Val any] interface {
+	Code(T) Val
+	Inverse() Dict[Val, T]
 }
-type Fillable[Key comparable] interface {
-	Fill(map[Key]int)
+type Fillable[Unit comparable] interface {
+	Fill(map[Unit]int)
+}
+type WordDict[T comparable] interface {
+	Dict[T, word.Code]
+	Fillable[T]
+	io.WriterTo
+	io.ReaderFrom
 }

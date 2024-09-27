@@ -6,31 +6,25 @@ import (
 	"github.com/ajiyoshi-vg/hairetsu/word"
 )
 
-type Searcher[T any] struct {
+type Searcher[T any, DA doublearray.Nodes] struct {
 	enc Encoder[T]
-	da  doublearray.Nodes
+	da  DA
 }
 
-func NewSearcher[T any](enc Encoder[T], da doublearray.Nodes) *Searcher[T] {
-	return &Searcher[T]{enc: enc, da: da}
+func NewSearcher[T any, DA doublearray.Nodes](enc Encoder[T], da DA) *Searcher[T, DA] {
+	return &Searcher[T, DA]{enc: enc, da: da}
 }
 
-func (s *Searcher[T]) ExactMatchSearch(x T) (node.Index, error) {
-	var parent node.Index
-	target, err := s.da.At(parent)
+func (s *Searcher[T, DA]) ExactMatchSearch(x T) (node.Index, error) {
+	target, parent, err := doublearray.InitialTarget(s.da)
 	if err != nil {
 		return 0, err
 	}
 	for c := range s.enc.Iter(x) {
-		child := target.GetChild(c)
-		target, err = s.da.At(child)
+		target, parent, err = doublearray.NextTarget(s.da, c, target, parent)
 		if err != nil {
 			return 0, err
 		}
-		if !target.IsChildOf(parent) {
-			return 0, doublearray.ErrNotAChild
-		}
-		parent = child
 	}
 	if !target.IsTerminal() {
 		return 0, doublearray.ErrNotATerminal
@@ -42,7 +36,7 @@ func (s *Searcher[T]) ExactMatchSearch(x T) (node.Index, error) {
 	return data.GetOffset(), nil
 }
 
-func (s *Searcher[T]) CommonPrefixSearch(x T) ([]node.Index, error) {
+func (s *Searcher[T, DA]) CommonPrefixSearch(x T) ([]node.Index, error) {
 	var ret []node.Index
 	var parent node.Index
 	target, err := s.da.At(parent)

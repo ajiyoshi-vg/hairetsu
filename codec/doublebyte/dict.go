@@ -15,16 +15,16 @@ type Dict interface {
 	codec.Dict[uint16, word.Code]
 }
 
+type Fillable interface {
+	codec.Fillable[uint16]
+}
+
 type FillableDict interface {
 	Dict
 	Fillable
 }
 
-type Fillable interface {
-	codec.Fillable[uint16]
-}
-
-type FullDict interface {
+type WordDict interface {
 	Dict
 	Fillable
 	io.WriterTo
@@ -33,9 +33,9 @@ type FullDict interface {
 type inverseDict codec.Dict[word.Code, uint16]
 
 var (
-	Identity FullDict = &codec.Identity[uint16]{}
-	_        FullDict = MapDict{}
-	_        FullDict = (*ArrayDict)(nil)
+	Identity WordDict = &codec.Identity[uint16]{}
+	_        WordDict = MapDict{}
+	_        WordDict = (*ArrayDict)(nil)
 )
 
 type MapDict map[uint16]word.Code

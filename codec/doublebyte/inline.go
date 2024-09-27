@@ -1,22 +1,22 @@
 package doublebyte
 
 import (
-	da "github.com/ajiyoshi-vg/hairetsu/doublearray"
+	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 )
 
-type InlineSearcher[T Dict] struct {
-	da   da.Nodes
+type InlineSearcher[T Dict, DA doublearray.Nodes] struct {
+	da   DA
 	dict T
 }
 
-func NewInlineSearcher[T Dict](da da.Nodes, dict T) *InlineSearcher[T] {
-	return &InlineSearcher[T]{da: da, dict: dict}
+func NewInlineSearcher[T Dict, DA doublearray.Nodes](da DA, dict T) *InlineSearcher[T, DA] {
+	return &InlineSearcher[T, DA]{da: da, dict: dict}
 }
 
-func (x *InlineSearcher[T]) ExactMatchSearch(key []byte) (node.Index, error) {
-	target, parent, err := da.InitialTarget(x.da)
+func (x *InlineSearcher[T, DA]) ExactMatchSearch(key []byte) (node.Index, error) {
+	target, parent, err := doublearray.InitialTarget(x.da)
 	if err != nil {
 		return 0, err
 	}
@@ -27,13 +27,13 @@ func (x *InlineSearcher[T]) ExactMatchSearch(key []byte) (node.Index, error) {
 			val |= uint16(key[i+1]) << 8
 		}
 		code := x.dict.Code(val)
-		target, parent, err = da.NextTarget(x.da, code, target, parent)
+		target, parent, err = doublearray.NextTarget(x.da, code, target, parent)
 		if err != nil {
 			return 0, err
 		}
 	}
 	if len(key)%2 == 1 {
-		target, _, err = da.NextTarget(x.da, word.Backspace, target, parent)
+		target, _, err = doublearray.NextTarget(x.da, word.Backspace, target, parent)
 		if err != nil {
 			return 0, err
 		}
