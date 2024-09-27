@@ -29,9 +29,9 @@ func TestDoubleByte(t *testing.T) {
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
 			kinds := map[string]WordDict{
-				"map":   codec.MapDict[uint16]{},
-				"array": codec.NewArrayDict[uint16](),
-				"id":    &codec.Identity[uint16]{},
+				"map":   NewMapDict(),
+				"array": NewArrayDict(),
+				"id":    NewIdentityDict(),
 			}
 			for kind, d := range kinds {
 				t.Run(kind, func(t *testing.T) {

@@ -27,3 +27,13 @@ type WordDict interface {
 	io.ReaderFrom
 }
 type inverseDict codec.Dict[word.Code, uint16]
+
+func NewMapDict() codec.WordDict[uint16] {
+	return codec.MapDict[uint16]{}
+}
+func NewArrayDict() codec.ArrayDict[uint16] {
+	return codec.NewArrayDict[uint16]()
+}
+func NewIdentityDict() *codec.Identity[uint16] {
+	return &codec.Identity[uint16]{}
+}
