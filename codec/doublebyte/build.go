@@ -11,16 +11,15 @@ type Factory interface {
 	Put(item.Item)
 }
 
-func FromReadSeeker[D Dict](dict D, r io.ReadSeeker, f Factory) (D, error) {
-	b := NewBuilder(dict)
+func FromReadSeeker[D Dict](r io.ReadSeeker, f Factory, dict D) error {
+	b := newBuilder(dict)
 	for line := range scan.ByteLines(r) {
-		b.Add(line)
+		b.add(line)
 	}
-	b.Build()
+	b.build()
 
-	var zero D
 	if _, err := r.Seek(0, io.SeekStart); err != nil {
-		return zero, err
+		return err
 	}
 
 	enc := NewEncoder(dict)
@@ -29,27 +28,34 @@ func FromReadSeeker[D Dict](dict D, r io.ReadSeeker, f Factory) (D, error) {
 		f.Put(item.New(enc.Encode(line), i))
 		i++
 	}
-	return dict, nil
+	return nil
 }
 
-type Builder[D Dict] struct {
-	counter map[uint16]int
-	dest    D
+type builder[D Dict] struct {
+	count map[uint16]int
+	dest  D
 }
 
-func NewBuilder[D Dict](dest D) *Builder[D] {
-	return &Builder[D]{
-		counter: make(map[uint16]int),
-		dest:    dest,
+func newBuilder[D Dict](dest D) *builder[D] {
+	return &builder[D]{
+		count: make(map[uint16]int),
+		dest:  dest,
 	}
 }
 
-func (b *Builder[D]) Add(x []byte) {
+func (b *builder[D]) add(x []byte) {
 	for i := range DoubleBytes(x) {
-		b.counter[i] += 1
+		b.count[i] += 1
 	}
 }
 
-func (b *Builder[D]) Build() {
-	b.dest.Fill(b.counter)
+func (b *builder[D]) build() D {
+	b.dest.Fill(b.count)
+	return b.dest
+}
+
+func instantBuild[D Dict](dest D, data []byte) D {
+	b := newBuilder(dest)
+	b.add(data)
+	return b.build()
 }

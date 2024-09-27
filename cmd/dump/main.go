@@ -126,7 +126,7 @@ func dumpDoubleID(file io.ReadSeeker) error {
 	return writeTo(trie, opt.out)
 }
 func dumpDoubleArray(file io.ReadSeeker) error {
-	b := hairetsu.NewDoubleByteTrieBuilder(doublebyte.NewArrayDict(doublebyte.MapDict{}), options()...)
+	b := hairetsu.NewDoubleByteTrieBuilder(doublebyte.NewArrayDict(), options()...)
 	trie, err := b.BuildFromLines(file)
 	if err != nil {
 		return err

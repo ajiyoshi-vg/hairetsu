@@ -193,7 +193,7 @@ func BenchmarkTrie(b *testing.B) {
 		})
 	})
 	b.Run("codec-a", func(b *testing.B) {
-		trie := NewDoubleByteTrie(nil, doublebyte.NewArrayDict(doublebyte.MapDict{}))
+		trie := NewDoubleByteTrie(nil, doublebyte.NewArrayDict())
 		{
 			file, err := os.Open("double-a.trie")
 			assert.NoError(b, err)

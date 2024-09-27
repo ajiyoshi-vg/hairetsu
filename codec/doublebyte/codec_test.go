@@ -28,17 +28,22 @@ func TestDoubleByte(t *testing.T) {
 			expect: []byte{0, 1, 2},
 		},
 		"map:1,2": {
-			dict:   MapDict{0x0201: 1},
+			dict:   MapDict{},
 			input:  []byte{1, 2},
 			expect: []byte{1, 2},
 		},
 		"map:1,2,3": {
-			dict:   MapDict{0x0201: 1, 0x03: 2},
+			dict:   MapDict{},
 			input:  []byte{1, 2, 3},
 			expect: []byte{1, 2, 3},
 		},
+		"array:1,2": {
+			dict:   NewArrayDict(),
+			input:  []byte{1, 2},
+			expect: []byte{1, 2},
+		},
 		"array:1,2,3": {
-			dict:   NewArrayDict(MapDict{0x0201: 1, 0x03: 2}),
+			dict:   NewArrayDict(),
 			input:  []byte{1, 2, 3},
 			expect: []byte{1, 2, 3},
 		},
@@ -46,7 +51,7 @@ func TestDoubleByte(t *testing.T) {
 
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
-			enc := NewEncoder(c.dict)
+			enc := NewEncoder(instantBuild(c.dict, c.input))
 			dec := enc.Decoder()
 			actual, err := dec.Decode(enc.Encode(c.input))
 			assert.NoError(t, err)

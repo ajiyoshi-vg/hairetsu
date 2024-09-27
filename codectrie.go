@@ -75,11 +75,11 @@ func NewDoubleByteTrieBuilder[D doublebyte.Dict](dict D, opt ...da.Option) *Doub
 
 func (b *DoubleByteTrieBuilder[D]) BuildFromLines(r io.ReadSeeker) (*DoubleByteTrie[D], error) {
 	f := b.builder.Factory()
-	dict, err := doublebyte.FromReadSeeker(b.dict, r, f)
+	err := doublebyte.FromReadSeeker(r, f, b.dict)
 	if err != nil {
 		return nil, err
 	}
-	return buildDoubleByteTrie(f, dict)
+	return buildDoubleByteTrie(f, b.dict)
 }
 
 func buildDoubleByteTrie[D doublebyte.Dict](f *da.Factory, dict D) (*DoubleByteTrie[D], error) {
