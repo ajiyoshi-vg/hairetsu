@@ -1,9 +1,10 @@
-package codec
+package dict
 
 import (
 	"slices"
 	"testing"
 
+	"github.com/ajiyoshi-vg/hairetsu/codec"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 	"github.com/stretchr/testify/assert"
 )
@@ -21,7 +22,7 @@ func TestCount(t *testing.T) {
 
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
-			kinds := map[string]FillableDict[uint16]{
+			kinds := map[string]codec.FillableDict[uint16]{
 				"map":   MapDict[uint16]{},
 				"array": NewArrayDict[uint16](),
 			}

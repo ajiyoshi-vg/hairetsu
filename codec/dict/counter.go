@@ -1,15 +1,17 @@
-package codec
+package dict
 
 import (
 	"iter"
+
+	"github.com/ajiyoshi-vg/hairetsu/codec"
 )
 
-type Counter[T comparable, S Fillable[T]] struct {
+type Counter[T comparable, S codec.Fillable[T]] struct {
 	count map[T]int
 	dest  S
 }
 
-func NewCounter[T comparable, S Fillable[T]](dest S) *Counter[T, S] {
+func NewCounter[T comparable, S codec.Fillable[T]](dest S) *Counter[T, S] {
 	return &Counter[T, S]{
 		count: make(map[T]int),
 		dest:  dest,
@@ -27,7 +29,7 @@ func (b *Counter[T, S]) Build() S {
 	return b.dest
 }
 
-func InstantCount[T comparable, S Fillable[T]](dest S, seq iter.Seq[T]) S {
+func InstantCount[T comparable, S codec.Fillable[T]](dest S, seq iter.Seq[T]) S {
 	b := NewCounter(dest)
 	b.Add(seq)
 	return b.Build()

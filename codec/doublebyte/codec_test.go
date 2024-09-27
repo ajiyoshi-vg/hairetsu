@@ -3,7 +3,7 @@ package doublebyte
 import (
 	"testing"
 
-	"github.com/ajiyoshi-vg/hairetsu/codec"
+	"github.com/ajiyoshi-vg/hairetsu/codec/dict"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -35,7 +35,7 @@ func TestDoubleByte(t *testing.T) {
 			}
 			for kind, d := range kinds {
 				t.Run(kind, func(t *testing.T) {
-					dict := codec.InstantCount(d, DoubleBytes(c.input))
+					dict := dict.InstantCount(d, DoubleBytes(c.input))
 					enc := NewEncoder(dict)
 					dec := enc.Decoder()
 					actual, err := dec.Decode(enc.Encode(c.input))

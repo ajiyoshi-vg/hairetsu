@@ -1,4 +1,4 @@
-package codec
+package dict
 
 import (
 	"bytes"
@@ -6,6 +6,7 @@ import (
 	"io"
 	"sort"
 
+	"github.com/ajiyoshi-vg/hairetsu/codec"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 	"golang.org/x/exp/constraints"
 )
@@ -14,8 +15,8 @@ type MapDict[T constraints.Integer] map[T]word.Code
 type inverseMapDict[T constraints.Integer] map[word.Code]T
 
 var (
-	_ WordDict[int]        = (MapDict[int])(nil)
-	_ Dict[word.Code, int] = (inverseMapDict[int])(nil)
+	_ codec.WordDict[int]        = (MapDict[int])(nil)
+	_ codec.Dict[word.Code, int] = (inverseMapDict[int])(nil)
 )
 
 func (m MapDict[T]) Code(x T) word.Code {
@@ -51,7 +52,7 @@ func (m MapDict[T]) fill(count map[T]int) MapDict[T] {
 	return m
 }
 
-func (m MapDict[T]) Inverse() Dict[word.Code, T] {
+func (m MapDict[T]) Inverse() codec.Dict[word.Code, T] {
 	ret := make(inverseMapDict[T], len(m))
 	for k, v := range m {
 		ret[v] = k
@@ -124,7 +125,7 @@ func (m inverseMapDict[T]) Code(x word.Code) T {
 	return ret
 }
 
-func (m inverseMapDict[T]) Inverse() Dict[T, word.Code] {
+func (m inverseMapDict[T]) Inverse() codec.Dict[T, word.Code] {
 	ret := make(MapDict[T], len(m))
 	for k, v := range m {
 		ret[v] = k

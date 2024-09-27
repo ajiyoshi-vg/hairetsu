@@ -1,15 +1,16 @@
-package codec
+package dict
 
 import (
 	"io"
 
+	"github.com/ajiyoshi-vg/hairetsu/codec"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 	"golang.org/x/exp/constraints"
 )
 
 var (
-	_ WordDict[int]        = (*Identity[int])(nil)
-	_ Dict[word.Code, int] = (*InverseIdentity[int])(nil)
+	_ codec.WordDict[int]        = (*Identity[int])(nil)
+	_ codec.Dict[word.Code, int] = (*InverseIdentity[int])(nil)
 )
 
 type Identity[T constraints.Integer] struct{}
@@ -17,7 +18,7 @@ type Identity[T constraints.Integer] struct{}
 func (*Identity[T]) Code(x T) word.Code {
 	return word.Code(x)
 }
-func (*Identity[T]) Inverse() Dict[word.Code, T] {
+func (*Identity[T]) Inverse() codec.Dict[word.Code, T] {
 	return &InverseIdentity[T]{}
 }
 func (*Identity[T]) Fill(count map[T]int) {
@@ -34,6 +35,6 @@ type InverseIdentity[T constraints.Integer] struct{}
 func (*InverseIdentity[T]) Code(x word.Code) T {
 	return T(x)
 }
-func (*InverseIdentity[T]) Inverse() Dict[T, word.Code] {
+func (*InverseIdentity[T]) Inverse() codec.Dict[T, word.Code] {
 	return &Identity[T]{}
 }

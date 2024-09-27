@@ -1,4 +1,4 @@
-package codec
+package dict
 
 type Option[T any] func(*T)
 

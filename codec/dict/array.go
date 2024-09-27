@@ -1,4 +1,4 @@
-package codec
+package dict
 
 import (
 	"bytes"
@@ -7,6 +7,7 @@ import (
 	"math"
 	"unsafe"
 
+	"github.com/ajiyoshi-vg/hairetsu/codec"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 	"golang.org/x/exp/constraints"
 )
@@ -18,7 +19,7 @@ type tinyInteger interface {
 type ArrayDict[T constraints.Integer] []word.Code
 
 var (
-	_ WordDict[byte] = (ArrayDict[byte])(nil)
+	_ codec.WordDict[byte] = (ArrayDict[byte])(nil)
 )
 
 func NewArrayDict[T constraints.Integer](opt ...Option[ArrayDict[T]]) ArrayDict[T] {
@@ -47,7 +48,7 @@ func (a ArrayDict[T]) fill(count map[T]int) ArrayDict[T] {
 	return a
 }
 
-func (a ArrayDict[T]) Inverse() Dict[word.Code, T] {
+func (a ArrayDict[T]) Inverse() codec.Dict[word.Code, T] {
 	ret := make(inverseMapDict[T], len(a))
 	for i, c := range a {
 		if c != word.Unknown {

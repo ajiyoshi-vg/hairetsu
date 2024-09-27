@@ -1,4 +1,4 @@
-package codec
+package dict
 
 import (
 	"bufio"
@@ -7,6 +7,7 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/ajiyoshi-vg/hairetsu/codec"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 	"github.com/stretchr/testify/assert"
 )
@@ -24,7 +25,7 @@ func TestReaderWriter(t *testing.T) {
 	}
 
 	for name, c := range cases {
-		kinds := map[string]WordDict[uint16]{
+		kinds := map[string]codec.WordDict[uint16]{
 			"map":   MapDict[uint16]{},
 			"array": NewArrayDict[uint16](),
 			"id":    &Identity[uint16]{},
