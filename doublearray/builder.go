@@ -38,7 +38,7 @@ func (b *Builder) readFrom(da *DoubleArray, r io.Reader) (int64, error) {
 	length := 8
 	buf := make([]byte, length)
 	for i := node.Index(0); ; i++ {
-		n, err := r.Read(buf)
+		n, err := io.ReadFull(r, buf)
 		ret += int64(n)
 
 		if n == length {

@@ -31,14 +31,22 @@ bench.dat: jawiki-latest-all-titles.gz
 tiny_data:
 	cat LICENSE| tr ' ' '\n' | grep -v "^$$" | sort -u | uniq > head.dat
 
-head.dat: bench.dat Makefile
-	tail -n 100000 $< > $@
+SOURCE := uuid.dat
+
+head.dat: $(SOURCE) Makefile
+	tail -n 200000 $< > $@
+
+uuid.dat:
+	go run cmd/gen/main.go > $@
 
 %.trie: head.dat
 	go run cmd/dump/main.go -o $@ -in $< -kind $* -v
 
 bench: generate codec-data
-	go test -benchmem -bench BenchmarkTrie/codec
+	go test -benchmem -bench BenchmarkCodec
+
+all-bench: generate codec-data data
+	go test -benchmem -bench .
 
 data: byte.trie rune.trie darts.trie dict.trie
 

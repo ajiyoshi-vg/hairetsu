@@ -31,9 +31,3 @@ func FromReadSeeker[T FillableDict](r io.ReadSeeker, f Factory, dict T) error {
 	}
 	return nil
 }
-
-func instantBuild[T Fillable](dest T, data []byte) T {
-	b := codec.NewCounter(dest)
-	b.Add(DoubleBytes(data))
-	return b.Build()
-}

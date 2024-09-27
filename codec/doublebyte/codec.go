@@ -8,8 +8,7 @@ import (
 )
 
 var (
-	_ codec.Encoder[[]byte] = (*Encoder[*ArrayDict])(nil)
-	_ codec.Encoder[[]byte] = (*Encoder[MapDict])(nil)
+	_ codec.Encoder[[]byte] = (*Encoder[Dict])(nil)
 	_ codec.Decoder[[]byte] = (*Decoder)(nil)
 )
 

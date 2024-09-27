@@ -106,6 +106,9 @@ func (m MapDict[T]) ReadFrom(r io.Reader) (int64, error) {
 			return ret, err
 		}
 		if err := binary.Read(br, binary.LittleEndian, &c); err != nil {
+			if err == io.EOF {
+				return ret, nil
+			}
 			return ret, err
 		}
 		m[T(x)] = word.Code(c)

@@ -1,6 +1,7 @@
 package codec
 
 import (
+	"bufio"
 	"bytes"
 	"io"
 	"slices"
@@ -45,11 +46,13 @@ func TestReaderWriter(t *testing.T) {
 					_, err = buf.WriteString("dummy body")
 					assert.NoError(t, err)
 
-					nRead, err := dict.ReadFrom(buf)
+					br := bufio.NewReader(buf)
+
+					nRead, err := dict.ReadFrom(br)
 					assert.NoError(t, err)
 					assert.Equal(t, nWrite, nRead)
 
-					body, err := io.ReadAll(buf)
+					body, err := io.ReadAll(br)
 					assert.NoError(t, err)
 					assert.Equal(t, "dummy body", string(body))
 
