@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/ajiyoshi-vg/external/scan"
-	"github.com/ajiyoshi-vg/hairetsu/codec/dict"
+	"github.com/ajiyoshi-vg/hairetsu/codec/doublebyte"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/overhead"
 	"github.com/ajiyoshi-vg/hairetsu/word"
@@ -170,7 +170,7 @@ func BenchmarkTrie(b *testing.B) {
 }
 func BenchmarkCodec(b *testing.B) {
 	b.Run("codec-map", func(b *testing.B) {
-		trie := NewDoubleByteTrie(nil, dict.MapDict[uint16]{})
+		trie := NewDoubleByteTrie(nil, doublebyte.NewMapDict())
 		{
 			file, err := os.Open("double-map.trie")
 			assert.NoError(b, err)
@@ -195,7 +195,7 @@ func BenchmarkCodec(b *testing.B) {
 		})
 	})
 	b.Run("codec-a", func(b *testing.B) {
-		trie := NewDoubleByteTrie(nil, dict.NewArrayDict[uint16]())
+		trie := NewDoubleByteTrie(nil, doublebyte.NewArrayDict())
 		{
 			file, err := os.Open("double-a.trie")
 			assert.NoError(b, err)
@@ -220,7 +220,7 @@ func BenchmarkCodec(b *testing.B) {
 		})
 	})
 	b.Run("codec-id", func(b *testing.B) {
-		trie := NewDoubleByteTrie(nil, &dict.Identity[uint16]{})
+		trie := NewDoubleByteTrie(nil, doublebyte.NewIdentityDict())
 		{
 			file, err := os.Open("double-id.trie")
 			assert.NoError(b, err)

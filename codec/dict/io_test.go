@@ -26,9 +26,9 @@ func TestReaderWriter(t *testing.T) {
 
 	for name, c := range cases {
 		kinds := map[string]codec.WordDict[uint16]{
-			"map":   MapDict[uint16]{},
-			"array": NewArrayDict[uint16](),
-			"id":    &Identity[uint16]{},
+			"map":   Map[uint16]{},
+			"array": NewArray[uint16](),
+			"id":    NewIdentity[uint16](),
 		}
 		t.Run(name, func(t *testing.T) {
 			for kind, d := range kinds {

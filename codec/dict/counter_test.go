@@ -23,8 +23,8 @@ func TestCount(t *testing.T) {
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
 			kinds := map[string]codec.FillableDict[uint16]{
-				"map":   MapDict[uint16]{},
-				"array": NewArrayDict[uint16](),
+				"map":   Map[uint16]{},
+				"array": NewArray[uint16](),
 			}
 			for kind, d := range kinds {
 				t.Run(kind, func(t *testing.T) {
@@ -42,7 +42,7 @@ func TestCount(t *testing.T) {
 				})
 			}
 			t.Run("identity", func(t *testing.T) {
-				dict := InstantCount(&Identity[uint16]{}, slices.Values(c.input))
+				dict := InstantCount(NewIdentity[uint16](), slices.Values(c.input))
 
 				xs := append(c.input, c.unknown...)
 				for _, b := range xs {

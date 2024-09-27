@@ -16,14 +16,14 @@ type tinyInteger interface {
 	~int8 | ~int16 | ~uint8 | ~uint16
 }
 
-type ArrayDict[T constraints.Integer] []word.Code
+type Array[T constraints.Integer] []word.Code
 
 var (
-	_ codec.WordDict[byte] = (ArrayDict[byte])(nil)
+	_ codec.WordDict[byte] = (Array[byte])(nil)
 )
 
-func NewArrayDict[T constraints.Integer](opt ...Option[ArrayDict[T]]) ArrayDict[T] {
-	var ret ArrayDict[T]
+func NewArray[T constraints.Integer](opt ...Option[Array[T]]) Array[T] {
+	var ret Array[T]
 	ret = make([]word.Code, ret.bufferLength())
 	for _, f := range opt {
 		f(&ret)
@@ -31,16 +31,16 @@ func NewArrayDict[T constraints.Integer](opt ...Option[ArrayDict[T]]) ArrayDict[
 	return ret
 }
 
-func (a ArrayDict[T]) Code(x T) word.Code {
+func (a Array[T]) Code(x T) word.Code {
 	return a[x]
 }
 
-func (a ArrayDict[T]) Fill(count map[T]int) {
+func (a Array[T]) Fill(count map[T]int) {
 	a.fill(count)
 }
 
-func (a ArrayDict[T]) fill(count map[T]int) ArrayDict[T] {
-	tmp := MapDict[T]{}
+func (a Array[T]) fill(count map[T]int) Array[T] {
+	tmp := Map[T]{}
 	tmp.fill(count)
 	for n := range a.bufferLength() {
 		a[n] = tmp.Code(T(n))
@@ -48,8 +48,8 @@ func (a ArrayDict[T]) fill(count map[T]int) ArrayDict[T] {
 	return a
 }
 
-func (a ArrayDict[T]) Inverse() codec.Dict[word.Code, T] {
-	ret := make(inverseMapDict[T], len(a))
+func (a Array[T]) Inverse() codec.Dict[word.Code, T] {
+	ret := make(inverseMap[T], len(a))
 	for i, c := range a {
 		if c != word.Unknown {
 			ret[c] = T(i)
@@ -58,7 +58,7 @@ func (a ArrayDict[T]) Inverse() codec.Dict[word.Code, T] {
 	return ret
 }
 
-func (a ArrayDict[T]) WriteTo(w io.Writer) (int64, error) {
+func (a Array[T]) WriteTo(w io.Writer) (int64, error) {
 	buf := &bytes.Buffer{}
 	for _, c := range a {
 		err := binary.Write(buf, binary.LittleEndian, uint32(c))
@@ -69,7 +69,7 @@ func (a ArrayDict[T]) WriteTo(w io.Writer) (int64, error) {
 	return io.Copy(w, buf)
 }
 
-func (a ArrayDict[T]) ReadFrom(r io.Reader) (int64, error) {
+func (a Array[T]) ReadFrom(r io.Reader) (int64, error) {
 	size := a.bufferLength()
 	buf := make([]byte, size*wordSize())
 
@@ -89,7 +89,7 @@ func (a ArrayDict[T]) ReadFrom(r io.Reader) (int64, error) {
 	return ret, nil
 }
 
-func (a ArrayDict[T]) bufferLength() int {
+func (a Array[T]) bufferLength() int {
 	size := unsafe.Sizeof(T(0))
 	switch size {
 	case 1:

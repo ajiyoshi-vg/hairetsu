@@ -34,8 +34,8 @@ func TestBuild(t *testing.T) {
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
 			kinds := map[string]WordDict{
-				"map": dict.MapDict[rune]{},
-				"id":  &dict.Identity[rune]{},
+				"map": dict.Map[rune]{},
+				"id":  dict.NewIdentity[rune](),
 			}
 			for kind, d := range kinds {
 				t.Run(kind, func(t *testing.T) {

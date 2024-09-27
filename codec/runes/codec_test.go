@@ -4,7 +4,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ajiyoshi-vg/hairetsu/codec"
 	"github.com/ajiyoshi-vg/hairetsu/codec/dict"
 	"github.com/stretchr/testify/assert"
 )
@@ -26,9 +25,9 @@ func TestEncodeDecode(t *testing.T) {
 
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
-			kinds := map[string]codec.WordDict[rune]{
-				"map": dict.MapDict[rune]{},
-				"id":  &dict.Identity[rune]{},
+			kinds := map[string]WordDict{
+				"map": NewMapDict(),
+				"id":  NewIdentityDict(),
 			}
 			for kind, d := range kinds {
 				t.Run(kind, func(t *testing.T) {

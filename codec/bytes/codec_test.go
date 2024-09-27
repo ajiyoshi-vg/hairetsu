@@ -30,9 +30,9 @@ func TestEncodeDecode(t *testing.T) {
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
 			kinds := map[string]WordDict{
-				"map":   dict.MapDict[byte]{},
-				"array": dict.NewArrayDict[byte](),
-				"id":    &dict.Identity[byte]{},
+				"map":   NewMapDict(),
+				"array": NewArrayDict(),
+				"id":    NewIdentityDict(),
 			}
 			for kind, d := range kinds {
 				t.Run(kind, func(t *testing.T) {

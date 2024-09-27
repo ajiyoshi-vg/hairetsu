@@ -11,15 +11,15 @@ import (
 	"golang.org/x/exp/constraints"
 )
 
-type MapDict[T constraints.Integer] map[T]word.Code
-type inverseMapDict[T constraints.Integer] map[word.Code]T
+type Map[T constraints.Integer] map[T]word.Code
+type inverseMap[T constraints.Integer] map[word.Code]T
 
 var (
-	_ codec.WordDict[int]        = (MapDict[int])(nil)
-	_ codec.Dict[word.Code, int] = (inverseMapDict[int])(nil)
+	_ codec.WordDict[int]        = (Map[int])(nil)
+	_ codec.Dict[word.Code, int] = (inverseMap[int])(nil)
 )
 
-func (m MapDict[T]) Code(x T) word.Code {
+func (m Map[T]) Code(x T) word.Code {
 	ret, ok := m[x]
 	if !ok {
 		return word.Unknown
@@ -27,11 +27,11 @@ func (m MapDict[T]) Code(x T) word.Code {
 	return ret
 }
 
-func (m MapDict[T]) Fill(count map[T]int) {
+func (m Map[T]) Fill(count map[T]int) {
 	m.fill(count)
 }
 
-func (m MapDict[T]) fill(count map[T]int) MapDict[T] {
+func (m Map[T]) fill(count map[T]int) Map[T] {
 	type touple struct {
 		i T
 		n int
@@ -52,15 +52,15 @@ func (m MapDict[T]) fill(count map[T]int) MapDict[T] {
 	return m
 }
 
-func (m MapDict[T]) Inverse() codec.Dict[word.Code, T] {
-	ret := make(inverseMapDict[T], len(m))
+func (m Map[T]) Inverse() codec.Dict[word.Code, T] {
+	ret := make(inverseMap[T], len(m))
 	for k, v := range m {
 		ret[v] = k
 	}
 	return ret
 }
 
-func (m MapDict[T]) WriteTo(w io.Writer) (int64, error) {
+func (m Map[T]) WriteTo(w io.Writer) (int64, error) {
 	buf := &bytes.Buffer{}
 	size := len(m) * 8
 	if err := binary.Write(buf, binary.LittleEndian, uint32(size)); err != nil {
@@ -77,7 +77,7 @@ func (m MapDict[T]) WriteTo(w io.Writer) (int64, error) {
 	return io.Copy(w, buf)
 }
 
-func (m MapDict[T]) ReadFrom(r io.Reader) (int64, error) {
+func (m Map[T]) ReadFrom(r io.Reader) (int64, error) {
 	var ret int64
 	sizeBuf := make([]byte, 4)
 	n, err := io.ReadFull(r, sizeBuf)
@@ -116,7 +116,7 @@ func (m MapDict[T]) ReadFrom(r io.Reader) (int64, error) {
 	}
 }
 
-func (m inverseMapDict[T]) Code(x word.Code) T {
+func (m inverseMap[T]) Code(x word.Code) T {
 	ret, ok := m[x]
 	if !ok {
 		var zero T
@@ -125,8 +125,8 @@ func (m inverseMapDict[T]) Code(x word.Code) T {
 	return ret
 }
 
-func (m inverseMapDict[T]) Inverse() codec.Dict[T, word.Code] {
-	ret := make(MapDict[T], len(m))
+func (m inverseMap[T]) Inverse() codec.Dict[T, word.Code] {
+	ret := make(Map[T], len(m))
 	for k, v := range m {
 		ret[v] = k
 	}

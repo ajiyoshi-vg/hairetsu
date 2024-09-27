@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestDoubleByte(t *testing.T) {
+func TestEncodeDecode(t *testing.T) {
 	cases := map[string]struct {
 		input  []byte
 		expect []byte

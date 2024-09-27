@@ -11,9 +11,9 @@ import (
 type Dict codec.Dict[uint16, word.Code]
 type WordDict codec.WordDict[uint16]
 
-func NewMapDict() dict.MapDict[uint16]        { return dict.MapDict[uint16]{} }
-func NewArrayDict() dict.ArrayDict[uint16]    { return dict.NewArrayDict[uint16]() }
-func NewIdentityDict() *dict.Identity[uint16] { return &dict.Identity[uint16]{} }
+func NewMapDict() dict.Map[uint16]            { return dict.Map[uint16]{} }
+func NewArrayDict() dict.Array[uint16]        { return dict.NewArray[uint16]() }
+func NewIdentityDict() *dict.Identity[uint16] { return dict.NewIdentity[uint16]() }
 
 var (
 	_ codec.Encoder[[]byte] = (*Encoder[Dict])(nil)

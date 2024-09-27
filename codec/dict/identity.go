@@ -15,6 +15,9 @@ var (
 
 type Identity[T constraints.Integer] struct{}
 
+func NewIdentity[T constraints.Integer]() *Identity[T] {
+	return &Identity[T]{}
+}
 func (*Identity[T]) Code(x T) word.Code {
 	return word.Code(x)
 }

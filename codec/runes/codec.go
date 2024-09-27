@@ -4,11 +4,15 @@ import (
 	"iter"
 
 	"github.com/ajiyoshi-vg/hairetsu/codec"
+	"github.com/ajiyoshi-vg/hairetsu/codec/dict"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 )
 
 type Dict codec.Dict[rune, word.Code]
 type WordDict codec.WordDict[rune]
+
+func NewMapDict() dict.Map[rune]            { return dict.Map[rune]{} }
+func NewIdentityDict() *dict.Identity[rune] { return dict.NewIdentity[rune]() }
 
 var (
 	_ codec.Encoder[string] = (*Encoder[Dict])(nil)
