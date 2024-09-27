@@ -11,38 +11,38 @@ import (
 	"github.com/ajiyoshi-vg/hairetsu/doublearray/item"
 )
 
-type DoubleByteTrie[Dict doublebyte.Dict] struct {
+type DoubleByteTrie[T doublebyte.FullDict] struct {
 	data da.Nodes
-	dict Dict
+	dict T
 }
 
-type DoubleByteTrieBuilder[Dict doublebyte.Dict] struct {
+type DoubleByteTrieBuilder[T doublebyte.FullDict] struct {
 	builder *da.Builder
-	dict    Dict
+	dict    T
 }
 
-func NewDoubleByteTrie[Dict doublebyte.Dict](
+func NewDoubleByteTrie[T doublebyte.FullDict](
 	data da.Nodes,
-	dict Dict,
-) *DoubleByteTrie[Dict] {
-	return &DoubleByteTrie[Dict]{
+	dict T,
+) *DoubleByteTrie[T] {
+	return &DoubleByteTrie[T]{
 		data: data,
 		dict: dict,
 	}
 }
 
-func (t *DoubleByteTrie[Dict]) InlineSearcher() *doublebyte.InlineSearcher[Dict] {
+func (t *DoubleByteTrie[T]) InlineSearcher() *doublebyte.InlineSearcher[T] {
 	return doublebyte.NewInlineSearcher(t.data, t.dict)
 }
-func (t *DoubleByteTrie[Dict]) Searcher() *codec.Searcher[[]byte] {
+func (t *DoubleByteTrie[T]) Searcher() *codec.Searcher[[]byte] {
 	return codec.NewSearcher(doublebyte.NewEncoder(t.dict), t.data)
 }
 
-func (t *DoubleByteTrie[Dict]) Leafs() iter.Seq[item.Item] {
+func (t *DoubleByteTrie[T]) Leafs() iter.Seq[item.Item] {
 	return doublearray.Leafs(t.data)
 }
 
-func (t *DoubleByteTrie[Dict]) WriteTo(w io.Writer) (int64, error) {
+func (t *DoubleByteTrie[T]) WriteTo(w io.Writer) (int64, error) {
 	ret, err := t.dict.WriteTo(w)
 	if err != nil {
 		return ret, err
@@ -52,7 +52,7 @@ func (t *DoubleByteTrie[Dict]) WriteTo(w io.Writer) (int64, error) {
 	return ret, err
 }
 
-func (t *DoubleByteTrie[Dict]) ReadFrom(r io.Reader) (int64, error) {
+func (t *DoubleByteTrie[T]) ReadFrom(r io.Reader) (int64, error) {
 	n, err := t.dict.ReadFrom(r)
 	if err != nil {
 		return n, err
@@ -66,14 +66,14 @@ func (t *DoubleByteTrie[Dict]) ReadFrom(r io.Reader) (int64, error) {
 	return n, err
 }
 
-func NewDoubleByteTrieBuilder[D doublebyte.Dict](dict D, opt ...da.Option) *DoubleByteTrieBuilder[D] {
-	return &DoubleByteTrieBuilder[D]{
+func NewDoubleByteTrieBuilder[T doublebyte.FullDict](dict T, opt ...da.Option) *DoubleByteTrieBuilder[T] {
+	return &DoubleByteTrieBuilder[T]{
 		builder: da.NewBuilder(opt...),
 		dict:    dict,
 	}
 }
 
-func (b *DoubleByteTrieBuilder[D]) BuildFromLines(r io.ReadSeeker) (*DoubleByteTrie[D], error) {
+func (b *DoubleByteTrieBuilder[T]) BuildFromLines(r io.ReadSeeker) (*DoubleByteTrie[T], error) {
 	f := b.builder.Factory()
 	err := doublebyte.FromReadSeeker(r, f, b.dict)
 	if err != nil {
@@ -82,7 +82,7 @@ func (b *DoubleByteTrieBuilder[D]) BuildFromLines(r io.ReadSeeker) (*DoubleByteT
 	return buildDoubleByteTrie(f, b.dict)
 }
 
-func buildDoubleByteTrie[D doublebyte.Dict](f *da.Factory, dict D) (*DoubleByteTrie[D], error) {
+func buildDoubleByteTrie[T doublebyte.FullDict](f *da.Factory, dict T) (*DoubleByteTrie[T], error) {
 	data, err := f.Done()
 	if err != nil {
 		return nil, err

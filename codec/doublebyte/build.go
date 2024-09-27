@@ -11,7 +11,7 @@ type Factory interface {
 	Put(item.Item)
 }
 
-func FromReadSeeker[D Dict](r io.ReadSeeker, f Factory, dict D) error {
+func FromReadSeeker[T FillableDict](r io.ReadSeeker, f Factory, dict T) error {
 	b := newBuilder(dict)
 	for line := range scan.ByteLines(r) {
 		b.add(line)
@@ -31,30 +31,30 @@ func FromReadSeeker[D Dict](r io.ReadSeeker, f Factory, dict D) error {
 	return nil
 }
 
-type builder[D Dict] struct {
+type builder[T Fillable] struct {
 	count map[uint16]int
-	dest  D
+	dest  T
 }
 
-func newBuilder[D Dict](dest D) *builder[D] {
-	return &builder[D]{
+func newBuilder[T Fillable](dest T) *builder[T] {
+	return &builder[T]{
 		count: make(map[uint16]int),
 		dest:  dest,
 	}
 }
 
-func (b *builder[D]) add(x []byte) {
+func (b *builder[T]) add(x []byte) {
 	for i := range DoubleBytes(x) {
 		b.count[i] += 1
 	}
 }
 
-func (b *builder[D]) build() D {
+func (b *builder[T]) build() T {
 	b.dest.Fill(b.count)
 	return b.dest
 }
 
-func instantBuild[D Dict](dest D, data []byte) D {
+func instantBuild[T Fillable](dest T, data []byte) T {
 	b := newBuilder(dest)
 	b.add(data)
 	return b.build()

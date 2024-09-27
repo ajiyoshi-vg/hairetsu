@@ -18,3 +18,6 @@ type Dict[Key, Val any] interface {
 	Code(Key) Val
 	Inverse() Dict[Val, Key]
 }
+type Fillable[Key comparable] interface {
+	Fill(map[Key]int)
+}

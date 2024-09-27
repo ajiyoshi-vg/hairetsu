@@ -8,7 +8,7 @@ import (
 
 func TestDoubleByte(t *testing.T) {
 	cases := map[string]struct {
-		dict   Dict
+		dict   FillableDict
 		input  []byte
 		expect []byte
 	}{

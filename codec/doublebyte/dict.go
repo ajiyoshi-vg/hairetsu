@@ -13,41 +13,30 @@ import (
 
 type Dict interface {
 	codec.Dict[uint16, word.Code]
-	Fill(map[uint16]int)
+}
+
+type FillableDict interface {
+	Dict
+	Fillable
+}
+
+type Fillable interface {
+	codec.Fillable[uint16]
+}
+
+type FullDict interface {
+	Dict
+	Fillable
 	io.WriterTo
 	io.ReaderFrom
 }
 type inverseDict codec.Dict[word.Code, uint16]
 
 var (
-	Identity Dict = (*identity)(nil)
-	_        Dict = MapDict{}
-	_        Dict = (*ArrayDict)(nil)
+	Identity FullDict = &codec.Identity[uint16]{}
+	_        FullDict = MapDict{}
+	_        FullDict = (*ArrayDict)(nil)
 )
-
-type identity struct{}
-type inverseIdentity struct{}
-
-func (*identity) Fill(count map[uint16]int) {
-}
-func (*identity) Code(x uint16) word.Code {
-	return word.Code(x)
-}
-func (*identity) Inverse() codec.Dict[word.Code, uint16] {
-	return &inverseIdentity{}
-}
-func (*identity) WriteTo(w io.Writer) (int64, error) {
-	return 0, nil
-}
-func (*identity) ReadFrom(r io.Reader) (int64, error) {
-	return 0, nil
-}
-func (*inverseIdentity) Code(x word.Code) uint16 {
-	return uint16(x)
-}
-func (*inverseIdentity) Inverse() codec.Dict[uint16, word.Code] {
-	return &identity{}
-}
 
 type MapDict map[uint16]word.Code
 type inverseMapDict map[word.Code]uint16

@@ -4,7 +4,6 @@ go 1.23.0
 
 require (
 	github.com/ajiyoshi-vg/external v0.0.0-20240925080105-8951936a439c
-	github.com/google/uuid v1.6.0
 	github.com/gosuri/uiprogress v0.0.1
 	github.com/ikawaha/dartsclone v1.0.0
 	github.com/pkg/errors v0.9.1
