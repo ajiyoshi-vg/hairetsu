@@ -8,7 +8,9 @@ import (
 )
 
 var (
+	_ codec.Encoder[[]byte] = (*Encoder[*ArrayDict])(nil)
 	_ codec.Encoder[[]byte] = (*Encoder[MapDict])(nil)
+	_ codec.Encoder[[]byte] = (*Encoder[*identity])(nil)
 	_ codec.Decoder[[]byte] = (*Decoder)(nil)
 )
 
@@ -16,11 +18,10 @@ type Encoder[D Dict] struct {
 	dict D
 }
 
-func NewEncoder[D Dict](dict D) Encoder[D] {
-	ret := Encoder[D]{
+func NewEncoder[D Dict](dict D) *Encoder[D] {
+	return &Encoder[D]{
 		dict: dict,
 	}
-	return ret
 }
 
 func DoubleBytes(x []byte) iter.Seq[uint16] {
