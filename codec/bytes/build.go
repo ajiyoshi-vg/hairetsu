@@ -1,8 +1,9 @@
-package doublebyte
+package bytes
 
 import (
 	"io"
 	"iter"
+	"slices"
 
 	"github.com/ajiyoshi-vg/external/emit"
 	"github.com/ajiyoshi-vg/external/scan"
@@ -10,21 +11,21 @@ import (
 	"github.com/ajiyoshi-vg/hairetsu/codec/dict"
 )
 
-type FillableDict codec.FillableDict[uint16]
+type FillableDict codec.FillableDict[byte]
 
 func FromReadSeeker[T FillableDict](r io.ReadSeeker, f dict.Factory, d T) error {
-	b := dict.NewBuilder(scan.ByteLines, uint16Seq, newEncoder[T])
+	b := dict.NewBuilder(scan.ByteLines, byteSeq, newEncoder[T])
 	return b.Build(r, f, d)
 }
 
 func newEncoder[T FillableDict](dict T) codec.Encoder[[]byte] {
-	return NewEncoder(dict)
+	return NewEncoder[T](dict)
 }
 
-func uint16Seq(r io.Reader) iter.Seq[uint16] {
-	return func(yield func(uint16) bool) {
+func byteSeq(r io.Reader) iter.Seq[byte] {
+	return func(yield func(byte) bool) {
 		for line := range scan.ByteLines(r) {
-			emit.All(DoubleBytes(line), yield)
+			emit.All(slices.Values(line), yield)
 		}
 	}
 }

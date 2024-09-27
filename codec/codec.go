@@ -7,20 +7,20 @@ import (
 	"github.com/ajiyoshi-vg/hairetsu/word"
 )
 
-type Encoder[Item any] interface {
-	Iter(Item) iter.Seq[word.Code]
-	Encode(Item) word.Word
+type Encoder[X any] interface {
+	Iter(X) iter.Seq[word.Code]
+	Encode(X) word.Word
 }
-type Decoder[Item any] interface {
-	Decode(word.Word) (Item, error)
+type Decoder[X any] interface {
+	Decode(word.Word) (X, error)
 }
 
 type Dict[T, Val any] interface {
 	Code(T) Val
 	Inverse() Dict[Val, T]
 }
-type Fillable[Unit comparable] interface {
-	Fill(map[Unit]int)
+type Fillable[T comparable] interface {
+	Fill(map[T]int)
 }
 type FillableDict[T comparable] interface {
 	Dict[T, word.Code]
