@@ -6,6 +6,10 @@ import (
 	"github.com/ajiyoshi-vg/hairetsu/word"
 )
 
+type Factory interface {
+	Put(Item)
+}
+
 type Item struct {
 	Word word.Word
 	Val  uint32

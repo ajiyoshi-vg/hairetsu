@@ -8,10 +8,6 @@ import (
 	"github.com/ajiyoshi-vg/hairetsu/doublearray/item"
 )
 
-type Factory interface {
-	Put(item.Item)
-}
-
 type Builder[T comparable, X any, D codec.FillableDict[T]] struct {
 	items      func(io.Reader) iter.Seq[X]
 	units      func(io.Reader) iter.Seq[T]
@@ -30,8 +26,8 @@ func NewBuilder[T comparable, X any, D codec.FillableDict[T]](
 	}
 }
 
-func (b *Builder[T, X, D]) Build(r io.ReadSeeker, f Factory, dict D) error {
-	c := NewCounter[T](dict)
+func (b *Builder[T, X, D]) Build(r io.ReadSeeker, f item.Factory, dict D) error {
+	c := NewCounter(dict)
 	c.Add(b.units(r))
 	c.Build()
 

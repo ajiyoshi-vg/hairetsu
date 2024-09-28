@@ -8,11 +8,12 @@ import (
 	"github.com/ajiyoshi-vg/external/scan"
 	"github.com/ajiyoshi-vg/hairetsu/codec"
 	"github.com/ajiyoshi-vg/hairetsu/codec/dict"
+	"github.com/ajiyoshi-vg/hairetsu/doublearray/item"
 )
 
 type FillableDict codec.FillableDict[uint16]
 
-func FromReadSeeker[T FillableDict](r io.ReadSeeker, f dict.Factory, d T) error {
+func FromReadSeeker[T FillableDict](r io.ReadSeeker, f item.Factory, d T) error {
 	b := dict.NewBuilder(scan.ByteLines, uint16Seq, newEncoder[T])
 	return b.Build(r, f, d)
 }
