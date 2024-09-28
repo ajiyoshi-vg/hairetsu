@@ -1,9 +1,8 @@
 package composer
 
 import (
+	stdbytes "bytes"
 	"io"
-	"os"
-	"strings"
 	"testing"
 
 	"github.com/ajiyoshi-vg/hairetsu/codec/bytes"
@@ -47,18 +46,9 @@ func TestBytesCompose(t *testing.T) {
 				"bytes/i": NewBytes(bytes.NewIdentityDict()),
 			}
 			for kind, x := range kinds {
-				f, err := os.CreateTemp("", "bytes")
-				assert.NoError(t, err)
-				defer os.Remove(f.Name())
-
-				_, err = io.Copy(f, strings.NewReader(c.data))
-				assert.NoError(t, err)
-				f.Close()
 
 				t.Run(kind, func(t *testing.T) {
-					in, err := os.Open(f.Name())
-					assert.NoError(t, err)
-					defer in.Close()
+					in := stdbytes.NewReader([]byte(c.data))
 
 					trie, err := x.Compose(in)
 					assert.NoError(t, err)
@@ -100,18 +90,8 @@ func TestStringCompose(t *testing.T) {
 				"runes/i": NewRunes(runes.NewIdentityDict()),
 			}
 			for kind, x := range kinds {
-				f, err := os.CreateTemp("", "runes")
-				assert.NoError(t, err)
-				defer os.Remove(f.Name())
-
-				_, err = io.Copy(f, strings.NewReader(c.data))
-				assert.NoError(t, err)
-				f.Close()
-
 				t.Run(kind, func(t *testing.T) {
-					in, err := os.Open(f.Name())
-					assert.NoError(t, err)
-					defer in.Close()
+					in := stdbytes.NewReader([]byte(c.data))
 
 					trie, err := x.Compose(in)
 					assert.NoError(t, err)

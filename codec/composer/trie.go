@@ -53,6 +53,15 @@ func NewFileTrie[X any](enc codec.Encoder[X]) *FileTrie[X] {
 	return &FileTrie[X]{enc: enc}
 }
 
+func (t *FileTrie[X]) Searcher() *codec.Searcher[X, *doublearray.DoubleArray] {
+	return codec.NewSearcher(t.enc, t.da)
+}
+
+func (t *FileTrie[X]) WriteTo(w io.Writer) (int64, error) {
+	x := (*Trie[X, *doublearray.DoubleArray])(t)
+	return x.WriteTo(w)
+}
+
 func (t *FileTrie[X]) ReadFrom(r io.Reader) (int64, error) {
 	br := bufio.NewReader(r)
 	var ret int64
@@ -95,6 +104,7 @@ func (t *MmapTrie[X]) Open(path string) error {
 	}
 	return nil
 }
+
 func (t *MmapTrie[X]) open(r *mmap.ReaderAt) error {
 	sec := io.NewSectionReader(r, 0, int64(r.Len()))
 	br := bufio.NewReader(sec)
@@ -105,4 +115,13 @@ func (t *MmapTrie[X]) open(r *mmap.ReaderAt) error {
 
 	t.da = doublearray.NewMmap(r, int64(n), int64(r.Len())-int64(n))
 	return nil
+}
+
+func (t *MmapTrie[X]) Searcher() *codec.Searcher[X, *doublearray.Mmap] {
+	return codec.NewSearcher(t.enc, t.da)
+}
+
+func (t *MmapTrie[X]) WriteTo(w io.Writer) (int64, error) {
+	x := (*Trie[X, *doublearray.Mmap])(t)
+	return x.WriteTo(w)
 }
