@@ -21,6 +21,8 @@ type Dict[T, Val any] interface {
 }
 type Fillable[T comparable] interface {
 	Fill(map[T]int)
+	io.WriterTo
+	io.ReaderFrom
 }
 type FillableDict[T comparable] interface {
 	Dict[T, word.Code]
@@ -29,6 +31,4 @@ type FillableDict[T comparable] interface {
 type WordDict[T comparable] interface {
 	Dict[T, word.Code]
 	Fillable[T]
-	io.WriterTo
-	io.ReaderFrom
 }

@@ -1,6 +1,7 @@
 package runes
 
 import (
+	"io"
 	"iter"
 
 	"github.com/ajiyoshi-vg/hairetsu/codec"
@@ -8,7 +9,11 @@ import (
 	"github.com/ajiyoshi-vg/hairetsu/word"
 )
 
-type Dict codec.Dict[rune, word.Code]
+type Dict interface {
+	codec.Dict[rune, word.Code]
+	io.WriterTo
+	io.ReaderFrom
+}
 type WordDict codec.WordDict[rune]
 
 func NewMapDict() dict.Map[rune]            { return dict.Map[rune]{} }
@@ -45,6 +50,13 @@ func (enc Encoder[T]) Encode(x string) word.Word {
 		ret = append(ret, c)
 	}
 	return ret
+}
+
+func (enc Encoder[T]) WriteTo(w io.Writer) (int64, error) {
+	return enc.dictionary.WriteTo(w)
+}
+func (enc Encoder[T]) ReadFrom(r io.Reader) (int64, error) {
+	return enc.dictionary.ReadFrom(r)
 }
 
 func (enc Encoder[T]) Decoder() *Decoder {

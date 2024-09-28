@@ -1,6 +1,7 @@
 package bytes
 
 import (
+	"io"
 	"iter"
 
 	"github.com/ajiyoshi-vg/hairetsu/codec"
@@ -8,7 +9,11 @@ import (
 	"github.com/ajiyoshi-vg/hairetsu/word"
 )
 
-type Dict codec.Dict[byte, word.Code]
+type Dict interface {
+	codec.Dict[byte, word.Code]
+	io.WriterTo
+	io.ReaderFrom
+}
 type WordDict codec.WordDict[byte]
 
 func NewMapDict() dict.Map[byte]            { return dict.Map[byte]{} }
@@ -52,6 +57,13 @@ func (enc Encoder[T]) Decoder() *Decoder {
 	return &Decoder{
 		dictionary: enc.dictionary.Inverse(),
 	}
+}
+
+func (enc Encoder[T]) WriteTo(w io.Writer) (int64, error) {
+	return enc.dictionary.WriteTo(w)
+}
+func (enc Encoder[T]) ReadFrom(r io.Reader) (int64, error) {
+	return enc.dictionary.ReadFrom(r)
 }
 
 type Decoder struct {
