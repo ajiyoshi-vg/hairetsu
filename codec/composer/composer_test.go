@@ -2,19 +2,13 @@ package composer
 
 import (
 	stdbytes "bytes"
-	"io"
 	"testing"
 
 	"github.com/ajiyoshi-vg/hairetsu/codec/bytes"
 	"github.com/ajiyoshi-vg/hairetsu/codec/runes"
 	"github.com/ajiyoshi-vg/hairetsu/codec/u16s"
-	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/stretchr/testify/assert"
 )
-
-type composer[T any] interface {
-	Compose(r io.ReadSeeker) (*Trie[T, *doublearray.DoubleArray], error)
-}
 
 func TestBytesCompose(t *testing.T) {
 	cases := map[string]struct {
@@ -37,7 +31,7 @@ func TestBytesCompose(t *testing.T) {
 
 	for title, c := range cases {
 		t.Run(title, func(t *testing.T) {
-			kinds := map[string]composer[[]byte]{
+			kinds := map[string]Composable[[]byte]{
 				"int16/m": NewInt16(u16s.NewMapDict()),
 				"int16/a": NewInt16(u16s.NewArrayDict()),
 				"int16/i": NewInt16(u16s.NewIdentityDict()),
@@ -50,7 +44,7 @@ func TestBytesCompose(t *testing.T) {
 				t.Run(kind, func(t *testing.T) {
 					in := stdbytes.NewReader([]byte(c.data))
 
-					trie, err := x.Compose(in)
+					trie, err := x.Loose(in)
 					assert.NoError(t, err)
 
 					s := trie.Searcher()
@@ -85,7 +79,7 @@ func TestStringCompose(t *testing.T) {
 
 	for title, c := range cases {
 		t.Run(title, func(t *testing.T) {
-			kinds := map[string]composer[string]{
+			kinds := map[string]Composable[string]{
 				"runes/m": NewRunes(runes.NewMapDict()),
 				"runes/i": NewRunes(runes.NewIdentityDict()),
 			}
@@ -93,7 +87,7 @@ func TestStringCompose(t *testing.T) {
 				t.Run(kind, func(t *testing.T) {
 					in := stdbytes.NewReader([]byte(c.data))
 
-					trie, err := x.Compose(in)
+					trie, err := x.Loose(in)
 					assert.NoError(t, err)
 
 					s := trie.Searcher()

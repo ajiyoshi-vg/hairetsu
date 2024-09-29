@@ -52,10 +52,10 @@ func (enc Encoder[T]) Encode(x string) word.Word {
 	return ret
 }
 
-func (enc Encoder[T]) WriteTo(w io.Writer) (int64, error) {
+func (enc *Encoder[T]) WriteTo(w io.Writer) (int64, error) {
 	return enc.dictionary.WriteTo(w)
 }
-func (enc Encoder[T]) ReadFrom(r io.Reader) (int64, error) {
+func (enc *Encoder[T]) ReadFrom(r io.Reader) (int64, error) {
 	return enc.dictionary.ReadFrom(r)
 }
 

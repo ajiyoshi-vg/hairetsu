@@ -12,6 +12,9 @@ import (
 
 	"github.com/ajiyoshi-vg/external/scan"
 	"github.com/ajiyoshi-vg/hairetsu"
+	"github.com/ajiyoshi-vg/hairetsu/codec/bytes"
+	"github.com/ajiyoshi-vg/hairetsu/codec/composer"
+	"github.com/ajiyoshi-vg/hairetsu/codec/runes"
 	"github.com/ajiyoshi-vg/hairetsu/codec/u16s"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/progress"
@@ -64,12 +67,22 @@ func run() error {
 		return dumpDict(file)
 	case "darts":
 		return dumpDarts(file)
-	case "double-map":
-		return dumpDouble(file)
-	case "double-id":
-		return dumpDoubleID(file)
-	case "double-a":
-		return dumpDoubleArray(file)
+	case "bytes-m":
+		return composeBytes(file, bytes.NewMapDict())
+	case "bytes-i":
+		return composeBytes(file, bytes.NewIdentityDict())
+	case "bytes-a":
+		return composeBytes(file, bytes.NewArrayDict())
+	case "u16s-m":
+		return composeU16s(file, u16s.NewMapDict())
+	case "u16s-i":
+		return composeU16s(file, u16s.NewIdentityDict())
+	case "u16s-a":
+		return composeU16s(file, u16s.NewArrayDict())
+	case "runes-m":
+		return composeRunes(file, runes.NewMapDict())
+	case "runes-i":
+		return composeRunes(file, runes.NewIdentityDict())
 	default:
 		return fmt.Errorf("unkown kind %s", opt.kind)
 	}
@@ -83,6 +96,31 @@ func options() []doublearray.Option {
 		return append(ret, doublearray.Verbose)
 	}
 	return ret
+}
+
+func composeBytes[D bytes.WordDict](r io.ReadSeeker, dict D) error {
+	c := composer.NewBytes(dict)
+	trie, err := c.Compose(r)
+	if err != nil {
+		return err
+	}
+	return writeTo(trie, opt.out)
+}
+func composeU16s[D u16s.WordDict](r io.ReadSeeker, dict D) error {
+	c := composer.NewInt16(dict)
+	trie, err := c.Compose(r)
+	if err != nil {
+		return err
+	}
+	return writeTo(trie, opt.out)
+}
+func composeRunes[D runes.WordDict](r io.ReadSeeker, dict D) error {
+	c := composer.NewRunes(dict)
+	trie, err := c.Compose(r)
+	if err != nil {
+		return err
+	}
+	return writeTo(trie, opt.out)
 }
 
 func dumpByte(file io.Reader) error {
@@ -103,31 +141,6 @@ func dumpRune(file io.ReadSeeker) error {
 
 func dumpDict(file io.ReadSeeker) error {
 	trie, err := hairetsu.NewDictTrieBuilder(options()...).BuildFromLines(file)
-	if err != nil {
-		return err
-	}
-	return writeTo(trie, opt.out)
-}
-
-func dumpDouble(file io.ReadSeeker) error {
-	b := hairetsu.NewDoubleByteTrieBuilder(u16s.NewMapDict(), options()...)
-	trie, err := b.BuildFromLines(file)
-	if err != nil {
-		return err
-	}
-	return writeTo(trie, opt.out)
-}
-func dumpDoubleID(file io.ReadSeeker) error {
-	b := hairetsu.NewDoubleByteTrieBuilder(u16s.NewIdentityDict(), options()...)
-	trie, err := b.BuildFromLines(file)
-	if err != nil {
-		return err
-	}
-	return writeTo(trie, opt.out)
-}
-func dumpDoubleArray(file io.ReadSeeker) error {
-	b := hairetsu.NewDoubleByteTrieBuilder(u16s.NewArrayDict(), options()...)
-	trie, err := b.BuildFromLines(file)
 	if err != nil {
 		return err
 	}

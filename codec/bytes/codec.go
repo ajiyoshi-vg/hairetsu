@@ -35,7 +35,7 @@ func NewEncoder[D Dict](d D) *Encoder[D] {
 	}
 }
 
-func (enc Encoder[T]) Iter(x []byte) iter.Seq[word.Code] {
+func (enc *Encoder[T]) Iter(x []byte) iter.Seq[word.Code] {
 	return func(yield func(word.Code) bool) {
 		for _, c := range x {
 			if !yield(enc.dictionary.Code(c)) {
@@ -45,7 +45,7 @@ func (enc Encoder[T]) Iter(x []byte) iter.Seq[word.Code] {
 	}
 }
 
-func (enc Encoder[T]) Encode(x []byte) word.Word {
+func (enc *Encoder[T]) Encode(x []byte) word.Word {
 	ret := make(word.Word, 0, len(x))
 	for c := range enc.Iter(x) {
 		ret = append(ret, c)

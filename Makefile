@@ -50,7 +50,10 @@ all-bench: generate codec-data data
 
 data: byte.trie rune.trie darts.trie dict.trie
 
-codec-data: double-map.trie double-id.trie double-a.trie
+codec-data: bytes-m.trie bytes-a.trie bytes-i.trie \
+	u16s-m.trie u16s-a.trie u16s-i.trie \
+	runes-m.trie runes-i.trie \
+	darts.trie
 
 test_overhead: generate byte.trie
 	go test -bench Overhead

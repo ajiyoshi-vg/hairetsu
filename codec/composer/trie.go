@@ -3,6 +3,7 @@ package composer
 import (
 	"bufio"
 	"io"
+	"os"
 
 	"github.com/ajiyoshi-vg/hairetsu/codec"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
@@ -58,8 +59,7 @@ func (t *FileTrie[X]) Searcher() *codec.Searcher[X, *doublearray.DoubleArray] {
 }
 
 func (t *FileTrie[X]) WriteTo(w io.Writer) (int64, error) {
-	x := (*Trie[X, *doublearray.DoubleArray])(t)
-	return x.WriteTo(w)
+	return (*Trie[X, *doublearray.DoubleArray])(t).WriteTo(w)
 }
 
 func (t *FileTrie[X]) ReadFrom(r io.Reader) (int64, error) {
@@ -81,8 +81,19 @@ func (t *FileTrie[X]) ReadFrom(r io.Reader) (int64, error) {
 		}
 		t.da = da
 	}
-
 	return 0, nil
+}
+
+func (t *FileTrie[X]) Open(path string) error {
+	f, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	if _, err := t.ReadFrom(f); err != nil {
+		return err
+	}
+	return nil
 }
 
 type MmapTrie[X any] Trie[X, *doublearray.Mmap]
@@ -122,6 +133,5 @@ func (t *MmapTrie[X]) Searcher() *codec.Searcher[X, *doublearray.Mmap] {
 }
 
 func (t *MmapTrie[X]) WriteTo(w io.Writer) (int64, error) {
-	x := (*Trie[X, *doublearray.Mmap])(t)
-	return x.WriteTo(w)
+	return (*Trie[X, *doublearray.Mmap])(t).WriteTo(w)
 }

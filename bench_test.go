@@ -2,11 +2,16 @@ package hairetsu
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"testing"
 	"time"
 
 	"github.com/ajiyoshi-vg/external/scan"
+	"github.com/ajiyoshi-vg/hairetsu/codec"
+	"github.com/ajiyoshi-vg/hairetsu/codec/bytes"
+	"github.com/ajiyoshi-vg/hairetsu/codec/composer"
+	"github.com/ajiyoshi-vg/hairetsu/codec/runes"
 	"github.com/ajiyoshi-vg/hairetsu/codec/u16s"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/overhead"
@@ -168,77 +173,93 @@ func BenchmarkTrie(b *testing.B) {
 		})
 	})
 }
+
 func BenchmarkCodec(b *testing.B) {
-	b.Run("codec-map", func(b *testing.B) {
-		trie := NewDoubleByteTrie(nil, u16s.NewMapDict())
-		{
-			file, err := os.Open("double-map.trie")
-			assert.NoError(b, err)
-			defer file.Close()
-
-			_, err = trie.ReadFrom(bufio.NewReader(file))
-			if err != nil {
-				b.Fatal(err)
-				assert.NoError(b, err)
-			}
-			b.Logf("double-map.trie:%s", doublearray.GetStat(trie.data))
+	b.Run("byte", func(b *testing.B) {
+		kinds := map[string]codec.Encoder[[]byte]{
+			"u16s-m":  u16s.NewEncoder((u16s.NewMapDict())),
+			"u16s-a":  u16s.NewEncoder((u16s.NewArrayDict())),
+			"u16s-i":  u16s.NewEncoder((u16s.NewIdentityDict())),
+			"bytes-m": bytes.NewEncoder(bytes.NewMapDict()),
+			"bytes-a": bytes.NewEncoder(bytes.NewArrayDict()),
+			"bytes-i": bytes.NewEncoder(bytes.NewIdentityDict()),
 		}
-		s := trie.Searcher()
-		b.Run("exact", func(b *testing.B) {
+		for kind, c := range kinds {
+			b.Run(kind, func(b *testing.B) {
+				t := composer.NewFileTrie(c)
+				err := t.Open(fmt.Sprintf("%s.trie", kind))
+				assert.NoError(b, err)
+				s := t.Searcher()
+				b.ResetTimer()
+				for i := 0; i < b.N; i++ {
+					for _, v := range bs {
+						if id, err := s.ExactMatchSearch(v); err != nil {
+							b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", string(v), id, err)
+						}
+					}
+				}
+			})
+		}
+
+	})
+	b.Run("rune", func(b *testing.B) {
+		kinds := map[string]codec.Encoder[string]{
+			"runes-m": runes.NewEncoder(runes.NewMapDict()),
+			"runes-i": runes.NewEncoder(runes.NewIdentityDict()),
+		}
+		for kind, c := range kinds {
+			b.Run(kind, func(b *testing.B) {
+				t := composer.NewFileTrie(c)
+				err := t.Open(fmt.Sprintf("%s.trie", kind))
+				assert.NoError(b, err)
+				s := t.Searcher()
+				b.ResetTimer()
+				for i := 0; i < b.N; i++ {
+					for _, v := range ss {
+						if id, err := s.ExactMatchSearch(v); err != nil {
+							b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
+						}
+					}
+				}
+			})
+		}
+	})
+	b.Run("misc", func(b *testing.B) {
+		b.Run("old", func(b *testing.B) {
+			da, err := readIndex("bytes-i.trie")
+			assert.NoError(b, err)
+			s := NewByteTrie(da)
+			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
 				for _, v := range bs {
 					if id, err := s.ExactMatchSearch(v); err != nil {
-						b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", string(v), id, err)
+						b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
 					}
 				}
 			}
 		})
-	})
-	b.Run("codec-a", func(b *testing.B) {
-		trie := NewDoubleByteTrie(nil, u16s.NewArrayDict())
-		{
-			file, err := os.Open("double-a.trie")
+		b.Run("inline", func(b *testing.B) {
+			t := composer.NewFileInline(u16s.NewArrayDict())
+			err := t.Open("u16s-a.trie")
 			assert.NoError(b, err)
-			defer file.Close()
-
-			_, err = trie.ReadFrom(bufio.NewReader(file))
-			if err != nil {
-				b.Fatal(err)
-				assert.NoError(b, err)
-			}
-			b.Logf("double-a.trie:%s", doublearray.GetStat(trie.data))
-		}
-		s := trie.Searcher()
-		b.Run("exact", func(b *testing.B) {
+			s := t.Searcher()
+			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
 				for _, v := range bs {
 					if id, err := s.ExactMatchSearch(v); err != nil {
-						b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", string(v), id, err)
+						b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
 					}
 				}
 			}
 		})
-	})
-	b.Run("codec-id", func(b *testing.B) {
-		trie := NewDoubleByteTrie(nil, u16s.NewIdentityDict())
-		{
-			file, err := os.Open("double-id.trie")
+		b.Run("darts", func(b *testing.B) {
+			trie, err := dartsclone.Open("darts.trie")
 			assert.NoError(b, err)
-			defer file.Close()
-
-			_, err = trie.ReadFrom(bufio.NewReader(file))
-			if err != nil {
-				b.Fatal(err)
-				assert.NoError(b, err)
-			}
-			b.Logf("double-id.trie:%s", doublearray.GetStat(trie.data))
-		}
-		s := trie.Searcher()
-		b.Run("exact-s", func(b *testing.B) {
+			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
-				for _, v := range bs {
-					if id, err := s.ExactMatchSearch(v); err != nil {
-						b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", string(v), id, err)
+				for _, v := range ss {
+					if id, _, err := trie.ExactMatchSearch(v); id < 0 || err != nil {
+						b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
 					}
 				}
 			}

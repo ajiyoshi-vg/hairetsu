@@ -12,7 +12,6 @@ import (
 	"slices"
 
 	"github.com/ajiyoshi-vg/hairetsu"
-	"github.com/ajiyoshi-vg/hairetsu/codec/u16s"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray/item"
 	"github.com/ajiyoshi-vg/hairetsu/word"
@@ -59,12 +58,6 @@ func process(r io.Reader) error {
 		count(uint16FromByte(bytesFromWord(wordFromItem(doublearray.Leafs(da)))))
 	case "rune":
 		da := &hairetsu.RuneTrie{}
-		if _, err := da.ReadFrom(r); err != nil {
-			return err
-		}
-		count(runeFromWord(wordFromItem(da.Leafs())))
-	case "double":
-		da := hairetsu.NewDoubleByteTrie(nil, u16s.NewMapDict())
 		if _, err := da.ReadFrom(r); err != nil {
 			return err
 		}

@@ -1,15 +1,6 @@
 package hairetsu
 
-import (
-	"io"
-	"iter"
-
-	"github.com/ajiyoshi-vg/hairetsu/codec"
-	"github.com/ajiyoshi-vg/hairetsu/codec/u16s"
-	"github.com/ajiyoshi-vg/hairetsu/doublearray"
-	"github.com/ajiyoshi-vg/hairetsu/doublearray/item"
-)
-
+/*
 type doubleByteDict interface {
 	codec.WordDict[uint16]
 }
@@ -100,3 +91,4 @@ func buildDoubleByteTrie[T doubleByteDict](f *doublearray.Factory, dict T) (*Dou
 	}
 	return NewDoubleByteTrie(data, dict), nil
 }
+*/

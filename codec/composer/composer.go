@@ -8,6 +8,10 @@ import (
 	"github.com/ajiyoshi-vg/hairetsu/doublearray/item"
 )
 
+type Composable[X any] interface {
+	Loose(r io.ReadSeeker) (*FileTrie[X], error)
+}
+
 type Composer[
 	X any,
 	T comparable,
@@ -51,4 +55,14 @@ func (c *Composer[X, T, Dic, Enc]) Compose(
 	enc := c.newEncoder(c.dict)
 
 	return NewTrie(enc, da), nil
+}
+
+func (c *Composer[X, T, Dic, Enc]) Loose(r io.ReadSeeker) (*FileTrie[X], error) {
+	t, err := c.Compose(r)
+	if err != nil {
+		return nil, err
+	}
+	ret := NewFileTrie(t.enc)
+	ret.da = t.da
+	return ret, nil
 }

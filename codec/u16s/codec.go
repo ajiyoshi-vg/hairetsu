@@ -50,7 +50,7 @@ func DoubleBytes(x []byte) iter.Seq[uint16] {
 	}
 }
 
-func (enc Encoder[T]) Iter(x []byte) iter.Seq[word.Code] {
+func (enc *Encoder[T]) Iter(x []byte) iter.Seq[word.Code] {
 	return func(yield func(word.Code) bool) {
 		for i := range DoubleBytes(x) {
 			if !yield(enc.dictionary.Code(i)) {
@@ -64,7 +64,7 @@ func (enc Encoder[T]) Iter(x []byte) iter.Seq[word.Code] {
 	}
 }
 
-func (enc Encoder[T]) Encode(x []byte) word.Word {
+func (enc *Encoder[T]) Encode(x []byte) word.Word {
 	ret := make(word.Word, 0, 1+len(x)/2)
 	for c := range enc.Iter(x) {
 		ret = append(ret, c)
