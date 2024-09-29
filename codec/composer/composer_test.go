@@ -44,7 +44,7 @@ func TestBytesCompose(t *testing.T) {
 				t.Run(kind, func(t *testing.T) {
 					in := stdbytes.NewReader([]byte(c.data))
 
-					trie, err := x.Loose(in)
+					trie, err := x.Compose(in)
 					assert.NoError(t, err)
 
 					s := trie.Searcher()
@@ -87,7 +87,7 @@ func TestStringCompose(t *testing.T) {
 				t.Run(kind, func(t *testing.T) {
 					in := stdbytes.NewReader([]byte(c.data))
 
-					trie, err := x.Loose(in)
+					trie, err := x.Compose(in)
 					assert.NoError(t, err)
 
 					s := trie.Searcher()
