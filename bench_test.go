@@ -3,7 +3,9 @@ package hairetsu
 import (
 	"bufio"
 	"fmt"
+	"maps"
 	"os"
+	"slices"
 	"testing"
 	"time"
 
@@ -184,9 +186,11 @@ func BenchmarkCodec(b *testing.B) {
 			"bytes-a": bytes.NewEncoder(bytes.NewArrayDict()),
 			"bytes-i": bytes.NewEncoder(bytes.NewIdentityDict()),
 		}
-		for kind, c := range kinds {
+		keys := slices.Collect(maps.Keys(kinds))
+		slices.Sort(keys)
+		for _, kind := range keys {
 			b.Run(kind, func(b *testing.B) {
-				t := composer.NewFileTrie(c)
+				t := composer.NewFileTrie(kinds[kind])
 				err := t.Open(fmt.Sprintf("%s.trie", kind))
 				assert.NoError(b, err)
 				s := t.Searcher()
@@ -207,9 +211,11 @@ func BenchmarkCodec(b *testing.B) {
 			"runes-m": runes.NewEncoder(runes.NewMapDict()),
 			"runes-i": runes.NewEncoder(runes.NewIdentityDict()),
 		}
-		for kind, c := range kinds {
+		keys := slices.Collect(maps.Keys(kinds))
+		slices.Sort(keys)
+		for _, kind := range keys {
 			b.Run(kind, func(b *testing.B) {
-				t := composer.NewFileTrie(c)
+				t := composer.NewFileTrie(kinds[kind])
 				err := t.Open(fmt.Sprintf("%s.trie", kind))
 				assert.NoError(b, err)
 				s := t.Searcher()
