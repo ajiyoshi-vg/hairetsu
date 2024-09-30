@@ -92,7 +92,7 @@ func options() []doublearray.Option {
 }
 
 func composeBytes[D bytes.WordDict](r io.ReadSeeker, dict D) error {
-	c := composer.NewBytes(dict)
+	c := composer.NewBytes(dict, options()...)
 	trie, err := c.Compose(r)
 	if err != nil {
 		return err
@@ -100,7 +100,7 @@ func composeBytes[D bytes.WordDict](r io.ReadSeeker, dict D) error {
 	return writeTo(trie, opt.out)
 }
 func composeU16s[D u16s.WordDict](r io.ReadSeeker, dict D) error {
-	c := composer.NewInt16(dict)
+	c := composer.NewInt16(dict, options()...)
 	trie, err := c.Compose(r)
 	if err != nil {
 		return err
@@ -108,7 +108,7 @@ func composeU16s[D u16s.WordDict](r io.ReadSeeker, dict D) error {
 	return writeTo(trie, opt.out)
 }
 func composeRunes[D runes.WordDict](r io.ReadSeeker, dict D) error {
-	c := composer.NewRunes(dict)
+	c := composer.NewRunes(dict, options()...)
 	trie, err := c.Compose(r)
 	if err != nil {
 		return err

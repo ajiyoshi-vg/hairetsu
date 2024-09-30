@@ -10,7 +10,7 @@ show_cover: generate
 	open cover.html
 
 clean:
-	-rm *.dat *.dict
+	-rm *.dat *.dict *.trie
 
 generate:
 	$(MAKE) -C doublearray $@
