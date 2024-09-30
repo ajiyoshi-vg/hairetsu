@@ -13,10 +13,10 @@ type Composable[X any] interface {
 }
 
 type Composer[
-	X any,
-	T comparable,
 	Dic codec.WordDict[T],
 	Enc codec.Encoder[X],
+	X any,
+	T comparable,
 ] struct {
 	newEncoder func(Dic) Enc
 	reader     func(io.ReadSeeker, item.Factory, Dic) error
@@ -24,23 +24,23 @@ type Composer[
 }
 
 func NewComposer[
-	X any,
-	T comparable,
 	Dic codec.WordDict[T],
 	Enc codec.Encoder[X],
+	X any,
+	T comparable,
 ](
 	dict Dic,
 	newEncoder func(Dic) Enc,
 	reader func(io.ReadSeeker, item.Factory, Dic) error,
-) *Composer[X, T, Dic, Enc] {
-	return &Composer[X, T, Dic, Enc]{
+) *Composer[Dic, Enc, X, T] {
+	return &Composer[Dic, Enc, X, T]{
 		newEncoder: newEncoder,
 		reader:     reader,
 		dict:       dict,
 	}
 }
 
-func (c *Composer[X, T, Dic, Enc]) Compose(
+func (c *Composer[Dic, Enc, X, T]) Compose(
 	r io.ReadSeeker,
 ) (*Trie[X, *doublearray.DoubleArray], error) {
 	f := doublearray.NewBuilder().Factory()

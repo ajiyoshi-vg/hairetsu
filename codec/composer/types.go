@@ -7,10 +7,10 @@ import (
 )
 
 func NewInt16[D u16s.WordDict](d D) *Composer[
-	[]byte,
-	uint16,
 	D,
 	*u16s.Encoder[D],
+	[]byte,
+	uint16,
 ] {
 	return NewComposer(
 		d,
@@ -19,10 +19,10 @@ func NewInt16[D u16s.WordDict](d D) *Composer[
 	)
 }
 func NewBytes[D bytes.WordDict](d D) *Composer[
-	[]byte,
-	byte,
 	D,
 	*bytes.Encoder[D],
+	[]byte,
+	byte,
 ] {
 	return NewComposer(
 		d,
@@ -32,10 +32,10 @@ func NewBytes[D bytes.WordDict](d D) *Composer[
 }
 
 func NewRunes[D runes.WordDict](d D) *Composer[
-	string,
-	rune,
 	D,
 	*runes.Encoder[D],
+	string,
+	rune,
 ] {
 	return NewComposer(
 		d,

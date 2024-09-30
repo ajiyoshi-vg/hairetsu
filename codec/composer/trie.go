@@ -7,6 +7,7 @@ import (
 
 	"github.com/ajiyoshi-vg/hairetsu/codec"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
+	"github.com/ajiyoshi-vg/hairetsu/node"
 	"golang.org/x/exp/mmap"
 )
 
@@ -24,6 +25,10 @@ func NewTrie[X any, DA doublearray.Nodes](
 
 func (t *Trie[X, DA]) Searcher() *codec.Searcher[X, DA] {
 	return codec.NewSearcher(t.enc, t.da)
+}
+
+func (t *Trie[X, DA]) ExactMatchSearch(x X) (node.Index, error) {
+	return codec.ExactMatchSearch(t.da, t.enc.Iter(x))
 }
 
 func (t *Trie[X, DA]) WriteTo(w io.Writer) (int64, error) {

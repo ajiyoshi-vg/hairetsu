@@ -1,6 +1,8 @@
 package codec
 
 import (
+	"iter"
+
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/word"
@@ -16,12 +18,20 @@ func NewSearcher[T any, DA doublearray.Nodes](enc Encoder[T], da DA) *Searcher[T
 }
 
 func (s *Searcher[T, DA]) ExactMatchSearch(x T) (node.Index, error) {
-	target, parent, err := doublearray.InitialTarget(s.da)
+	return ExactMatchSearch(s.da, s.enc.Iter(x))
+}
+
+func (s *Searcher[T, DA]) CommonPrefixSearch(x T) ([]node.Index, error) {
+	return CommonPrefixSearch(s.da, s.enc.Iter(x))
+}
+
+func ExactMatchSearch[DA doublearray.Nodes](da DA, seq iter.Seq[word.Code]) (node.Index, error) {
+	target, parent, err := doublearray.InitialTarget(da)
 	if err != nil {
 		return 0, err
 	}
-	for c := range s.enc.Iter(x) {
-		target, parent, err = doublearray.NextTarget(s.da, c, target, parent)
+	for c := range seq {
+		target, parent, err = doublearray.NextTarget(da, c, target, parent)
 		if err != nil {
 			return 0, err
 		}
@@ -29,27 +39,27 @@ func (s *Searcher[T, DA]) ExactMatchSearch(x T) (node.Index, error) {
 	if !target.IsTerminal() {
 		return 0, doublearray.ErrNotATerminal
 	}
-	data, err := s.da.At(target.GetChild(word.EOS))
+	data, err := da.At(target.GetChild(word.EOS))
 	if err != nil {
 		return 0, err
 	}
 	return data.GetOffset(), nil
 }
 
-func (s *Searcher[T, DA]) CommonPrefixSearch(x T) ([]node.Index, error) {
+func CommonPrefixSearch[DA doublearray.Nodes](da DA, seq iter.Seq[word.Code]) ([]node.Index, error) {
 	var ret []node.Index
-	target, parent, err := doublearray.InitialTarget(s.da)
+	target, parent, err := doublearray.InitialTarget(da)
 	if err != nil {
 		return nil, err
 	}
 
-	for c := range s.enc.Iter(x) {
-		target, parent, err = doublearray.NextTarget(s.da, c, target, parent)
+	for c := range seq {
+		target, parent, err = doublearray.NextTarget(da, c, target, parent)
 		if err != nil {
 			return nil, err
 		}
 		if target.IsTerminal() {
-			data, err := s.da.At(target.GetChild(word.EOS))
+			data, err := da.At(target.GetChild(word.EOS))
 			if err != nil {
 				return ret, nil
 			}
