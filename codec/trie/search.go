@@ -1,19 +1,20 @@
-package codec
+package trie
 
 import (
 	"iter"
 
+	"github.com/ajiyoshi-vg/hairetsu/codec"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 )
 
 type Searcher[T any, DA doublearray.Nodes] struct {
-	enc Encoder[T]
+	enc codec.Encoder[T]
 	da  DA
 }
 
-func NewSearcher[T any, DA doublearray.Nodes](enc Encoder[T], da DA) *Searcher[T, DA] {
+func NewSearcher[T any, DA doublearray.Nodes](enc codec.Encoder[T], da DA) *Searcher[T, DA] {
 	return &Searcher[T, DA]{enc: enc, da: da}
 }
 
@@ -24,6 +25,22 @@ func (s *Searcher[T, DA]) ExactMatchSearch(x T) (node.Index, error) {
 func (s *Searcher[T, DA]) CommonPrefixSearch(x T) ([]node.Index, error) {
 	return CommonPrefixSearch(s.da, s.enc.Iter(x))
 }
+
+/*
+
+// today, we can't write codes like this:
+// refs. https://github.com/golang/go/issues/51053
+
+type codes interface {
+	iter.Seq2[int, word.Code] | []word.Code
+}
+
+func exactMatchSearch[T codes](cs T) {
+	for i, c := range cs {
+		fmt.Println(i, c)
+	}
+}
+*/
 
 func ExactMatchSearch[DA doublearray.Nodes](da DA, seq iter.Seq[word.Code]) (node.Index, error) {
 	target, parent, err := doublearray.InitialTarget(da)

@@ -6,16 +6,16 @@ import (
 	"github.com/ajiyoshi-vg/hairetsu/word"
 )
 
-type InlineSearcher[T Dict, DA doublearray.Nodes] struct {
+type InlineSearcher[D Dict, DA doublearray.Nodes] struct {
+	dict D
 	da   DA
-	dict T
 }
 
-func NewInlineSearcher[T Dict, DA doublearray.Nodes](da DA, dict T) *InlineSearcher[T, DA] {
-	return &InlineSearcher[T, DA]{da: da, dict: dict}
+func NewInlineSearcher[D Dict, DA doublearray.Nodes](da DA, dict D) *InlineSearcher[D, DA] {
+	return &InlineSearcher[D, DA]{da: da, dict: dict}
 }
 
-func (x *InlineSearcher[T, DA]) ExactMatchSearch(key []byte) (node.Index, error) {
+func (x *InlineSearcher[D, DA]) ExactMatchSearch(key []byte) (node.Index, error) {
 	target, parent, err := doublearray.InitialTarget(x.da)
 	if err != nil {
 		return 0, err

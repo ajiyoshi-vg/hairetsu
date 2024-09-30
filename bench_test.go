@@ -12,8 +12,8 @@ import (
 	"github.com/ajiyoshi-vg/external/scan"
 	"github.com/ajiyoshi-vg/hairetsu/codec"
 	"github.com/ajiyoshi-vg/hairetsu/codec/bytes"
-	"github.com/ajiyoshi-vg/hairetsu/codec/composer"
 	"github.com/ajiyoshi-vg/hairetsu/codec/runes"
+	"github.com/ajiyoshi-vg/hairetsu/codec/trie"
 	"github.com/ajiyoshi-vg/hairetsu/codec/u16s"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/overhead"
@@ -190,8 +190,7 @@ func BenchmarkCodec(b *testing.B) {
 		slices.Sort(keys)
 		for _, kind := range keys {
 			b.Run(kind, func(b *testing.B) {
-				t := composer.NewFileTrie(kinds[kind])
-				err := t.Open(fmt.Sprintf("%s.trie", kind))
+				t, err := trie.OpenFile(fmt.Sprintf("%s.trie", kind), kinds[kind])
 				assert.NoError(b, err)
 				s := t.Searcher()
 				b.ResetTimer()
@@ -215,8 +214,7 @@ func BenchmarkCodec(b *testing.B) {
 		slices.Sort(keys)
 		for _, kind := range keys {
 			b.Run(kind, func(b *testing.B) {
-				t := composer.NewFileTrie(kinds[kind])
-				err := t.Open(fmt.Sprintf("%s.trie", kind))
+				t, err := trie.OpenFile(fmt.Sprintf("%s.trie", kind), kinds[kind])
 				assert.NoError(b, err)
 				s := t.Searcher()
 				b.ResetTimer()
@@ -245,8 +243,7 @@ func BenchmarkCodec(b *testing.B) {
 			}
 		})
 		b.Run("inline", func(b *testing.B) {
-			t := composer.NewFileInline(u16s.NewArrayDict())
-			err := t.Open("u16s-a.trie")
+			t, err := trie.OpenInline("u16s-a.trie", u16s.NewArrayDict())
 			assert.NoError(b, err)
 			s := t.Searcher()
 			b.ResetTimer()

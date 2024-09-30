@@ -4,12 +4,13 @@ import (
 	"io"
 
 	"github.com/ajiyoshi-vg/hairetsu/codec"
+	"github.com/ajiyoshi-vg/hairetsu/codec/trie"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray/item"
 )
 
 type Composable[X any] interface {
-	Compose(r io.ReadSeeker) (*FileTrie[X], error)
+	Compose(r io.ReadSeeker) (*trie.File[X], error)
 }
 
 type Composer[
@@ -42,7 +43,7 @@ func NewComposer[
 
 func (c *Composer[Dic, Enc, X, T]) Compose(
 	r io.ReadSeeker,
-) (*FileTrie[X], error) {
+) (*trie.File[X], error) {
 	f := doublearray.NewBuilder().Factory()
 	if err := c.reader(r, f, c.dict); err != nil {
 		return nil, err
@@ -54,5 +55,5 @@ func (c *Composer[Dic, Enc, X, T]) Compose(
 	}
 	enc := c.newEncoder(c.dict)
 
-	return NewFileTrie(enc, WithIndex[X](da)), nil
+	return trie.NewFile(enc, trie.WithIndex[X](da)), nil
 }
