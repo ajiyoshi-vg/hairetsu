@@ -1,9 +1,11 @@
 package doublearray
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"io"
+	"os"
 
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/word"
@@ -84,4 +86,17 @@ func (da *DoubleArray) At(i node.Index) (node.Node, error) {
 		return 0, fmt.Errorf("index(%d) out of range", i)
 	}
 	return da.nodes[i], nil
+}
+
+func OpenFile(path string) (*DoubleArray, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	da := New()
+	if _, err := da.ReadFrom(bufio.NewReader(file)); err != nil {
+		return nil, err
+	}
+	return da, nil
 }

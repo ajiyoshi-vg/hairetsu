@@ -11,7 +11,10 @@ import (
 	"time"
 
 	"github.com/ajiyoshi-vg/external/scan"
-	"github.com/ajiyoshi-vg/hairetsu"
+	"github.com/ajiyoshi-vg/hairetsu/codec/bytes"
+	"github.com/ajiyoshi-vg/hairetsu/codec/composer"
+	"github.com/ajiyoshi-vg/hairetsu/codec/runes"
+	"github.com/ajiyoshi-vg/hairetsu/codec/u16s"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/progress"
 	"github.com/ikawaha/dartsclone"
@@ -55,14 +58,24 @@ func run() error {
 	defer file.Close()
 
 	switch opt.kind {
-	case "byte":
-		return dumpByte(file)
-	case "rune":
-		return dumpRune(file)
-	case "dict":
-		return dumpDict(file)
 	case "darts":
 		return dumpDarts(file)
+	case "bytes-m":
+		return composeBytes(file, bytes.NewMapDict())
+	case "bytes-i":
+		return composeBytes(file, bytes.NewIdentityDict())
+	case "bytes-a":
+		return composeBytes(file, bytes.NewArrayDict())
+	case "u16s-m":
+		return composeU16s(file, u16s.NewMapDict())
+	case "u16s-i":
+		return composeU16s(file, u16s.NewIdentityDict())
+	case "u16s-a":
+		return composeU16s(file, u16s.NewArrayDict())
+	case "runes-m":
+		return composeRunes(file, runes.NewMapDict())
+	case "runes-i":
+		return composeRunes(file, runes.NewIdentityDict())
 	default:
 		return fmt.Errorf("unkown kind %s", opt.kind)
 	}
@@ -78,24 +91,25 @@ func options() []doublearray.Option {
 	return ret
 }
 
-func dumpByte(file io.Reader) error {
-	trie, err := hairetsu.NewByteTrieBuilder(options()...).BuildFromLines(file)
+func composeBytes[D bytes.WordDict](r io.ReadSeeker, dict D) error {
+	c := composer.NewBytes(dict, options()...)
+	trie, err := c.Compose(r)
 	if err != nil {
 		return err
 	}
 	return writeTo(trie, opt.out)
 }
-
-func dumpRune(file io.ReadSeeker) error {
-	trie, err := hairetsu.NewRuneTrieBuilder(options()...).BuildFromLines(file)
+func composeU16s[D u16s.WordDict](r io.ReadSeeker, dict D) error {
+	c := composer.NewInt16(dict, options()...)
+	trie, err := c.Compose(r)
 	if err != nil {
 		return err
 	}
 	return writeTo(trie, opt.out)
 }
-
-func dumpDict(file io.ReadSeeker) error {
-	trie, err := hairetsu.NewDictTrieBuilder(options()...).BuildFromLines(file)
+func composeRunes[D runes.WordDict](r io.ReadSeeker, dict D) error {
+	c := composer.NewRunes(dict, options()...)
+	trie, err := c.Compose(r)
 	if err != nil {
 		return err
 	}

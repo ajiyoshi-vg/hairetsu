@@ -2,7 +2,9 @@ package doublearray
 
 import (
 	"fmt"
+	"iter"
 
+	"github.com/ajiyoshi-vg/hairetsu/doublearray/item"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/ajiyoshi-vg/hairetsu/word"
 )
@@ -31,6 +33,16 @@ func WalkLeaf(da Nodes, yield func(word.Word, uint32) error) error {
 				return err
 			}
 		}
+	}
+}
+func Leafs(da Nodes) iter.Seq[item.Item] {
+	return func(yield func(item.Item) bool) {
+		_ = WalkLeaf(da, func(key word.Word, value uint32) error {
+			if !yield(item.New(key, value)) {
+				return fmt.Errorf("iteration stop")
+			}
+			return nil
+		})
 	}
 }
 func getKey(da Nodes, parent, child node.Index) (word.Word, error) {

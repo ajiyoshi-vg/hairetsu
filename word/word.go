@@ -21,7 +21,7 @@ const (
 	reserved2
 	reserved3
 	reserved4
-	reserved5
+	Backspace
 	Separator
 	EOS
 )

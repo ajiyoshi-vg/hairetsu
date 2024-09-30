@@ -17,6 +17,10 @@ func (x Index) Forward(c word.Code) Index {
 		return x ^ 0
 	case word.Separator:
 		return x ^ 1
+	case word.Backspace:
+		return x ^ 2
+	case word.Unknown:
+		return x ^ 7
 	default:
 		return x ^ Index(c+word.ReservedCodes)
 	}
@@ -29,6 +33,10 @@ func (x Index) Backward(c word.Code) Index {
 		return x ^ 0
 	case word.Separator:
 		return x ^ 1
+	case word.Backspace:
+		return x ^ 2
+	case word.Unknown:
+		return x ^ 7
 	default:
 		return x ^ Index(c+word.ReservedCodes)
 	}

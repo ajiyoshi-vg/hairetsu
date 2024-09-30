@@ -16,21 +16,15 @@ var (
 )
 
 func ExactMatchSearchPointer(da *doublearray.DoubleArray, cs []byte) (node.Index, error) {
-	var parent node.Index
-	target, err := da.At(parent)
+	target, parent, err := doublearray.InitialTarget(da)
 	if err != nil {
 		return 0, err
 	}
 	for _, c := range cs {
-		child := target.GetChild(word.Code(c))
-		target, err = da.At(child)
+		target, parent, err = doublearray.NextTarget(da, word.Code(c), target, parent)
 		if err != nil {
 			return 0, err
 		}
-		if !target.IsChildOf(parent) {
-			return 0, doublearray.ErrNotAChild
-		}
-		parent = child
 	}
 	if !target.IsTerminal() {
 		return 0, doublearray.ErrNotATerminal
@@ -42,22 +36,16 @@ func ExactMatchSearchPointer(da *doublearray.DoubleArray, cs []byte) (node.Index
 	return data.GetOffset(), nil
 }
 
-func ExactMatchSearchInterface(da Nodes, cs []byte) (node.Index, error) {
-	var parent node.Index
-	target, err := da.At(parent)
+func ExactMatchSearchInterface(da doublearray.Nodes, cs []byte) (node.Index, error) {
+	target, parent, err := doublearray.InitialTarget(da)
 	if err != nil {
 		return 0, err
 	}
 	for _, c := range cs {
-		child := target.GetChild(word.Code(c))
-		target, err = da.At(child)
+		target, parent, err = doublearray.NextTarget(da, word.Code(c), target, parent)
 		if err != nil {
 			return 0, err
 		}
-		if !target.IsChildOf(parent) {
-			return 0, doublearray.ErrNotAChild
-		}
-		parent = child
 	}
 	if !target.IsTerminal() {
 		return 0, doublearray.ErrNotATerminal
@@ -70,21 +58,15 @@ func ExactMatchSearchInterface(da Nodes, cs []byte) (node.Index, error) {
 }
 
 func ExactMatchSearchPointerMmap(da *doublearray.Mmap, cs []byte) (node.Index, error) {
-	var parent node.Index
-	target, err := da.At(parent)
+	target, parent, err := doublearray.InitialTarget(da)
 	if err != nil {
 		return 0, err
 	}
 	for _, c := range cs {
-		child := target.GetChild(word.Code(c))
-		target, err = da.At(child)
+		target, parent, err = doublearray.NextTarget(da, word.Code(c), target, parent)
 		if err != nil {
 			return 0, err
 		}
-		if !target.IsChildOf(parent) {
-			return 0, doublearray.ErrNotAChild
-		}
-		parent = child
 	}
 	if !target.IsTerminal() {
 		return 0, doublearray.ErrNotATerminal
@@ -97,21 +79,15 @@ func ExactMatchSearchPointerMmap(da *doublearray.Mmap, cs []byte) (node.Index, e
 }
 
 func ExactMatchSearchGenerics[T doublearray.Nodes](da T, cs []byte) (node.Index, error) {
-	var parent node.Index
-	target, err := da.At(parent)
+	target, parent, err := doublearray.InitialTarget(da)
 	if err != nil {
 		return 0, err
 	}
 	for _, c := range cs {
-		child := target.GetChild(word.Code(c))
-		target, err = da.At(child)
+		target, parent, err = doublearray.NextTarget(da, word.Code(c), target, parent)
 		if err != nil {
 			return 0, err
 		}
-		if !target.IsChildOf(parent) {
-			return 0, doublearray.ErrNotAChild
-		}
-		parent = child
 	}
 	if !target.IsTerminal() {
 		return 0, doublearray.ErrNotATerminal

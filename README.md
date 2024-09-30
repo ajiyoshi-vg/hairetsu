@@ -40,8 +40,9 @@ func TestByteTrie(t *testing.T) {
 		[]byte{math.MaxUint8, 0, math.MaxInt8},
 	}
 
-	trie, err := hairetsu.NewByteTrieBuilder().BuildSlice(data)
+	x, err := composer.NewBytes(bytes.NewIdentityDict()).ComposeFromSlice(data)
 	assert.NoError(t, err)
+	trie := x.Searcher()
 
 	for i, x := range data {
 		actual, err := trie.ExactMatchSearch(x)
@@ -97,8 +98,9 @@ func TestRuneTrie(t *testing.T) {
 		"日本語",
 	}
 
-	trie, err := hairetsu.NewRuneTrieBuilder().BuildSlice(data)
+	x, err := composer.NewRunes(runes.NewIdentityDict()).ComposeFromSlice(data)
 	assert.NoError(t, err)
+	trie := x.Searcher()
 
 	for i, x := range data {
 		actual, err := trie.ExactMatchSearch(x)

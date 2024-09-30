@@ -10,7 +10,7 @@ show_cover: generate
 	open cover.html
 
 clean:
-	-rm *.dat *.dict
+	-rm *.dat *.dict *.trie
 
 generate:
 	$(MAKE) -C doublearray $@
@@ -31,14 +31,29 @@ bench.dat: jawiki-latest-all-titles.gz
 tiny_data:
 	cat LICENSE| tr ' ' '\n' | grep -v "^$$" | sort -u | uniq > head.dat
 
-head.dat: bench.dat Makefile
+SOURCE := uuid.dat
+
+head.dat: $(SOURCE) Makefile
 	tail -n 100000 $< > $@
 
-%.trie: head.dat
-	go run cmd/dump/main.go -o $@ -in $< -kind $*
+uuid.dat:
+	go run cmd/gen/main.go > $@
 
-bench: generate byte.trie rune.trie darts.trie dict.trie
+%.trie: head.dat
+	go run cmd/dump/main.go -o $@ -in $< -kind $* -v
+
+bench: generate codec-data
+	go test -benchmem -bench BenchmarkCodec
+
+all-bench: generate codec-data data
 	go test -benchmem -bench .
+
+data: byte.trie rune.trie darts.trie dict.trie
+
+codec-data: bytes-m.trie bytes-a.trie bytes-i.trie \
+	u16s-m.trie u16s-a.trie u16s-i.trie \
+	runes-m.trie runes-i.trie \
+	darts.trie
 
 test_overhead: generate byte.trie
 	go test -bench Overhead
