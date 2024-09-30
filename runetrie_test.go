@@ -1,11 +1,10 @@
 package hairetsu
 
 import (
-	"bytes"
-	"strings"
 	"testing"
 
-	"github.com/ajiyoshi-vg/hairetsu/doublearray"
+	"github.com/ajiyoshi-vg/hairetsu/codec/composer"
+	"github.com/ajiyoshi-vg/hairetsu/codec/runes"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/stretchr/testify/assert"
 )
@@ -42,73 +41,33 @@ func TestRuneTrieSearch(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
-			data := c.data
-			da, err := NewRuneTrieBuilder().BuildFromSlice(data)
-			assert.NoError(t, err)
-
-			for i, x := range data {
-				actual, err := da.ExactMatchSearch(x)
-				assert.NoError(t, err, x)
-				assert.Equal(t, node.Index(i), actual)
+			encs := map[string]composer.Composable[string]{
+				"rune-id":  composer.NewRunes(runes.NewIdentityDict()),
+				"rune-map": composer.NewRunes(runes.NewMapDict()),
 			}
-			for _, x := range c.ng {
-				_, err := da.ExactMatchSearch(x)
-				assert.Error(t, err, x)
-			}
+			for name, enc := range encs {
+				t.Run(name, func(t *testing.T) {
+					x, err := enc.ComposeFromSlice(c.data)
+					assert.NoError(t, err)
 
-			is, err := da.CommonPrefixSearch(c.prefix)
-			assert.NoError(t, err)
-			assert.Equal(t, c.num, len(is))
+					da := x.Searcher()
 
-			t.Log(doublearray.GetStat(da.data))
-		})
-	}
-}
+					for i, x := range c.data {
+						actual, err := da.ExactMatchSearch(x)
+						assert.NoError(t, err, x)
+						assert.Equal(t, node.Index(i), actual)
+					}
+					for _, x := range c.ng {
+						_, err := da.ExactMatchSearch(x)
+						assert.Error(t, err, x)
+					}
 
-func TestRuneTrieBuild(t *testing.T) {
-	cases := []struct {
-		title string
-		data  string
-		ng    []string
-	}{
-		{
-			title: "BuildLines",
-			data:  "aaa\nbbb\nabc\nabb",
-			ng: []string{
-				("hoge"),
-				("印"),
-			},
-		},
-	}
+					is, err := da.CommonPrefixSearch(c.prefix)
+					assert.NoError(t, err)
+					assert.Equal(t, c.num, len(is))
 
-	for _, c := range cases {
-		t.Run(c.title, func(t *testing.T) {
-			data := bytes.NewReader([]byte(c.data))
-			origin, err := NewRuneTrieBuilder().BuildFromLines(data)
-			assert.NoError(t, err)
-
-			buf := &bytes.Buffer{}
-			_, err = origin.WriteTo(buf)
-			assert.NoError(t, err)
-
-			restored := &RuneTrie{}
-			_, err = restored.ReadFrom(buf)
-			assert.NoError(t, err)
-
-			das := []*RuneTrie{origin, restored}
-
-			for _, da := range das {
-
-				for i, x := range strings.Split(c.data, "\n") {
-					actual, err := da.ExactMatchSearch(x)
-					assert.NoError(t, err, x)
-					assert.Equal(t, node.Index(i), actual)
-				}
-				for _, x := range c.ng {
-					_, err := da.ExactMatchSearch(x)
-					assert.Error(t, err, x)
-				}
-				t.Log(doublearray.GetStat(da.data))
+					t.Log(x.Stat())
+				})
 			}
 		})
 	}

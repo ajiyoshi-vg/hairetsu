@@ -1,11 +1,10 @@
 package hairetsu
 
 import (
-	"bytes"
-	"strings"
 	"testing"
 
-	"github.com/ajiyoshi-vg/hairetsu/doublearray"
+	"github.com/ajiyoshi-vg/hairetsu/codec/bytes"
+	"github.com/ajiyoshi-vg/hairetsu/codec/composer"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/stretchr/testify/assert"
 )
@@ -42,75 +41,34 @@ func TestDictTrieSearch(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
-			da, err := NewDictTrieBuilder().BuildFromSlice(c.data)
-			assert.NoError(t, err)
-
-			for i, x := range c.data {
-				actual, err := da.ExactMatchSearch(x)
-				assert.NoError(t, err, x)
-				assert.Equal(t, node.Index(i), actual)
+			encs := map[string]composer.Composable[[]byte]{
+				"byte-id":    composer.NewBytes(bytes.NewIdentityDict()),
+				"byte-map":   composer.NewBytes(bytes.NewMapDict()),
+				"byte-array": composer.NewBytes(bytes.NewArrayDict()),
 			}
-			for _, x := range c.ng {
-				_, err := da.ExactMatchSearch(x)
-				assert.Error(t, err, x)
-			}
+			for name, enc := range encs {
+				t.Run(name, func(t *testing.T) {
+					x, err := enc.ComposeFromSlice(c.data)
+					assert.NoError(t, err)
 
-			is, err := da.CommonPrefixSearch(c.prefix)
-			assert.NoError(t, err)
-			assert.Equal(t, c.num, len(is))
+					da := x.Searcher()
 
-			t.Log(doublearray.GetStat(da.data))
-		})
-	}
-}
+					for i, x := range c.data {
+						actual, err := da.ExactMatchSearch(x)
+						assert.NoError(t, err, x)
+						assert.Equal(t, node.Index(i), actual)
+					}
+					for _, x := range c.ng {
+						_, err := da.ExactMatchSearch(x)
+						assert.Error(t, err, x)
+					}
 
-func TestDictTrieBuild(t *testing.T) {
-	cases := []struct {
-		title string
-		data  string
-		ng    [][]byte
-	}{
-		{
-			title: "BuildLines",
-			data:  "aaa\nbbb\nabc\nabb",
-			ng: [][]byte{
-				[]byte("hoge"),
-				[]byte("印"),
-			},
-		},
-	}
+					is, err := da.CommonPrefixSearch(c.prefix)
+					assert.NoError(t, err)
+					assert.Equal(t, c.num, len(is))
 
-	for _, c := range cases {
-		t.Run(c.title, func(t *testing.T) {
-			data := bytes.NewReader([]byte(c.data))
-			origin, err := NewDictTrieBuilder().BuildFromLines(data)
-			assert.NoError(t, err)
-
-			buf := &bytes.Buffer{}
-			_, err = origin.WriteTo(buf)
-			assert.NoError(t, err)
-
-			restored := &DictTrie{}
-			_, err = restored.ReadFrom(buf)
-			assert.NoError(t, err)
-			assert.Equal(t,
-				doublearray.GetStat(origin.data),
-				doublearray.GetStat(restored.data),
-			)
-
-			das := []*DictTrie{origin, restored}
-
-			for _, da := range das {
-				for i, x := range strings.Split(c.data, "\n") {
-					actual, err := da.ExactMatchSearch([]byte(x))
-					assert.NoError(t, err, x)
-					assert.Equal(t, node.Index(i), actual)
-				}
-				for _, x := range c.ng {
-					id, err := da.ExactMatchSearch(x)
-					assert.Error(t, err, string(x), id)
-				}
-				t.Log(doublearray.GetStat(da.data))
+					t.Log(x.Stat())
+				})
 			}
 		})
 	}

@@ -11,7 +11,6 @@ import (
 	"os"
 	"slices"
 
-	"github.com/ajiyoshi-vg/hairetsu"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray/item"
 	"github.com/ajiyoshi-vg/hairetsu/word"
@@ -56,12 +55,6 @@ func process(r io.Reader) error {
 			return err
 		}
 		count(uint16FromByte(bytesFromWord(wordFromItem(doublearray.Leafs(da)))))
-	case "rune":
-		da := &hairetsu.RuneTrie{}
-		if _, err := da.ReadFrom(r); err != nil {
-			return err
-		}
-		count(runeFromWord(wordFromItem(da.Leafs())))
 	}
 	return nil
 }
@@ -91,18 +84,6 @@ func wordFromItem(seq iter.Seq[item.Item]) iter.Seq[word.Word] {
 		for x := range seq {
 			if !yield(x.Word) {
 				return
-			}
-		}
-	}
-}
-
-func runeFromWord(seq iter.Seq[word.Word]) iter.Seq[rune] {
-	return func(yield func(rune) bool) {
-		for x := range seq {
-			for _, c := range x {
-				if !yield(rune(c)) {
-					return
-				}
 			}
 		}
 	}

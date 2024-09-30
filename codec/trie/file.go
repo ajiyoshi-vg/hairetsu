@@ -75,3 +75,7 @@ func (t *File[X]) Open(path string) error {
 	}
 	return nil
 }
+
+func (t *File[X]) Stat() doublearray.Stat {
+	return doublearray.GetStat(t.da)
+}

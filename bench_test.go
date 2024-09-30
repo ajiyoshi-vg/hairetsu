@@ -1,7 +1,6 @@
 package hairetsu
 
 import (
-	"bufio"
 	"fmt"
 	"maps"
 	"os"
@@ -64,100 +63,12 @@ func BenchmarkTrie(b *testing.B) {
 			}
 		})
 	})
-	b.Run("da", func(b *testing.B) {
-		t, err := doublearray.OpenFile("byte.trie")
-		assert.NoError(b, err)
-		b.Logf("byte.trie:%s", doublearray.GetStat(t))
-		b.Run("exact", func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				for _, v := range ws {
-					if id, err := t.ExactMatchSearch(v); err != nil {
-						b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
-					}
-				}
-			}
-		})
-		b.Run("prefix", func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				for _, v := range ws {
-					if ret, err := t.CommonPrefixSearch(v); len(ret) == 0 || err != nil {
-						b.Fatalf("unexpected error, missing a keyword %v, err=%v", v, err)
-					}
-				}
-			}
-		})
-	})
-	b.Run("rune", func(b *testing.B) {
-		t := NewRuneTrie(nil, nil)
-		{
-			file, err := os.Open("rune.trie")
-			assert.NoError(b, err)
-			defer file.Close()
-
-			_, err = t.ReadFrom(bufio.NewReader(file))
-			assert.NoError(b, err)
-			b.Logf("rune.trie:%s", doublearray.GetStat(t.data))
-		}
-		b.Run("exact", func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				for _, v := range ss {
-					if id, err := t.ExactMatchSearch(v); err != nil {
-						b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
-					}
-				}
-			}
-		})
-		b.Run("prefix", func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				for _, v := range ss {
-					if ret, err := t.CommonPrefixSearch(v); len(ret) == 0 || err != nil {
-						b.Fatalf("unexpected error, missing a keyword %v, err=%v", v, err)
-					}
-				}
-			}
-		})
-	})
-	b.Run("dict", func(b *testing.B) {
-		var t DictTrie
-		{
-			file, err := os.Open("dict.trie")
-			assert.NoError(b, err)
-			defer file.Close()
-
-			_, err = t.ReadFrom(bufio.NewReader(file))
-			if err != nil {
-				b.Fatal(err)
-				assert.NoError(b, err)
-			}
-			b.Logf("dict.trie:%s", doublearray.GetStat(t.data))
-		}
-		b.Run("exact", func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				for _, v := range bs {
-					if id, err := t.ExactMatchSearch(v); err != nil {
-						b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", string(v), id, err)
-					}
-				}
-			}
-		})
-		b.Run("prefix", func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				for _, v := range bs {
-					if ret, err := t.CommonPrefixSearch(v); len(ret) == 0 || err != nil {
-						b.Fatalf("unexpected error, missing a keyword %v, err=%v", v, err)
-					}
-				}
-			}
-		})
-	})
 }
 
 func BenchmarkCodec(b *testing.B) {
 	byteEncoder := map[string]codec.Encoder[[]byte]{
-		//"u16s-m":  u16s.NewEncoder((u16s.NewMapDict())),
-		"u16s-a": u16s.NewEncoder((u16s.NewArrayDict())),
-		"u16s-i": u16s.NewEncoder((u16s.NewIdentityDict())),
-		//"bytes-m": bytes.NewEncoder(bytes.NewMapDict()),
+		"u16s-a":  u16s.NewEncoder(u16s.NewArrayDict()),
+		"u16s-i":  u16s.NewEncoder(u16s.NewIdentityDict()),
 		"bytes-a": bytes.NewEncoder(bytes.NewArrayDict()),
 		"bytes-i": bytes.NewEncoder(bytes.NewIdentityDict()),
 	}
@@ -303,6 +214,29 @@ func BenchmarkCodec(b *testing.B) {
 				for _, v := range bs {
 					if id, err := s.ExactMatchSearch(v); err != nil {
 						b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
+					}
+				}
+			}
+		})
+	})
+	b.Run("word", func(b *testing.B) {
+		t, err := doublearray.OpenFile("bytes-i.trie")
+		assert.NoError(b, err)
+		b.Logf("byte-i.trie:%s", doublearray.GetStat(t))
+		b.Run("exact", func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				for _, v := range ws {
+					if id, err := t.ExactMatchSearch(v); err != nil {
+						b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
+					}
+				}
+			}
+		})
+		b.Run("prefix", func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				for _, v := range ws {
+					if ret, err := t.CommonPrefixSearch(v); len(ret) == 0 || err != nil {
+						b.Fatalf("unexpected error, missing a keyword %v, err=%v", v, err)
 					}
 				}
 			}
