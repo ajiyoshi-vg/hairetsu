@@ -5,7 +5,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/ajiyoshi-vg/hairetsu/doublearray"
+	"github.com/ajiyoshi-vg/hairetsu/codec/bytes"
+	"github.com/ajiyoshi-vg/hairetsu/codec/composer"
+	"github.com/ajiyoshi-vg/hairetsu/codec/trie"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/stretchr/testify/assert"
 )
@@ -51,41 +53,59 @@ func TestSearch(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
-			data := c.data
-			origin, err := NewByteTrieBuilder().BuildSlice(data)
+			// build index from data
+			b := composer.NewBytes(bytes.NewIdentityDict())
+			origin, err := b.ComposeFromSlice(c.data)
 			assert.NoError(t, err)
 
 			f, err := os.CreateTemp("", "bytes")
 			assert.NoError(t, err)
 			defer os.Remove(f.Name())
 
+			// write index to file
 			_, err = origin.WriteTo(f)
 			assert.NoError(t, err)
 
 			err = f.Close()
 			assert.NoError(t, err)
 
-			m, err := doublearray.OpenMmap(f.Name())
+			// open index from file
+			file, err := trie.OpenFile(
+				f.Name(),
+				bytes.NewEncoder(bytes.NewIdentityDict()),
+			)
 			assert.NoError(t, err)
-			mmaped := NewByteTrie(m)
 
-			xs := []*ByteTrie{origin, mmaped}
+			// open index from mmap
+			mmap, err := trie.OpenMmap(
+				f.Name(),
+				bytes.NewEncoder(bytes.NewIdentityDict()),
+			)
+			assert.NoError(t, err)
+			defer func() { assert.NoError(t, mmap.Close()) }()
 
-			for _, da := range xs {
-				for i, x := range data {
-					actual, err := da.ExactMatchSearch(x)
-					assert.NoError(t, err, x)
-					assert.Equal(t, node.Index(i), actual)
-				}
-				for _, x := range c.ng {
-					_, err := da.ExactMatchSearch(x)
-					assert.Error(t, err, x)
-				}
+			kinds := map[string]trie.Searchable[[]byte]{
+				"origin": origin.Searcher(),
+				"file":   file.Searcher(),
+				"mmap":   mmap.Searcher(),
+			}
 
-				is, err := da.CommonPrefixSearch(c.prefix)
-				assert.NoError(t, err)
-				assert.Equal(t, c.num, len(is))
-				t.Log(doublearray.GetStat(da.data))
+			for kind, da := range kinds {
+				t.Run(kind, func(t *testing.T) {
+					for i, x := range c.data {
+						actual, err := da.ExactMatchSearch(x)
+						assert.NoError(t, err, x)
+						assert.Equal(t, node.Index(i), actual)
+					}
+					for _, x := range c.ng {
+						_, err := da.ExactMatchSearch(x)
+						assert.Error(t, err, x)
+					}
+
+					is, err := da.CommonPrefixSearch(c.prefix)
+					assert.NoError(t, err)
+					assert.Equal(t, c.num, len(is))
+				})
 			}
 		})
 	}

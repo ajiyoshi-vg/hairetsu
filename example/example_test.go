@@ -1,12 +1,14 @@
 package example
 
 import (
-	"bytes"
+	stdbytes "bytes"
 	"math"
 	"strings"
 	"testing"
 
-	"github.com/ajiyoshi-vg/hairetsu"
+	"github.com/ajiyoshi-vg/hairetsu/codec/bytes"
+	"github.com/ajiyoshi-vg/hairetsu/codec/composer"
+	"github.com/ajiyoshi-vg/hairetsu/codec/runes"
 	"github.com/ajiyoshi-vg/hairetsu/node"
 	"github.com/stretchr/testify/assert"
 )
@@ -32,8 +34,9 @@ func TestByteTrie(t *testing.T) {
 		{math.MaxUint8, 0, math.MaxInt8},
 	}
 
-	trie, err := hairetsu.NewByteTrieBuilder().BuildSlice(data)
+	x, err := composer.NewBytes(bytes.NewIdentityDict()).ComposeFromSlice(data)
 	assert.NoError(t, err)
+	trie := x.Searcher()
 
 	for i, x := range data {
 		actual, err := trie.ExactMatchSearch(x)
@@ -57,7 +60,7 @@ func TestByteTrie(t *testing.T) {
 
 	n := 0
 	for _, x := range data {
-		if bytes.HasPrefix(target, x) {
+		if stdbytes.HasPrefix(target, x) {
 			n++
 		}
 	}
@@ -85,8 +88,9 @@ func TestRuneTrie(t *testing.T) {
 		"日本語",
 	}
 
-	trie, err := hairetsu.NewRuneTrieBuilder().BuildFromSlice(data)
+	x, err := composer.NewRunes(runes.NewIdentityDict()).ComposeFromSlice(data)
 	assert.NoError(t, err)
+	trie := x.Searcher()
 
 	for i, x := range data {
 		actual, err := trie.ExactMatchSearch(x)

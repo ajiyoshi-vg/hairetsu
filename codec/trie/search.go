@@ -9,6 +9,11 @@ import (
 	"github.com/ajiyoshi-vg/hairetsu/word"
 )
 
+type Searchable[T any] interface {
+	ExactMatchSearch(x T) (node.Index, error)
+	CommonPrefixSearch(x T) ([]node.Index, error)
+}
+
 type Searcher[T any, DA doublearray.Nodes] struct {
 	enc codec.Encoder[T]
 	da  DA
@@ -73,7 +78,7 @@ func CommonPrefixSearch[DA doublearray.Nodes](da DA, seq iter.Seq[word.Code]) ([
 	for c := range seq {
 		target, parent, err = doublearray.NextTarget(da, c, target, parent)
 		if err != nil {
-			return nil, err
+			return ret, nil
 		}
 		if target.IsTerminal() {
 			data, err := da.At(target.GetChild(word.EOS))
