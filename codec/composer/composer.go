@@ -11,39 +11,35 @@ import (
 
 type Composable[X any] interface {
 	Compose(r io.ReadSeeker) (*trie.File[X], error)
+	ComposeFromSlice(xs []X) (*trie.File[X], error)
 }
 
 type Composer[
-	Dic codec.WordDict[T],
-	Enc codec.Encoder[X],
 	X any,
 	T comparable,
+	Dic codec.WordDict[T],
+	Enc codec.Encoder[X],
 ] struct {
-	newEncoder func(Dic) Enc
-	dict       Dic
-	builder    *dict.Builder[T, X, Dic]
+	dict    Dic
+	builder *dict.Builder[T, X, Dic, Enc]
 }
 
 func NewComposer[
-	Dic codec.WordDict[T],
-	Enc codec.Encoder[X],
 	X any,
 	T comparable,
+	Dic codec.WordDict[T],
+	Enc codec.Encoder[X],
 ](
 	dict Dic,
-	newEncoder func(Dic) Enc,
-	builder *dict.Builder[T, X, Dic],
-) *Composer[Dic, Enc, X, T] {
-	return &Composer[Dic, Enc, X, T]{
-		newEncoder: newEncoder,
-		dict:       dict,
-		builder:    builder,
+	builder *dict.Builder[T, X, Dic, Enc],
+) *Composer[X, T, Dic, Enc] {
+	return &Composer[X, T, Dic, Enc]{
+		dict:    dict,
+		builder: builder,
 	}
 }
 
-func (c *Composer[Dic, Enc, X, T]) Compose(
-	r io.ReadSeeker,
-) (*trie.File[X], error) {
+func (c *Composer[X, T, Dic, Enc]) Compose(r io.ReadSeeker) (*trie.File[X], error) {
 	f := doublearray.NewBuilder().Factory()
 	if err := c.builder.Build(r, f, c.dict); err != nil {
 		return nil, err
@@ -53,7 +49,22 @@ func (c *Composer[Dic, Enc, X, T]) Compose(
 	if err != nil {
 		return nil, err
 	}
-	enc := c.newEncoder(c.dict)
+	enc := c.builder.Encoder(c.dict)
+
+	return trie.NewFile(enc, trie.WithIndex[X](da)), nil
+}
+
+func (c *Composer[X, T, Dic, Enc]) ComposeFromSlice(xs []X) (*trie.File[X], error) {
+	f := doublearray.NewBuilder().Factory()
+	if err := c.builder.BuildSlice(xs, f, c.dict); err != nil {
+		return nil, err
+	}
+
+	da, err := f.Done()
+	if err != nil {
+		return nil, err
+	}
+	enc := c.builder.Encoder(c.dict)
 
 	return trie.NewFile(enc, trie.WithIndex[X](da)), nil
 }

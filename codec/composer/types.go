@@ -7,50 +7,38 @@ import (
 )
 
 func NewInt16[D u16s.WordDict](d D) *Composer[
-	D,
-	*u16s.Encoder[D],
 	[]byte,
 	uint16,
+	D,
+	*u16s.Encoder[D],
 ] {
-	return NewComposer(
-		d,
-		u16s.NewEncoder[D],
-		u16s.NewBuilder[D](),
-	)
+	return NewComposer(d, u16s.NewBuilder[D]())
 }
 func NewBytes[D bytes.WordDict](d D) *Composer[
-	D,
-	*bytes.Encoder[D],
 	[]byte,
 	byte,
+	D,
+	*bytes.Encoder[D],
 ] {
-	return NewComposer(
-		d,
-		bytes.NewEncoder[D],
-		bytes.NewBuilder[D](),
-	)
+	return NewComposer(d, bytes.NewBuilder[D]())
 }
 
 func NewRunes[D runes.WordDict](d D) *Composer[
-	D,
-	*runes.Encoder[D],
 	string,
 	rune,
+	D,
+	*runes.Encoder[D],
 ] {
-	return NewComposer(
-		d,
-		runes.NewEncoder[D],
-		runes.NewBuilder[D](),
-	)
+	return NewComposer(d, runes.NewBuilder[D]())
 }
 
 var (
-	_ = NewInt16(u16s.NewMapDict())
-	_ = NewInt16(u16s.NewArrayDict())
-	_ = NewInt16(u16s.NewIdentityDict())
-	_ = NewBytes(bytes.NewMapDict())
-	_ = NewBytes(bytes.NewArrayDict())
-	_ = NewBytes(bytes.NewIdentityDict())
-	_ = NewRunes(runes.NewMapDict())
-	_ = NewRunes(runes.NewIdentityDict())
+	_ Composable[[]byte] = NewInt16(u16s.NewMapDict())
+	_ Composable[[]byte] = NewInt16(u16s.NewArrayDict())
+	_ Composable[[]byte] = NewInt16(u16s.NewIdentityDict())
+	_ Composable[[]byte] = NewBytes(bytes.NewMapDict())
+	_ Composable[[]byte] = NewBytes(bytes.NewArrayDict())
+	_ Composable[[]byte] = NewBytes(bytes.NewIdentityDict())
+	_ Composable[string] = NewRunes(runes.NewMapDict())
+	_ Composable[string] = NewRunes(runes.NewIdentityDict())
 )

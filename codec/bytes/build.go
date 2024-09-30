@@ -14,23 +14,16 @@ import (
 
 type FillableDict codec.FillableDict[byte]
 
-var Builder = dict.NewBuilder(scan.ByteLines, byteSeq, newEncoder[FillableDict])
-
-func NewBuilder[D FillableDict]() *dict.Builder[byte, []byte, D] {
-	return dict.NewBuilder(scan.ByteLines, byteSeq, newEncoder[D])
-}
-
 func FromReadSeeker[D FillableDict](r io.ReadSeeker, f item.Factory, d D) error {
-	return Builder.Build(r, f, d)
+	return NewBuilder[D]().Build(r, f, d)
 }
 
 func FromSlice[D FillableDict](xs [][]byte, f item.Factory, d D) error {
-	b := dict.NewBuilder(scan.ByteLines, byteSeq, newEncoder[D])
-	return b.BuildSlice(xs, f, d)
+	return NewBuilder[D]().BuildSlice(xs, f, d)
 }
 
-func newEncoder[D FillableDict](dict D) codec.Encoder[[]byte] {
-	return NewEncoder(dict)
+func NewBuilder[D FillableDict]() *dict.Builder[byte, []byte, D, *Encoder[D]] {
+	return dict.NewBuilder(scan.ByteLines, byteSeq, NewEncoder[D])
 }
 
 func byteSeq(seq iter.Seq[[]byte]) iter.Seq[byte] {

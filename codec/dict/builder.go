@@ -9,25 +9,39 @@ import (
 	"github.com/ajiyoshi-vg/hairetsu/doublearray/item"
 )
 
-type Builder[T comparable, X any, D codec.FillableDict[T]] struct {
+type Builder[
+	T comparable,
+	X any,
+	Dic codec.FillableDict[T],
+	Enc codec.Encoder[X],
+] struct {
 	items      func(io.Reader) iter.Seq[X]
 	units      func(iter.Seq[X]) iter.Seq[T]
-	newEncoder func(D) codec.Encoder[X]
+	newEncoder func(Dic) Enc
 }
 
-func NewBuilder[T comparable, X any, D codec.FillableDict[T]](
+func NewBuilder[
+	T comparable,
+	X any,
+	Dic codec.FillableDict[T],
+	Enc codec.Encoder[X],
+](
 	items func(io.Reader) iter.Seq[X],
 	units func(iter.Seq[X]) iter.Seq[T],
-	newEncoder func(D) codec.Encoder[X],
-) *Builder[T, X, D] {
-	return &Builder[T, X, D]{
+	newEncoder func(Dic) Enc,
+) *Builder[T, X, Dic, Enc] {
+	return &Builder[T, X, Dic, Enc]{
 		items:      items,
 		units:      units,
 		newEncoder: newEncoder,
 	}
 }
 
-func (b *Builder[T, X, D]) Build(r io.ReadSeeker, f item.Factory, dict D) error {
+func (b *Builder[T, X, Dic, Enc]) Build(
+	r io.ReadSeeker,
+	f item.Factory,
+	dict Dic,
+) error {
 	c := NewCounter(dict)
 	c.Add(b.units(b.items(r)))
 	c.Build()
@@ -36,7 +50,7 @@ func (b *Builder[T, X, D]) Build(r io.ReadSeeker, f item.Factory, dict D) error 
 		return err
 	}
 
-	enc := b.newEncoder(dict)
+	enc := b.Encoder(dict)
 	var i uint32
 	for x := range b.items(r) {
 		f.Put(item.New(enc.Encode(x), i))
@@ -45,14 +59,22 @@ func (b *Builder[T, X, D]) Build(r io.ReadSeeker, f item.Factory, dict D) error 
 	return nil
 }
 
-func (b *Builder[T, X, D]) BuildSlice(xs []X, f item.Factory, dict D) error {
+func (b *Builder[T, X, Dic, Enc]) BuildSlice(
+	xs []X,
+	f item.Factory,
+	dict Dic,
+) error {
 	c := NewCounter(dict)
 	c.Add(b.units(slices.Values(xs)))
 	c.Build()
 
-	enc := b.newEncoder(dict)
+	enc := b.Encoder(dict)
 	for i, x := range xs {
 		f.Put(item.New(enc.Encode(x), uint32(i)))
 	}
 	return nil
+}
+
+func (b *Builder[T, X, Dic, Enc]) Encoder(dict Dic) Enc {
+	return b.newEncoder(dict)
 }

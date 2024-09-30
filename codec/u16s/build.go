@@ -21,12 +21,8 @@ func FromSlice[D FillableDict](xs [][]byte, f item.Factory, d D) error {
 	return NewBuilder[D]().BuildSlice(xs, f, d)
 }
 
-func NewBuilder[D FillableDict]() *dict.Builder[uint16, []byte, D] {
-	return dict.NewBuilder(scan.ByteLines, uint16Seq, newEncoder[D])
-}
-
-func newEncoder[D FillableDict](dict D) codec.Encoder[[]byte] {
-	return NewEncoder(dict)
+func NewBuilder[D FillableDict]() *dict.Builder[uint16, []byte, D, *Encoder[D]] {
+	return dict.NewBuilder(scan.ByteLines, uint16Seq, NewEncoder[D])
 }
 
 func uint16Seq(seq iter.Seq[[]byte]) iter.Seq[uint16] {

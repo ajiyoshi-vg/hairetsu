@@ -20,12 +20,8 @@ func FromSlice[D FillableDict](xs []string, f item.Factory, d D) error {
 	return NewBuilder[D]().BuildSlice(xs, f, d)
 }
 
-func NewBuilder[D FillableDict]() *dict.Builder[rune, string, D] {
-	return dict.NewBuilder(scan.Lines, runeSeq, newEncoder[D])
-}
-
-func newEncoder[D FillableDict](dict D) codec.Encoder[string] {
-	return NewEncoder(dict)
+func NewBuilder[D FillableDict]() *dict.Builder[rune, string, D, *Encoder[D]] {
+	return dict.NewBuilder(scan.Lines, runeSeq, NewEncoder[D])
 }
 
 func runeSeq(seq iter.Seq[string]) iter.Seq[rune] {
