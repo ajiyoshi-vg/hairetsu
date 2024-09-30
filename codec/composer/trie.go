@@ -7,31 +7,27 @@ import (
 
 	"github.com/ajiyoshi-vg/hairetsu/codec"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
-	"github.com/ajiyoshi-vg/hairetsu/node"
 	"golang.org/x/exp/mmap"
 )
 
-type Trie[X any, DA doublearray.Nodes] struct {
+type FileTrie[X any] struct {
 	enc codec.Encoder[X]
-	da  DA
+	da  *doublearray.DoubleArray
 }
 
-func NewTrie[X any, DA doublearray.Nodes](
-	enc codec.Encoder[X],
-	da DA,
-) *Trie[X, DA] {
-	return &Trie[X, DA]{enc: enc, da: da}
+func NewFileTrie[X any](enc codec.Encoder[X], opt ...Option[FileTrie[X]]) *FileTrie[X] {
+	ret := &FileTrie[X]{enc: enc}
+	for _, f := range opt {
+		f(ret)
+	}
+	return ret
 }
 
-func (t *Trie[X, DA]) Searcher() *codec.Searcher[X, DA] {
+func (t *FileTrie[X]) Searcher() *codec.Searcher[X, *doublearray.DoubleArray] {
 	return codec.NewSearcher(t.enc, t.da)
 }
 
-func (t *Trie[X, DA]) ExactMatchSearch(x X) (node.Index, error) {
-	return codec.ExactMatchSearch(t.da, t.enc.Iter(x))
-}
-
-func (t *Trie[X, DA]) WriteTo(w io.Writer) (int64, error) {
+func (t *FileTrie[X]) WriteTo(w io.Writer) (int64, error) {
 	bw := bufio.NewWriter(w)
 	defer bw.Flush()
 
@@ -51,20 +47,6 @@ func (t *Trie[X, DA]) WriteTo(w io.Writer) (int64, error) {
 		}
 	}
 	return 0, nil
-}
-
-type FileTrie[X any] Trie[X, *doublearray.DoubleArray]
-
-func NewFileTrie[X any](enc codec.Encoder[X]) *FileTrie[X] {
-	return &FileTrie[X]{enc: enc}
-}
-
-func (t *FileTrie[X]) Searcher() *codec.Searcher[X, *doublearray.DoubleArray] {
-	return codec.NewSearcher(t.enc, t.da)
-}
-
-func (t *FileTrie[X]) WriteTo(w io.Writer) (int64, error) {
-	return (*Trie[X, *doublearray.DoubleArray])(t).WriteTo(w)
 }
 
 func (t *FileTrie[X]) ReadFrom(r io.Reader) (int64, error) {
@@ -101,7 +83,10 @@ func (t *FileTrie[X]) Open(path string) error {
 	return nil
 }
 
-type MmapTrie[X any] Trie[X, *doublearray.Mmap]
+type MmapTrie[X any] struct {
+	enc codec.Encoder[X]
+	da  *doublearray.Mmap
+}
 
 func NewMmapTrie[X any](enc codec.Encoder[X]) *MmapTrie[X] {
 	return &MmapTrie[X]{enc: enc}
@@ -138,5 +123,23 @@ func (t *MmapTrie[X]) Searcher() *codec.Searcher[X, *doublearray.Mmap] {
 }
 
 func (t *MmapTrie[X]) WriteTo(w io.Writer) (int64, error) {
-	return (*Trie[X, *doublearray.Mmap])(t).WriteTo(w)
+	bw := bufio.NewWriter(w)
+	defer bw.Flush()
+
+	var ret int64
+	{ // write encoder
+		n, err := t.enc.WriteTo(bw)
+		ret += n
+		if err != nil {
+			return ret, err
+		}
+	}
+	{ // write index
+		n, err := t.da.WriteTo(bw)
+		ret += n
+		if err != nil {
+			return ret, err
+		}
+	}
+	return 0, nil
 }

@@ -9,7 +9,7 @@ import (
 )
 
 type Composable[X any] interface {
-	Compose(r io.ReadSeeker) (*Trie[X, *doublearray.DoubleArray], error)
+	Compose(r io.ReadSeeker) (*FileTrie[X], error)
 }
 
 type Composer[
@@ -42,7 +42,7 @@ func NewComposer[
 
 func (c *Composer[Dic, Enc, X, T]) Compose(
 	r io.ReadSeeker,
-) (*Trie[X, *doublearray.DoubleArray], error) {
+) (*FileTrie[X], error) {
 	f := doublearray.NewBuilder().Factory()
 	if err := c.reader(r, f, c.dict); err != nil {
 		return nil, err
@@ -54,5 +54,5 @@ func (c *Composer[Dic, Enc, X, T]) Compose(
 	}
 	enc := c.newEncoder(c.dict)
 
-	return NewTrie(enc, da), nil
+	return NewFileTrie(enc, WithIndex[X](da)), nil
 }

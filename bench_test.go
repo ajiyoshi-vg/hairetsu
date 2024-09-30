@@ -43,12 +43,12 @@ func init() {
 
 func BenchmarkTrie(b *testing.B) {
 	b.Run("dartsclone", func(b *testing.B) {
-		trie, err := dartsclone.Open("darts.trie")
+		t, err := dartsclone.Open("darts.trie")
 		assert.NoError(b, err)
 		b.Run("exact", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				for _, v := range ss {
-					if id, _, err := trie.ExactMatchSearch(v); id < 0 || err != nil {
+					if id, _, err := t.ExactMatchSearch(v); id < 0 || err != nil {
 						b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
 					}
 				}
@@ -57,7 +57,7 @@ func BenchmarkTrie(b *testing.B) {
 		b.Run("prefix", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				for _, v := range ss {
-					if ret, err := trie.CommonPrefixSearch(v, 0); len(ret) == 0 || err != nil {
+					if ret, err := t.CommonPrefixSearch(v, 0); len(ret) == 0 || err != nil {
 						b.Fatalf("unexpected error, missing a keyword %v, err=%v", v, err)
 					}
 				}
@@ -65,13 +65,13 @@ func BenchmarkTrie(b *testing.B) {
 		})
 	})
 	b.Run("da", func(b *testing.B) {
-		trie, err := readIndex("byte.trie")
+		t, err := readIndex("byte.trie")
 		assert.NoError(b, err)
-		b.Logf("byte.trie:%s", doublearray.GetStat(trie))
+		b.Logf("byte.trie:%s", doublearray.GetStat(t))
 		b.Run("exact", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				for _, v := range ws {
-					if id, err := trie.ExactMatchSearch(v); err != nil {
+					if id, err := t.ExactMatchSearch(v); err != nil {
 						b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
 					}
 				}
@@ -80,7 +80,7 @@ func BenchmarkTrie(b *testing.B) {
 		b.Run("prefix", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				for _, v := range ws {
-					if ret, err := trie.CommonPrefixSearch(v); len(ret) == 0 || err != nil {
+					if ret, err := t.CommonPrefixSearch(v); len(ret) == 0 || err != nil {
 						b.Fatalf("unexpected error, missing a keyword %v, err=%v", v, err)
 					}
 				}
@@ -91,11 +91,11 @@ func BenchmarkTrie(b *testing.B) {
 		da, err := readIndex("byte.trie")
 		b.Logf("byte.trie:%s", doublearray.GetStat(da))
 		assert.NoError(b, err)
-		trie := NewByteTrie(da)
+		t := NewByteTrie(da)
 		b.Run("exact", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				for _, v := range bs {
-					if id, err := trie.ExactMatchSearch(v); err != nil {
+					if id, err := t.ExactMatchSearch(v); err != nil {
 						b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
 					}
 				}
@@ -104,7 +104,7 @@ func BenchmarkTrie(b *testing.B) {
 		b.Run("prefix", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				for _, v := range bs {
-					if ret, err := trie.CommonPrefixSearch(v); len(ret) == 0 || err != nil {
+					if ret, err := t.CommonPrefixSearch(v); len(ret) == 0 || err != nil {
 						b.Fatalf("unexpected error, missing a keyword %v, err=%v", v, err)
 					}
 				}
@@ -112,20 +112,20 @@ func BenchmarkTrie(b *testing.B) {
 		})
 	})
 	b.Run("rune", func(b *testing.B) {
-		trie := NewRuneTrie(nil, nil)
+		t := NewRuneTrie(nil, nil)
 		{
 			file, err := os.Open("rune.trie")
 			assert.NoError(b, err)
 			defer file.Close()
 
-			_, err = trie.ReadFrom(bufio.NewReader(file))
+			_, err = t.ReadFrom(bufio.NewReader(file))
 			assert.NoError(b, err)
-			b.Logf("rune.trie:%s", doublearray.GetStat(trie.data))
+			b.Logf("rune.trie:%s", doublearray.GetStat(t.data))
 		}
 		b.Run("exact", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				for _, v := range ss {
-					if id, err := trie.ExactMatchSearch(v); err != nil {
+					if id, err := t.ExactMatchSearch(v); err != nil {
 						b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
 					}
 				}
@@ -134,7 +134,7 @@ func BenchmarkTrie(b *testing.B) {
 		b.Run("prefix", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				for _, v := range ss {
-					if ret, err := trie.CommonPrefixSearch(v); len(ret) == 0 || err != nil {
+					if ret, err := t.CommonPrefixSearch(v); len(ret) == 0 || err != nil {
 						b.Fatalf("unexpected error, missing a keyword %v, err=%v", v, err)
 					}
 				}
@@ -142,23 +142,23 @@ func BenchmarkTrie(b *testing.B) {
 		})
 	})
 	b.Run("dict", func(b *testing.B) {
-		var trie DictTrie
+		var t DictTrie
 		{
 			file, err := os.Open("dict.trie")
 			assert.NoError(b, err)
 			defer file.Close()
 
-			_, err = trie.ReadFrom(bufio.NewReader(file))
+			_, err = t.ReadFrom(bufio.NewReader(file))
 			if err != nil {
 				b.Fatal(err)
 				assert.NoError(b, err)
 			}
-			b.Logf("dict.trie:%s", doublearray.GetStat(trie.data))
+			b.Logf("dict.trie:%s", doublearray.GetStat(t.data))
 		}
 		b.Run("exact", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				for _, v := range bs {
-					if id, err := trie.ExactMatchSearch(v); err != nil {
+					if id, err := t.ExactMatchSearch(v); err != nil {
 						b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", string(v), id, err)
 					}
 				}
@@ -167,7 +167,7 @@ func BenchmarkTrie(b *testing.B) {
 		b.Run("prefix", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				for _, v := range bs {
-					if ret, err := trie.CommonPrefixSearch(v); len(ret) == 0 || err != nil {
+					if ret, err := t.CommonPrefixSearch(v); len(ret) == 0 || err != nil {
 						b.Fatalf("unexpected error, missing a keyword %v, err=%v", v, err)
 					}
 				}
@@ -259,12 +259,12 @@ func BenchmarkCodec(b *testing.B) {
 			}
 		})
 		b.Run("darts", func(b *testing.B) {
-			trie, err := dartsclone.Open("darts.trie")
+			t, err := dartsclone.Open("darts.trie")
 			assert.NoError(b, err)
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
 				for _, v := range ss {
-					if id, _, err := trie.ExactMatchSearch(v); id < 0 || err != nil {
+					if id, _, err := t.ExactMatchSearch(v); id < 0 || err != nil {
 						b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
 					}
 				}
@@ -273,7 +273,7 @@ func BenchmarkCodec(b *testing.B) {
 	})
 }
 func BenchmarkOverhead(b *testing.B) {
-	trie, err := readIndex("byte.trie")
+	t, err := readIndex("byte.trie")
 	assert.NoError(b, err)
 
 	start := time.Now()
@@ -284,7 +284,7 @@ func BenchmarkOverhead(b *testing.B) {
 	b.Run("method", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			for _, v := range ws {
-				if id, err := trie.ExactMatchSearch(v); err != nil {
+				if id, err := t.ExactMatchSearch(v); err != nil {
 					b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
 				}
 			}
@@ -293,7 +293,7 @@ func BenchmarkOverhead(b *testing.B) {
 	b.Run("pointer", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			for _, v := range bs {
-				if id, err := overhead.ExactMatchSearchPointer(trie, v); err != nil {
+				if id, err := overhead.ExactMatchSearchPointer(t, v); err != nil {
 					b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
 				}
 			}
@@ -302,7 +302,7 @@ func BenchmarkOverhead(b *testing.B) {
 	b.Run("interface", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			for _, v := range bs {
-				if id, err := overhead.ExactMatchSearchInterface(trie, v); err != nil {
+				if id, err := overhead.ExactMatchSearchInterface(t, v); err != nil {
 					b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
 				}
 			}
@@ -311,7 +311,7 @@ func BenchmarkOverhead(b *testing.B) {
 	b.Run("generics", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			for _, v := range bs {
-				if id, err := overhead.ExactMatchSearchGenerics(trie, v); err != nil {
+				if id, err := overhead.ExactMatchSearchGenerics(t, v); err != nil {
 					b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
 				}
 			}
