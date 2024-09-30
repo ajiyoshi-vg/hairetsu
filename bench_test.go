@@ -65,7 +65,7 @@ func BenchmarkTrie(b *testing.B) {
 		})
 	})
 	b.Run("da", func(b *testing.B) {
-		t, err := readIndex("byte.trie")
+		t, err := doublearray.OpenFile("byte.trie")
 		assert.NoError(b, err)
 		b.Logf("byte.trie:%s", doublearray.GetStat(t))
 		b.Run("exact", func(b *testing.B) {
@@ -88,7 +88,7 @@ func BenchmarkTrie(b *testing.B) {
 		})
 	})
 	b.Run("byte", func(b *testing.B) {
-		da, err := readIndex("byte.trie")
+		da, err := doublearray.OpenFile("byte.trie")
 		b.Logf("byte.trie:%s", doublearray.GetStat(da))
 		assert.NoError(b, err)
 		t := NewByteTrie(da)
@@ -177,20 +177,25 @@ func BenchmarkTrie(b *testing.B) {
 }
 
 func BenchmarkCodec(b *testing.B) {
-	b.Run("byte", func(b *testing.B) {
-		kinds := map[string]codec.Encoder[[]byte]{
-			"u16s-m":  u16s.NewEncoder((u16s.NewMapDict())),
-			"u16s-a":  u16s.NewEncoder((u16s.NewArrayDict())),
-			"u16s-i":  u16s.NewEncoder((u16s.NewIdentityDict())),
-			"bytes-m": bytes.NewEncoder(bytes.NewMapDict()),
-			"bytes-a": bytes.NewEncoder(bytes.NewArrayDict()),
-			"bytes-i": bytes.NewEncoder(bytes.NewIdentityDict()),
-		}
-		keys := slices.Collect(maps.Keys(kinds))
+	byteEncoder := map[string]codec.Encoder[[]byte]{
+		//"u16s-m":  u16s.NewEncoder((u16s.NewMapDict())),
+		"u16s-a": u16s.NewEncoder((u16s.NewArrayDict())),
+		"u16s-i": u16s.NewEncoder((u16s.NewIdentityDict())),
+		//"bytes-m": bytes.NewEncoder(bytes.NewMapDict()),
+		"bytes-a": bytes.NewEncoder(bytes.NewArrayDict()),
+		"bytes-i": bytes.NewEncoder(bytes.NewIdentityDict()),
+	}
+	runeEncoder := map[string]codec.Encoder[string]{
+		"runes-m": runes.NewEncoder(runes.NewMapDict()),
+		"runes-i": runes.NewEncoder(runes.NewIdentityDict()),
+	}
+
+	b.Run("file", func(b *testing.B) {
+		keys := slices.Collect(maps.Keys(byteEncoder))
 		slices.Sort(keys)
 		for _, kind := range keys {
 			b.Run(kind, func(b *testing.B) {
-				t, err := trie.OpenFile(fmt.Sprintf("%s.trie", kind), kinds[kind])
+				t, err := trie.OpenFile(fmt.Sprintf("%s.trie", kind), byteEncoder[kind])
 				assert.NoError(b, err)
 				s := t.Searcher()
 				b.ResetTimer()
@@ -204,17 +209,50 @@ func BenchmarkCodec(b *testing.B) {
 			})
 		}
 
-	})
-	b.Run("rune", func(b *testing.B) {
-		kinds := map[string]codec.Encoder[string]{
-			"runes-m": runes.NewEncoder(runes.NewMapDict()),
-			"runes-i": runes.NewEncoder(runes.NewIdentityDict()),
-		}
-		keys := slices.Collect(maps.Keys(kinds))
+		keys = slices.Collect(maps.Keys(runeEncoder))
 		slices.Sort(keys)
 		for _, kind := range keys {
 			b.Run(kind, func(b *testing.B) {
-				t, err := trie.OpenFile(fmt.Sprintf("%s.trie", kind), kinds[kind])
+				file, encoder := fmt.Sprintf("%s.trie", kind), runeEncoder[kind]
+				t, err := trie.OpenFile(file, encoder)
+				assert.NoError(b, err)
+				s := t.Searcher()
+				b.ResetTimer()
+				for i := 0; i < b.N; i++ {
+					for _, v := range ss {
+						if id, err := s.ExactMatchSearch(v); err != nil {
+							b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
+						}
+					}
+				}
+			})
+		}
+	})
+	b.Run("mmap", func(b *testing.B) {
+		keys := slices.Collect(maps.Keys(byteEncoder))
+		slices.Sort(keys)
+		for _, kind := range keys {
+			b.Run(kind, func(b *testing.B) {
+				file, encoder := fmt.Sprintf("%s.trie", kind), byteEncoder[kind]
+				t, err := trie.OpenMmap(file, encoder)
+				assert.NoError(b, err)
+				s := t.Searcher()
+				b.ResetTimer()
+				for i := 0; i < b.N; i++ {
+					for _, v := range bs {
+						if id, err := s.ExactMatchSearch(v); err != nil {
+							b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", string(v), id, err)
+						}
+					}
+				}
+			})
+		}
+		keys = slices.Collect(maps.Keys(runeEncoder))
+		slices.Sort(keys)
+		for _, kind := range keys {
+			b.Run(kind, func(b *testing.B) {
+				file, encoder := fmt.Sprintf("%s.trie", kind), runeEncoder[kind]
+				t, err := trie.OpenMmap(file, encoder)
 				assert.NoError(b, err)
 				s := t.Searcher()
 				b.ResetTimer()
@@ -229,27 +267,25 @@ func BenchmarkCodec(b *testing.B) {
 		}
 	})
 	b.Run("misc", func(b *testing.B) {
-		b.Run("old", func(b *testing.B) {
-			da, err := readIndex("bytes-i.trie")
+		b.Run("byte", func(b *testing.B) {
+			da, err := doublearray.OpenFile("bytes-i.trie")
 			assert.NoError(b, err)
-			s := NewByteTrie(da)
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
 				for _, v := range bs {
-					if id, err := s.ExactMatchSearch(v); err != nil {
+					if id, err := trie.BytesExactMatchSearch(da, v); err != nil {
 						b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
 					}
 				}
 			}
 		})
-		b.Run("inline", func(b *testing.B) {
-			t, err := trie.OpenInline("u16s-a.trie", u16s.NewArrayDict())
+		b.Run("rune", func(b *testing.B) {
+			da, err := doublearray.OpenFile("runes-i.trie")
 			assert.NoError(b, err)
-			s := t.Searcher()
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
-				for _, v := range bs {
-					if id, err := s.ExactMatchSearch(v); err != nil {
+				for _, v := range ss {
+					if id, err := trie.RunsExactMatchSearch(da, v); err != nil {
 						b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
 					}
 				}
@@ -268,9 +304,37 @@ func BenchmarkCodec(b *testing.B) {
 			}
 		})
 	})
+	b.Run("inline", func(b *testing.B) {
+		b.Run("file", func(b *testing.B) {
+			t, err := trie.OpenInlineFile("u16s-a.trie", u16s.NewArrayDict())
+			assert.NoError(b, err)
+			s := t.Searcher()
+			b.ResetTimer()
+			for i := 0; i < b.N; i++ {
+				for _, v := range bs {
+					if id, err := s.ExactMatchSearch(v); err != nil {
+						b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
+					}
+				}
+			}
+		})
+		b.Run("mmap", func(b *testing.B) {
+			t, err := trie.OpenInlineFile("u16s-a.trie", u16s.NewArrayDict())
+			assert.NoError(b, err)
+			s := t.Searcher()
+			b.ResetTimer()
+			for i := 0; i < b.N; i++ {
+				for _, v := range bs {
+					if id, err := s.ExactMatchSearch(v); err != nil {
+						b.Fatalf("unexpected error, missing a keyword %v, id=%v, err=%v", v, id, err)
+					}
+				}
+			}
+		})
+	})
 }
 func BenchmarkOverhead(b *testing.B) {
-	t, err := readIndex("byte.trie")
+	t, err := doublearray.OpenFile("byte.trie")
 	assert.NoError(b, err)
 
 	start := time.Now()
@@ -350,20 +414,4 @@ func BenchmarkOverhead(b *testing.B) {
 			}
 		}
 	})
-}
-
-func readIndex(path string) (*doublearray.DoubleArray, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	r := bufio.NewReader(file)
-	da := doublearray.New()
-	_, err = da.ReadFrom(r)
-	if err != nil {
-		return nil, err
-	}
-	return da, nil
 }

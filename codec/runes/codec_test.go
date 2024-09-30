@@ -1,7 +1,7 @@
 package runes
 
 import (
-	"strings"
+	"slices"
 	"testing"
 
 	"github.com/ajiyoshi-vg/hairetsu/codec/dict"
@@ -31,7 +31,7 @@ func TestEncodeDecode(t *testing.T) {
 			}
 			for kind, d := range kinds {
 				t.Run(kind, func(t *testing.T) {
-					r := strings.NewReader(c.input)
+					r := slices.Values([]string{c.input})
 					dict := dict.InstantCount(d, runeSeq(r))
 					enc := NewEncoder(dict)
 					dec := enc.Decoder()

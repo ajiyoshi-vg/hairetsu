@@ -4,9 +4,9 @@ import (
 	"io"
 
 	"github.com/ajiyoshi-vg/hairetsu/codec"
+	"github.com/ajiyoshi-vg/hairetsu/codec/dict"
 	"github.com/ajiyoshi-vg/hairetsu/codec/trie"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray"
-	"github.com/ajiyoshi-vg/hairetsu/doublearray/item"
 )
 
 type Composable[X any] interface {
@@ -20,8 +20,8 @@ type Composer[
 	T comparable,
 ] struct {
 	newEncoder func(Dic) Enc
-	reader     func(io.ReadSeeker, item.Factory, Dic) error
 	dict       Dic
+	builder    *dict.Builder[T, X, Dic]
 }
 
 func NewComposer[
@@ -32,12 +32,12 @@ func NewComposer[
 ](
 	dict Dic,
 	newEncoder func(Dic) Enc,
-	reader func(io.ReadSeeker, item.Factory, Dic) error,
+	builder *dict.Builder[T, X, Dic],
 ) *Composer[Dic, Enc, X, T] {
 	return &Composer[Dic, Enc, X, T]{
 		newEncoder: newEncoder,
-		reader:     reader,
 		dict:       dict,
+		builder:    builder,
 	}
 }
 
@@ -45,7 +45,7 @@ func (c *Composer[Dic, Enc, X, T]) Compose(
 	r io.ReadSeeker,
 ) (*trie.File[X], error) {
 	f := doublearray.NewBuilder().Factory()
-	if err := c.reader(r, f, c.dict); err != nil {
+	if err := c.builder.Build(r, f, c.dict); err != nil {
 		return nil, err
 	}
 

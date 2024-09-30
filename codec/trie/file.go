@@ -34,6 +34,10 @@ func (t *File[X]) Searcher() *Searcher[X, *doublearray.DoubleArray] {
 	return NewSearcher(t.enc, t.da)
 }
 
+func (t *File[X]) Index() *doublearray.DoubleArray {
+	return t.da
+}
+
 func (t *File[X]) WriteTo(w io.Writer) (int64, error) {
 	return multiCopy(w, t.enc, t.da)
 }

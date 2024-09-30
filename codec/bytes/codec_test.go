@@ -1,7 +1,7 @@
 package bytes
 
 import (
-	"bytes"
+	"slices"
 	"testing"
 
 	"github.com/ajiyoshi-vg/hairetsu/codec/dict"
@@ -36,7 +36,7 @@ func TestEncodeDecode(t *testing.T) {
 			}
 			for kind, d := range kinds {
 				t.Run(kind, func(t *testing.T) {
-					r := bytes.NewReader(c.input)
+					r := slices.Values([][]byte{c.input})
 					dict := dict.InstantCount(d, byteSeq(r))
 					enc := NewEncoder(dict)
 					dec := enc.Decoder()

@@ -15,7 +15,7 @@ func NewInt16[D u16s.WordDict](d D) *Composer[
 	return NewComposer(
 		d,
 		u16s.NewEncoder[D],
-		u16s.FromReadSeeker,
+		u16s.NewBuilder[D](),
 	)
 }
 func NewBytes[D bytes.WordDict](d D) *Composer[
@@ -27,7 +27,7 @@ func NewBytes[D bytes.WordDict](d D) *Composer[
 	return NewComposer(
 		d,
 		bytes.NewEncoder[D],
-		bytes.FromReadSeeker,
+		bytes.NewBuilder[D](),
 	)
 }
 
@@ -40,7 +40,7 @@ func NewRunes[D runes.WordDict](d D) *Composer[
 	return NewComposer(
 		d,
 		runes.NewEncoder[D],
-		runes.FromReadSeeker,
+		runes.NewBuilder[D](),
 	)
 }
 

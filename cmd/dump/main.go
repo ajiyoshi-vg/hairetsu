@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/ajiyoshi-vg/external/scan"
-	"github.com/ajiyoshi-vg/hairetsu"
 	"github.com/ajiyoshi-vg/hairetsu/codec/bytes"
 	"github.com/ajiyoshi-vg/hairetsu/codec/composer"
 	"github.com/ajiyoshi-vg/hairetsu/codec/runes"
@@ -59,12 +58,6 @@ func run() error {
 	defer file.Close()
 
 	switch opt.kind {
-	case "byte":
-		return dumpByte(file)
-	case "rune":
-		return dumpRune(file)
-	case "dict":
-		return dumpDict(file)
 	case "darts":
 		return dumpDarts(file)
 	case "bytes-m":
@@ -117,30 +110,6 @@ func composeU16s[D u16s.WordDict](r io.ReadSeeker, dict D) error {
 func composeRunes[D runes.WordDict](r io.ReadSeeker, dict D) error {
 	c := composer.NewRunes(dict)
 	trie, err := c.Compose(r)
-	if err != nil {
-		return err
-	}
-	return writeTo(trie, opt.out)
-}
-
-func dumpByte(file io.Reader) error {
-	trie, err := hairetsu.NewByteTrieBuilder(options()...).BuildFromLines(file)
-	if err != nil {
-		return err
-	}
-	return writeTo(trie, opt.out)
-}
-
-func dumpRune(file io.ReadSeeker) error {
-	trie, err := hairetsu.NewRuneTrieBuilder(options()...).BuildFromLines(file)
-	if err != nil {
-		return err
-	}
-	return writeTo(trie, opt.out)
-}
-
-func dumpDict(file io.ReadSeeker) error {
-	trie, err := hairetsu.NewDictTrieBuilder(options()...).BuildFromLines(file)
 	if err != nil {
 		return err
 	}

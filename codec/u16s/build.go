@@ -13,18 +13,25 @@ import (
 
 type FillableDict codec.FillableDict[uint16]
 
-func FromReadSeeker[T FillableDict](r io.ReadSeeker, f item.Factory, d T) error {
-	b := dict.NewBuilder(scan.ByteLines, uint16Seq, newEncoder[T])
-	return b.Build(r, f, d)
+func FromReadSeeker[D FillableDict](r io.ReadSeeker, f item.Factory, d D) error {
+	return NewBuilder[D]().Build(r, f, d)
 }
 
-func newEncoder[T FillableDict](dict T) codec.Encoder[[]byte] {
+func FromSlice[D FillableDict](xs [][]byte, f item.Factory, d D) error {
+	return NewBuilder[D]().BuildSlice(xs, f, d)
+}
+
+func NewBuilder[D FillableDict]() *dict.Builder[uint16, []byte, D] {
+	return dict.NewBuilder(scan.ByteLines, uint16Seq, newEncoder[D])
+}
+
+func newEncoder[D FillableDict](dict D) codec.Encoder[[]byte] {
 	return NewEncoder(dict)
 }
 
-func uint16Seq(r io.Reader) iter.Seq[uint16] {
+func uint16Seq(seq iter.Seq[[]byte]) iter.Seq[uint16] {
 	return func(yield func(uint16) bool) {
-		for line := range scan.ByteLines(r) {
+		for line := range seq {
 			emit.All(DoubleBytes(line), yield)
 		}
 	}
