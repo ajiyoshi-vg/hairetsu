@@ -96,14 +96,15 @@ func (b *Builder) Factory() *Factory {
 
 func (b *Builder) StreamBuild(seq iter.Seq[item.Item]) (*DoubleArray, error) {
 	da := New()
-	node, err := b.SortedNode(seq)
+	nodes, n, err := b.SortedNode(seq)
 	if err != nil {
 		return nil, err
 	}
 
 	b.init(da, 0)
+	b.ensure(da, node.Index(n))
 
-	for x := range node {
+	for x := range nodes {
 		if x.val != nil {
 			x.branch = append(x.branch, word.EOS)
 		}
@@ -114,19 +115,19 @@ func (b *Builder) StreamBuild(seq iter.Seq[item.Item]) (*DoubleArray, error) {
 	return da, nil
 }
 
-func (b *Builder) SortedNode(seq iter.Seq[item.Item]) (iter.Seq[*nodeItem], error) {
+func (b *Builder) SortedNode(seq iter.Seq[item.Item]) (iter.Seq[*nodeItem], int, error) {
 	item := prove("item", seq, b)
 	unit := prove("unit", unitFromItem(item), b)
 	sortedUnit, n, err := stream.Sort(unit, compareNodeUnit, b.sortOption...)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	b.SetMax(n)
 	b.progressLogf("split into %d units", n)
 
 	sorted := prove("sorted", sortedUnit, b)
 	node := prove("node", nodeFromUnit(sorted), b)
-	return node, nil
+	return node, n, nil
 }
 
 func prove[T any](name string, seq iter.Seq[T], b *Builder) iter.Seq[T] {
