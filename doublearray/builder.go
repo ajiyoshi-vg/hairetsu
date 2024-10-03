@@ -122,8 +122,8 @@ func (b *Builder) SortedNode(seq iter.Seq[item.Item]) (iter.Seq[*nodeItem], int,
 	if err != nil {
 		return nil, 0, err
 	}
-	b.SetMax(n)
 	b.progressLogf("split into %d units", n)
+	b.SetMax(n)
 
 	sorted := prove("sorted", sortedUnit, b)
 	node := prove("node", nodeFromUnit(sorted), b)
