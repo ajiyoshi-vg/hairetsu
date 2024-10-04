@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/ajiyoshi-vg/external"
+	"github.com/ajiyoshi-vg/external/emit"
 )
 
 func Sort[T any](seq iter.Seq[T], cmp func(T, T) int, opt ...external.Option) (iter.Seq[T], int, error) {
@@ -26,18 +27,6 @@ func Sort[T any](seq iter.Seq[T], cmp func(T, T) int, opt ...external.Option) (i
 			}
 		}()
 
-		ch := make(chan T, 5*1000)
-		go func() {
-			defer close(ch)
-			for x := range sorted {
-				ch <- x
-			}
-		}()
-
-		for x := range ch {
-			if !yield(x) {
-				return
-			}
-		}
+		emit.Buffered(sorted, yield)
 	}, chunk.Length(), nil
 }
