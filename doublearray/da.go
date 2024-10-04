@@ -18,6 +18,7 @@ var (
 
 type Nodes interface {
 	At(node.Index) (node.Node, error)
+	Size() int64
 	io.WriterTo
 }
 
@@ -95,6 +96,10 @@ func (da *DoubleArray) trim() {
 			return
 		}
 	}
+}
+
+func (da *DoubleArray) Size() int64 {
+	return int64(len(da.nodes)) * 8
 }
 
 func OpenFile(path string) (*DoubleArray, error) {
