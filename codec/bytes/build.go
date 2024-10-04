@@ -26,6 +26,10 @@ func NewBuilder[D FillableDict]() *dict.Builder[byte, []byte, D, *Encoder[D]] {
 	return dict.NewBuilder(scan.ByteLines, byteSeq, NewEncoder[D])
 }
 
+func NewBuilderWith[D FillableDict](items func(io.Reader) iter.Seq[[]byte]) *dict.Builder[byte, []byte, D, *Encoder[D]] {
+	return dict.NewBuilder(items, byteSeq, NewEncoder[D])
+}
+
 func byteSeq(seq iter.Seq[[]byte]) iter.Seq[byte] {
 	return func(yield func(byte) bool) {
 		for line := range seq {

@@ -112,6 +112,7 @@ func (b *Builder) StreamBuild(seq iter.Seq[item.Item]) (*DoubleArray, error) {
 			return nil, err
 		}
 	}
+	da.trim()
 	return da, nil
 }
 

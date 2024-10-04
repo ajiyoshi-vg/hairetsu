@@ -88,6 +88,15 @@ func (da *DoubleArray) At(i node.Index) (node.Node, error) {
 	return da.nodes[i], nil
 }
 
+func (da *DoubleArray) trim() {
+	for i := len(da.nodes) - 1; i >= 0; i-- {
+		if da.nodes[i].IsUsed() {
+			da.nodes = da.nodes[:i+1]
+			return
+		}
+	}
+}
+
 func OpenFile(path string) (*DoubleArray, error) {
 	file, err := os.Open(path)
 	if err != nil {
