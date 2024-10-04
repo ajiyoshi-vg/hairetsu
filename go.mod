@@ -3,7 +3,7 @@ module github.com/ajiyoshi-vg/hairetsu
 go 1.23.0
 
 require (
-	github.com/ajiyoshi-vg/external v0.0.0-20241004040549-89d8211fde15
+	github.com/ajiyoshi-vg/external v0.0.0-20241004072749-ca498bcca1f5
 	github.com/google/uuid v1.6.0
 	github.com/gosuri/uiprogress v0.0.1
 	github.com/ikawaha/dartsclone v1.0.0
