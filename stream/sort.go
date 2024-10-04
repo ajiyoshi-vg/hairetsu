@@ -28,7 +28,7 @@ func Sort[T any](seq iter.Seq[T], cmp func(T, T) int, opt ...external.Option) (i
 		}()
 
 		done := make(chan struct{})
-		ch := make(chan []T, 5)
+		ch := make(chan []T, 5*1000)
 		go func() {
 			for xs := range ch {
 				for _, x := range xs {
@@ -39,7 +39,7 @@ func Sort[T any](seq iter.Seq[T], cmp func(T, T) int, opt ...external.Option) (i
 			}
 			close(done)
 		}()
-		for xs := range scan.Chunk(sorted, 1000*1000) {
+		for xs := range scan.Chunk(sorted, 1000) {
 			ch <- xs
 		}
 		close(ch)
