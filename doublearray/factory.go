@@ -1,37 +1,24 @@
 package doublearray
 
 import (
+	"github.com/ajiyoshi-vg/external/emit"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray/item"
 	"github.com/ajiyoshi-vg/hairetsu/result"
 )
 
 type Factory struct {
 	ch   chan item.Item
-	done chan result.Result[*DoubleArray]
+	done <-chan result.Result[*DoubleArray]
 }
 
 func NewFactory(b *Builder) *Factory {
+	ch := make(chan item.Item)
+	done := factory(b, ch)
+
 	ret := &Factory{
-		ch:   make(chan item.Item),
-		done: make(chan result.Result[*DoubleArray]),
+		ch:   ch,
+		done: done,
 	}
-
-	seq := func(yield func(item.Item) bool) {
-		for x := range ret.ch {
-			if !yield(x) {
-				return
-			}
-		}
-	}
-
-	go func() {
-		x, err := b.StreamBuild(seq)
-		if err != nil {
-			ret.done <- result.NG[*DoubleArray](err)
-		} else {
-			ret.done <- result.OK(x)
-		}
-	}()
 
 	return ret
 }
@@ -44,4 +31,18 @@ func (b *Factory) Done() (*DoubleArray, error) {
 	close(b.ch)
 	ret := <-b.done
 	return ret.Result()
+}
+
+func factory(b *Builder, ch <-chan item.Item) <-chan result.Result[*DoubleArray] {
+	done := make(chan result.Result[*DoubleArray])
+	go func() {
+		defer close(done)
+		x, err := b.StreamBuild(emit.Chan(ch))
+		if err != nil {
+			done <- result.NG[*DoubleArray](err)
+		} else {
+			done <- result.OK(x)
+		}
+	}()
+	return done
 }
