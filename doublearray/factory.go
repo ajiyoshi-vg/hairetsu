@@ -13,14 +13,11 @@ type Factory struct {
 
 func NewFactory(b *Builder) *Factory {
 	ch := make(chan item.Item)
-	done := factory(b, ch)
 
-	ret := &Factory{
+	return &Factory{
 		ch:   ch,
-		done: done,
+		done: factory(b, ch),
 	}
-
-	return ret
 }
 
 func (b *Factory) Put(item item.Item) {
@@ -37,12 +34,7 @@ func factory(b *Builder, ch <-chan item.Item) <-chan result.Result[*DoubleArray]
 	done := make(chan result.Result[*DoubleArray])
 	go func() {
 		defer close(done)
-		x, err := b.StreamBuild(emit.Chan(ch))
-		if err != nil {
-			done <- result.NG[*DoubleArray](err)
-		} else {
-			done <- result.OK(x)
-		}
+		done <- result.New(b.StreamBuild(emit.Chan(ch)))
 	}()
 	return done
 }
