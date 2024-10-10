@@ -3,14 +3,14 @@ module github.com/ajiyoshi-vg/hairetsu
 go 1.23.0
 
 require (
-	github.com/ajiyoshi-vg/external v0.0.0-20241009091928-1f002a60253b
+	github.com/ajiyoshi-vg/external v0.0.0-20241010043946-87bae49e6bb8
 	github.com/google/uuid v1.6.0
 	github.com/gosuri/uiprogress v0.0.1
 	github.com/ikawaha/dartsclone v1.0.0
 	github.com/pkg/errors v0.9.1
 	github.com/schollz/progressbar/v3 v3.16.1
 	github.com/stretchr/testify v1.9.0
-	golang.org/x/exp v0.0.0-20241004190924-225e2abe05e6
+	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c
 )
 
 require (

@@ -1,7 +1,7 @@
 package doublearray
 
 import (
-	"github.com/ajiyoshi-vg/external/emit"
+	"github.com/ajiyoshi-vg/external/scan"
 	"github.com/ajiyoshi-vg/hairetsu/doublearray/item"
 	"github.com/ajiyoshi-vg/hairetsu/result"
 )
@@ -34,7 +34,7 @@ func factory(b *Builder, ch <-chan item.Item) <-chan result.Result[*DoubleArray]
 	done := make(chan result.Result[*DoubleArray])
 	go func() {
 		defer close(done)
-		done <- result.New(b.StreamBuild(emit.Chan(ch)))
+		done <- result.New(b.StreamBuild(scan.Chan(ch)))
 	}()
 	return done
 }
