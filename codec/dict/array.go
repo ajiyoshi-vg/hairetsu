@@ -93,9 +93,9 @@ func (a Array[T]) bufferLength() int {
 	size := unsafe.Sizeof(T(0))
 	switch size {
 	case 1:
-		return math.MaxUint8
+		return math.MaxUint8 + 1
 	case 2:
-		return math.MaxUint16
+		return math.MaxUint16 + 1
 	default:
 		panic("unsupported type")
 	}

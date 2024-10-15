@@ -16,6 +16,12 @@ func StreamChunkSize(n int) Option {
 	}
 }
 
+func StreamLimit(n int) Option {
+	return func(b *Builder) {
+		b.sortOption = append(b.sortOption, external.Limit(n))
+	}
+}
+
 func Verbose(b *Builder) {
 	b.verbose = true
 }

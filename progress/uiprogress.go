@@ -12,10 +12,11 @@ type UIProgress struct {
 }
 
 func (u *UIProgress) SetMax(n int) {
-	uiprogress.Start()
-	u.bar = uiprogress.AddBar(n)
-	u.bar.AppendCompleted()
-	u.bar.PrependElapsed()
+	if u.bar == nil {
+		u.bar = uiprogress.AddBar(n).AppendCompleted().PrependElapsed()
+	} else {
+		u.bar.Total += n
+	}
 }
 
 func (u *UIProgress) Add(n int) {
@@ -29,7 +30,11 @@ type ProgressBar struct {
 }
 
 func (p *ProgressBar) SetMax(n int) {
-	p.bar = progressbar.Default(int64(n))
+	if p.bar == nil {
+		p.bar = progressbar.Default(int64(n))
+	} else {
+		p.bar.ChangeMax(n + p.bar.GetMax())
+	}
 }
 
 func (p *ProgressBar) Add(n int) {

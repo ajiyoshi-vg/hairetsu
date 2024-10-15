@@ -18,6 +18,7 @@ var (
 
 type Nodes interface {
 	At(node.Index) (node.Node, error)
+	Size() int64
 	io.WriterTo
 }
 
@@ -86,6 +87,19 @@ func (da *DoubleArray) At(i node.Index) (node.Node, error) {
 		return 0, fmt.Errorf("index(%d) out of range", i)
 	}
 	return da.nodes[i], nil
+}
+
+func (da *DoubleArray) trim() {
+	for i := len(da.nodes) - 1; i >= 0; i-- {
+		if da.nodes[i].IsUsed() {
+			da.nodes = da.nodes[:i+1]
+			return
+		}
+	}
+}
+
+func (da *DoubleArray) Size() int64 {
+	return int64(len(da.nodes)) * 8
 }
 
 func OpenFile(path string) (*DoubleArray, error) {

@@ -26,6 +26,7 @@ func Sort[T any](seq iter.Seq[T], cmp func(T, T) int, opt ...external.Option) (i
 				log.Println(err)
 			}
 		}()
-		emit.All(sorted, yield)
+
+		emit.Buffered(sorted, yield)
 	}, chunk.Length(), nil
 }

@@ -44,17 +44,19 @@ func TestDoubleArrayReadWrite(t *testing.T) {
 		assert.NoError(t, err)
 		defer os.Remove(tmp.Name())
 
-		_, err = origin.WriteTo(tmp)
+		n, err := origin.WriteTo(tmp)
 		assert.NoError(t, err)
 		assert.NoError(t, tmp.Close())
+		assert.Equal(t, n, origin.Size())
 
 		tmp, err = os.Open(tmp.Name())
 		assert.NoError(t, err)
 
 		restored1 := New()
-		_, err = restored1.ReadFrom(tmp)
+		m, err := restored1.ReadFrom(tmp)
 		assert.NoError(t, err)
 		assert.NoError(t, tmp.Close())
+		assert.Equal(t, m, origin.Size())
 
 		copied := FromArray(origin.Array())
 
@@ -63,8 +65,10 @@ func TestDoubleArrayReadWrite(t *testing.T) {
 
 		restored2 := New()
 		buf := &bytes.Buffer{}
-		_, err = mmaped.WriteTo(buf)
+		n, err = mmaped.WriteTo(buf)
 		assert.NoError(t, err)
+		assert.Equal(t, n, mmaped.Size())
+		assert.Equal(t, n, origin.Size())
 		_, err = restored2.ReadFrom(buf)
 		assert.NoError(t, err)
 
